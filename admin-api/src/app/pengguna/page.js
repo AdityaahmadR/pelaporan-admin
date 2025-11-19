@@ -1,28 +1,26 @@
 "use client";
 
-// BARIS INI YANG BIKIN SEMUA BERUBAH — WAJIB ADA!!
+import styles from './pengguna.module.css';
+import Sidebar from '@/components/Sidebar';
+import { useState } from 'react';
+import Image from 'next/image';
+
+// INI YANG BIKIN VERCEL BAHAGIA — HALAMAN JADI DYNAMIC + NO FETCH
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-import styles from './pengguna.module.css';
-import Sidebar from '@/components/Sidebar';
-import { useState, useEffect } from 'react';
-import Image from 'next/image';
-
 export default function DatabasePengguna() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    fetch('/api/pengguna')
-      .then(r => r.json())
-      .then(data => setUsers(data.users || []))
-      .finally(() => setLoading(false));
-  }, []);
+  // DUMMY DATA — NANTI KITA GANTI PAKAI API YANG BENAR
+  const dummyUsers = [
+    { uid: '1', nama: 'Aditya Ahmad', email: 'adit@gmail.com', dibuat: '15 Nov 2025', terakhirLogin: '20 Nov 2025', status: 'Aktif', foto: '/logo_kecil.png' },
+    { uid: '2', nama: 'Budi Santoso', email: 'budi@gmail.com', dibuat: '10 Nov 2025', terakhirLogin: '19 Nov 2025', status: 'Aktif', foto: '/logo_kecil.png' },
+    { uid: '3', nama: 'Siti Nurhaliza', email: 'siti@gmail.com', dibuat: '05 Nov 2025', terakhirLogin: '18 Nov 2025', status: 'Nonaktif', foto: '/logo_kecil.png' },
+  ];
 
-  const filtered = users.filter(u => 
+  const filtered = dummyUsers.filter(u => 
     u.nama.toLowerCase().includes(searchQuery.toLowerCase()) ||
     u.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -57,16 +55,16 @@ export default function DatabasePengguna() {
           <h2>Database Pengguna</h2>
         </header>
 
-        {loading ? (
-          <div className={styles.emptyState}><p>Memuat data...</p></div>
-        ) : filtered.length === 0 ? (
-          <div className={styles.emptyState}><p>Belum ada pengguna</p></div>
+        {filtered.length === 0 ? (
+          <div className={styles.emptyState}>
+            <p>Belum ada pengguna ditemukan</p>
+          </div>
         ) : (
           <div className={styles.userGrid}>
             {filtered.map(user => (
               <div key={user.uid} className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
                 <div className="flex items-center gap-4 mb-4">
-                  <img src={user.foto || '/logo_kecil.png'} alt="" className="w-16 h-16 rounded-full object-cover" />
+                  <img src={user.foto} alt="" className="w-16 h-16 rounded-full object-cover ring-4 ring-gray-200" />
                   <div>
                     <h3 className="font-bold text-lg">{user.nama}</h3>
                     <p className="text-gray-600 text-sm">{user.email}</p>
@@ -75,11 +73,19 @@ export default function DatabasePengguna() {
                 <div className="text-sm text-gray-600 space-y-1 mb-4">
                   <p><strong>Dibuat:</strong> {user.dibuat}</p>
                   <p><strong>Login terakhir:</strong> {user.terakhirLogin}</p>
-                  <p><strong>Status:</strong> <span className={user.status === 'Aktif' ? 'text-green-600' : 'text-red-600'}>{user.status}</span></p>
+                  <p><strong>Status:</strong> 
+                    <span className={user.status === 'Aktif' ? 'text-green-600 font-bold' : 'text-red-600 font-bold'}>
+                      {user.status}
+                    </span>
+                  </p>
                 </div>
-                <div className="flex gap-2">
-                  <button className="flex-1 bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-3 rounded-xl">Edit</button>
-                  <button className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl">Hapus</button>
+                <div className="flex gap-3">
+                  <button className="flex-1 bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-3 rounded-xl transition">
+                    Edit
+                  </button>
+                  <button className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl transition">
+                    Hapus
+                  </button>
                 </div>
               </div>
             ))}
