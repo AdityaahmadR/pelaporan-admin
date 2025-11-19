@@ -1,0 +1,39 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model laporan {
+  laporanID Int      @id @map("laporanID")
+  userID    Int
+  lokasi    String?  @db.VarChar(255)
+  deskripsi String?  @db.Text
+  tanggal   DateTime @default(now()) @map("tanggal")
+  
+  // Ganti ENUM jadi String biasa (ini yang jalan di MySQL + Prisma)
+  status    String   @default("baru")    @map("status")    // baru, diproses, selesai
+  prioritas String   @default("sedang") @map("prioritas") // rendah, sedang, tinggi
+
+  @@map("laporan")
+}
+
+model users {
+  uid       String?   @db.VarChar(255)
+  userID    Int       @id @default(autoincrement()) @map("userID")
+  nama      String    @db.VarChar(100)
+  email     String    @unique @db.VarChar(100)
+  password  String    @db.VarChar(255)
+  noTelepon String?   @db.VarChar(20)
+  
+  // Ganti ENUM jadi String biasa
+  role      String    @default("masyarakat") @map("role") // masyarakat, petugas, admin
+  
+  created_at DateTime @default(now()) @map("created_at")
+
+  @@map("users")
+}
