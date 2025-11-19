@@ -1,6 +1,6 @@
 // api/register.js
 
-import connectDB from '../db.js'; // Mengimpor fungsi koneksi database
+import connectDB from '../admin-api/db.js'; // Mengimpor fungsi koneksi database
 import bcrypt from 'bcrypt'; // Untuk hashing password
 import admin from 'firebase-admin'; // Firebase Admin SDK
 

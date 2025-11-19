@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import connectDB from 'C:\api-gateway\db.js'; // Path disesuaikan agar keluar dari src/app/api
+import connectDB from '../../../../db'; // Ganti ini
 import bcrypt from 'bcrypt';
 import admin from 'firebase-admin';// --- Inisialisasi Firebase Admin ---
 try {

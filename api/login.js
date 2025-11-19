@@ -1,6 +1,6 @@
 // api/login.js
 
-import connectDB from '../db.js';
+import connectDB from '../admin-api/db.js';
 import bcrypt from 'bcrypt';
 
 export default async function handler(req, res) {
