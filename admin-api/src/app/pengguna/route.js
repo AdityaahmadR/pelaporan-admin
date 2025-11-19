@@ -1,36 +1,35 @@
 // src/app/api/pengguna/route.js
-import { getAuth } from 'firebase-admin/auth';
-import { adminApp } from '@/lib/firebaseAdmin'; // pastikan file ini sudah ada & benar
+import { auth } from '@/lib/firebaseAdmin';
 
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search')?.toLowerCase() || '';
 
-    const { users } = await getAuth(adminApp).listUsers();
+    const { users } = await auth.listUsers();
 
-    let filtered = users.map(user => ({
+    let filteredUsers = users.map(user => ({
       uid: user.uid,
       nama: user.displayName || 'Tanpa Nama',
       email: user.email || '-',
       foto: user.photoURL || '/logo_kecil.png',
       dibuat: new Date(user.metadata.creationTime).toLocaleDateString('id-ID'),
       terakhirLogin: user.metadata.lastSignInTime
-        ? new Date(user.metadata.lastSignInTime).toLocaleString('id-ID')
+        ? new Date(user.metadata.lastSignInTime).toLocaleDateString('id-ID')
         : 'Belum pernah',
       status: user.disabled ? 'Nonaktif' : 'Aktif',
     }));
 
     if (search) {
-      filtered = filtered.filter(u =>
+      filteredUsers = filteredUsers.filter(u =>
         u.nama.toLowerCase().includes(search) ||
         u.email.toLowerCase().includes(search)
       );
     }
 
-    return Response.json({ users: filtered });
+    return Response.json({ users: filteredUsers });
   } catch (error) {
-    console.error('Error list users:', error);
+    console.error('Error di API pengguna:', error);
     return Response.json({ error: error.message }, { status: 500 });
   }
 }
