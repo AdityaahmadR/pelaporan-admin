@@ -1,87 +1,87 @@
-// src/app/pengguna/page.js → GANTI TOTAL JADI INI
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import AdminLayout from '@/components/AdminLayout';
-import SearchBar from '@/components/SearchBar';
+import styles from './pengguna.module.css';
+import Sidebar from '@/components/Sidebar';
+import { useState, useEffect } from 'react';
+import Image from 'next/image';
 
-export const dynamic = 'force-dynamic';   // CUKUP 1 KALI SAJA!!
-export const revalidate = 0;              // Biar selalu ambil data terbaru
-
-export default function HalamanPengguna() {
+export default function DatabasePengguna() {
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  const fetchUsers = async (search = '') => {
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/pengguna?search=${search}`);
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      setUsers(data.users || []);
-    } catch (err) {
-      alert('Gagal ambil data: ' + err.message);
-      setUsers([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    fetchUsers();
+    fetch('/api/pengguna')
+      .then(r => r.json())
+      .then(data => setUsers(data.users || []))
+      .finally(() => setLoading(false));
   }, []);
 
-  return (
-    <AdminLayout>
-      <div className="min-h-screen bg-black p-6">
-        {/* HEADER MERAH GLOW */}
-        <div className="relative mb-10">
-          <div className="bg-gradient-to-r from-red-800 via-red-600 to-red-500 h-28 rounded-3xl flex items-center justify-between px-10 shadow-2xl overflow-hidden">
-            <div>
-              <h1 className="text-5xl font-black text-white tracking-wider drop-shadow-2xl">
-                DATABASE PENGGUNA
-              </h1>
-              <p className="text-red-100 text-lg mt-2">Kelola semua akun pengguna sistem</p>
-            </div>
-            <div className="bg-black px-8 py-5 rounded-l-3xl shadow-2xl border-l-4 border-red-600">
-              <div className="text-red-500 text-5xl font-bold">{users.length}</div>
-              <div className="text-gray-400 text-sm uppercase tracking-wider">Total Pengguna</div>
-            </div>
-          </div>
-          <div className="absolute inset-x-0 -bottom-6 h-12 bg-red-600 blur-3xl opacity-70"></div>
-        </div>
+  const filtered = users.filter(u => 
+    u.nama.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    u.email.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-        <div className="max-w-2xl mx-auto mb-8">
-          <SearchBar placeholder="Cari nama atau email..." onSearch={fetchUsers} />
+  return (
+    <div className={`${styles.page} ${!sidebarOpen ? styles.sidebarCollapsed : ''}`}>
+      <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} activePage="/pengguna" />
+
+      <div className={styles.topBar}>
+        <div className={styles.searchWrapper}>
+          <div className={styles.searchBar}>
+            <Image src="/Search.png" alt="Search" width={20} height={20} className={styles.searchIcon} />
+            <input
+              type="text"
+              placeholder="Cari nama atau email pengguna..."
+              className={styles.searchInput}
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+            />
+          </div>
         </div>
+        <button className={styles.uploadButton}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 5v14m-7-7h14" />
+          </svg>
+          <span>Tambah Pengguna</span>
+        </button>
+      </div>
+
+      <main className={`${styles.content} ${!sidebarOpen ? styles.collapsed : ''}`}>
+        <header className={styles.header}>
+          <h2>Database Pengguna</h2>
+        </header>
 
         {loading ? (
-          <div className="text-center py-20 text-2xl text-gray-400">Loading data pengguna...</div>
+          <div className={styles.emptyState}><p>Memuat data...</p></div>
+        ) : filtered.length === 0 ? (
+          <div className={styles.emptyState}><p>Belum ada pengguna</p></div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-7 max-w-7xl mx-auto">
-            {users.map((user) => (
-              <div key={user.uid} className="group bg-gradient-to-b from-gray-900 to-black border-2 border-gray-800 rounded-3xl p-6 hover:border-red-600 transition-all duration-500 shadow-2xl hover:shadow-red-600/30">
-                <div className="flex items-center justify-between mb-5">
-                  <img src={user.foto || '/logo_kecil.png'} alt="" className="w-20 h-20 rounded-full object-cover ring-4 ring-red-600" />
-                  <span className={`px-4 py-2 rounded-full text-xs font-bold ${user.status === 'Aktif' ? 'bg-green-600' : 'bg-gray-700'}`}>
-                    {user.status}
-                  </span>
+          <div className={styles.userGrid}>
+            {filtered.map(user => (
+              <div key={user.uid} style={{ background: '#fff', borderRadius: '16px', padding: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
+                  <img src={user.foto || '/logo_kecil.png'} alt="" width={64} height={64} style={{ borderRadius: '50%' }} />
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '19px', fontWeight: '700' }}>{user.nama}</h3>
+                    <p style={{ margin: '4px 0 0', color: '#666' }}>{user.email}</p>
+                  </div>
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-1">{user.nama}</h3>
-                <p className="text-red-400 text-sm mb-4">{user.email}</p>
-                <div className="text-sm space-y-2 text-gray-400">
-                  <p>Dibuat: <span className="text-gray-300">{user.dibuat}</span></p>
-                  <p>Login terakhir: <span className="text-gray-300">{user.terakhirLogin}</span></p>
+                <div style={{ fontSize: '14px', color: '#555', marginBottom: '20px' }}>
+                  <p><strong>Dibuat:</strong> {user.dibuat}</p>
+                  <p><strong>Login terakhir:</strong> {user.terakhirLogin}</p>
+                  <p><strong>Status:</strong> <span style={{ color: user.status === 'Aktif' ? 'green' : 'red', fontWeight: 'bold' }}>{user.status}</span></p>
                 </div>
-                <div className="mt-8 flex gap-3">
-                  <button className="flex-1 bg-yellow-600 hover:bg-yellow-500 text-black font-bold py-3 rounded-2xl">Edit</button>
-                  <button className="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-2xl">Hapus</button>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button style={{ flex: 1, padding: '12px', background: '#facc15', color: 'black', border: 'none', borderRadius: '10px', fontWeight: '600' }}>Edit</button>
+                  <button style={{ flex: 1, padding: '12px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '10px', fontWeight: '600' }}>Hapus</button>
                 </div>
               </div>
             ))}
           </div>
         )}
-      </div>
-    </AdminLayout>
+      </main>
+    </div>
   );
 }
