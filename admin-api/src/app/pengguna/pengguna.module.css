@@ -1,6 +1,6 @@
-/* src/app/pengguna/pengguna.module.css */
-/* 100% MIRIP DENGAN app.module.css — cuma judul diganti jadi "Database Pengguna" */
+/* src/app/app/app.module.css */
 
+/* === PAGE UTAMA === */
 .page {
   display: block;
   height: 100vh;
@@ -10,6 +10,7 @@
   position: relative;
 }
 
+/* === TOP BAR === */
 .topBar {
   position: fixed;
   top: 0;
@@ -23,13 +24,13 @@
   padding: 0 32px;
   z-index: 30;
   transition: left 0.25s ease;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 
 .sidebarCollapsed .topBar {
   left: 72px;
 }
 
+/* === SEARCH WRAPPER === */
 .searchWrapper {
   display: flex;
   align-items: center;
@@ -39,6 +40,7 @@
   margin: 0 auto;
 }
 
+/* === SEARCH BAR === */
 .searchBar {
   position: relative;
   display: flex;
@@ -54,13 +56,16 @@
 }
 
 .searchBar:focus-within {
-  border-color: #d71c1c;
-  box-shadow: 0 0 0 4px rgba(215, 28, 28, 0.15), 0 6px 16px rgba(0, 0, 0, 0.1);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15), 0 6px 16px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
 }
 
 .searchIcon {
   margin-right: 14px;
   opacity: 0.65;
+  width: 19px;
+  height: 19px;
 }
 
 .searchInput {
@@ -77,25 +82,32 @@
   color: #a0aec0;
 }
 
+/* === UPLOAD BUTTON — PUTIH, BISA DIKLIK === */
 .uploadButton {
   display: flex;
   align-items: center;
   gap: 9px;
-  background: #d71c1c;
-  color: white;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  color: #2d3748;
   padding: 12px 20px;
   border-radius: 10px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.25s ease;
-  box-shadow: 0 2px 6px rgba(215, 28, 28, 0.3);
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 
 .uploadButton:hover {
-  background: #b91c1c;
+  background: #f7fafc;
+  border-color: #cbd5e0;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   transform: translateY(-1px);
 }
 
+/* === CONTENT === */
 .content {
   margin-left: 280px;
   margin-top: 72px;
@@ -103,70 +115,66 @@
   padding: 32px;
   overflow: auto;
   transition: margin-left 0.25s ease;
-  background: #f8f9fa;
 }
 
 .content.collapsed {
   margin-left: 72px;
 }
 
+/* === HEADER — JUDUL DI KIRI === */
 .header {
   position: relative;
   padding-bottom: 16px;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
   text-align: left;
   padding-left: 12px;
 }
 
 .header h2 {
   margin: 0;
-  font-size: 28px;
-  font-weight: 800;
-  color: #1a202c;
+  font-size: 26px;
+  font-weight: 700;
+  color: #212529;
   display: inline-block;
   position: relative;
 }
 
-/* GARIS MERAH TEBAL DI BAWAH JUDUL */
+/* GARIS MERAH — SESUAI PANJANG TULISAN */
 .header h2::after {
   content: '';
   position: absolute;
   left: 0;
   right: 0;
-  bottom: -10px;
-  height: 5px;
+  bottom: -8px;
+  height: 4px;
   background: #d71c1c;
-  border-radius: 3px;
+  border-radius: 2px;
 }
 
+/* GARIS HITAM — PANJANG PENUH */
 .header::after {
   content: '';
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
+  width: 100%;
   height: 1px;
-  background: #e2e8f0;
+  background: #e5e7eb;
 }
 
+/* === EMPTY STATE === */
 .emptyState {
   display: flex;
   align-items: center;
   justify-content: center;
   height: 60vh;
-  color: #718096;
-  font-size: 22px;
+  color: #777;
+  font-size: 20px;
   font-weight: 600;
 }
 
-/* CARD GRID */
-.userGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 24px;
-}
-
-/* RESPONSIVE */
+/* === RESPONSIVE === */
 @media (max-width: 900px) {
   .topBar {
     padding: 0 16px;
@@ -175,8 +183,19 @@
     height: auto;
     padding: 16px;
   }
-  .searchWrapper, .searchBar { max-width: 100%; }
-  .uploadButton { width: 100%; justify-content: center; }
+
+  .searchWrapper {
+    max-width: 100%;
+  }
+
+  .searchBar {
+    max-width: 100%;
+  }
+
+  .uploadButton {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 @media (max-width: 520px) {
@@ -185,6 +204,21 @@
     margin-top: 72px;
     padding: 16px;
   }
-  .topBar { left: 0 !important; }
-  .header h2 { font-size: 24px; }
+
+  .topBar {
+    left: 0 !important;
+    padding: 12px;
+  }
+
+  .header {
+    padding-left: 8px;
+  }
+
+  .header h2 {
+    font-size: 22px;
+  }
+
+  .header h2::after {
+    bottom: -6px;
+  }
 }
