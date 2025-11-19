@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import connectDB from '../../../../db'; // Ganti ini
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 export async function POST(request) {
   const { email, password } = await request.json();
