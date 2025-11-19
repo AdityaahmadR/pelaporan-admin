@@ -1,5 +1,9 @@
 "use client";
 
+// BARIS INI YANG BIKIN SEMUA BERUBAH — WAJIB ADA!!
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 import styles from './pengguna.module.css';
 import Sidebar from '@/components/Sidebar';
 import { useState, useEffect } from 'react';
@@ -60,22 +64,22 @@ export default function DatabasePengguna() {
         ) : (
           <div className={styles.userGrid}>
             {filtered.map(user => (
-              <div key={user.uid} style={{ background: '#fff', borderRadius: '16px', padding: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
-                  <img src={user.foto || '/logo_kecil.png'} alt="" width={64} height={64} style={{ borderRadius: '50%' }} />
+              <div key={user.uid} className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
+                <div className="flex items-center gap-4 mb-4">
+                  <img src={user.foto || '/logo_kecil.png'} alt="" className="w-16 h-16 rounded-full object-cover" />
                   <div>
-                    <h3 style={{ margin: 0, fontSize: '19px', fontWeight: '700' }}>{user.nama}</h3>
-                    <p style={{ margin: '4px 0 0', color: '#666' }}>{user.email}</p>
+                    <h3 className="font-bold text-lg">{user.nama}</h3>
+                    <p className="text-gray-600 text-sm">{user.email}</p>
                   </div>
                 </div>
-                <div style={{ fontSize: '14px', color: '#555', marginBottom: '20px' }}>
+                <div className="text-sm text-gray-600 space-y-1 mb-4">
                   <p><strong>Dibuat:</strong> {user.dibuat}</p>
                   <p><strong>Login terakhir:</strong> {user.terakhirLogin}</p>
-                  <p><strong>Status:</strong> <span style={{ color: user.status === 'Aktif' ? 'green' : 'red', fontWeight: 'bold' }}>{user.status}</span></p>
+                  <p><strong>Status:</strong> <span className={user.status === 'Aktif' ? 'text-green-600' : 'text-red-600'}>{user.status}</span></p>
                 </div>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <button style={{ flex: 1, padding: '12px', background: '#facc15', color: 'black', border: 'none', borderRadius: '10px', fontWeight: '600' }}>Edit</button>
-                  <button style={{ flex: 1, padding: '12px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '10px', fontWeight: '600' }}>Hapus</button>
+                <div className="flex gap-2">
+                  <button className="flex-1 bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-3 rounded-xl">Edit</button>
+                  <button className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl">Hapus</button>
                 </div>
               </div>
             ))}
