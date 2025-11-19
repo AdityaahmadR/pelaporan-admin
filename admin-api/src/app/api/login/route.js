@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import connectDB from '../../../../db'; // Path disesuaikan agar keluar dari src/app/api
+import connectDB from 'C:\api-gateway\db.js'; // Path disesuaikan agar keluar dari src/app/api
 import bcrypt from 'bcrypt';
 
 export async function POST(request) {
