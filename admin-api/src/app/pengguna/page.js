@@ -1,28 +1,57 @@
 "use client";
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 import styles from '../pengguna/pengguna.module.css';
 import Sidebar from '../../components/Sidebar';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 
 export default function DatabasePengguna() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [activeTab, setActiveTab] = useState('masyarakat'); // masyarakat atau petugas
+  const [activeTab, setActiveTab] = useState('masyarakat');
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // AMBIL DATA DARI RAILWAY MYSQL + HITUNG RIWAYAT PELAPORAN
+  useEffect(() => {
+    async function fetchData() {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/pengguna?role=${activeTab}`);
+        const data = await res.json();
+        setUsers(data);
+      } catch (err) {
+        console.error("Gagal ambil data:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, [activeTab]);
+
+  const handleDelete = async (userID) => {
+    if (!confirm("Yakin ingin menghapus user ini?")) return;
+
+    try {
+      await fetch(`/api/pengguna/${userID}`, { method: 'DELETE' });
+      setUsers(users.filter(u => u.userID !== userID));
+    } catch (err) {
+      alert("Gagal menghapus user");
+    }
+  };
 
   return (
     <div className={`${styles.page} ${!sidebarOpen ? styles.sidebarCollapsed : ''}`}>
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} activePage="/pengguna" />
 
-      {/* TOP BAR */}
+      {/* TOP BAR — TETAP SAMA */}
       <div className={styles.topBar}>
         <div className={styles.searchWrapper}>
           <div className={styles.searchBar}>
             <Image src="/Search.png" alt="Search" width={20} height={20} className={styles.searchIcon} />
-            <input
-              type="text"
-              placeholder="Search"
-              className={styles.searchInput}
-            />
+            <input type="text" placeholder="Search" className={styles.searchInput} />
           </div>
         </div>
         <button className={styles.uploadButton}>
@@ -35,96 +64,98 @@ export default function DatabasePengguna() {
         </button>
       </div>
 
-      {/* KONTEN UTAMA */}
       <main className={`${styles.content} ${!sidebarOpen ? styles.collapsed : ''}`}>
-        {/* HEADER DUA TAB — INI YANG KAMU MAU! */}
         <header className={styles.header} style={{ paddingBottom: '32px' }}>
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '40px',
-            position: 'relative',
-            paddingLeft: '12px'
-          }}>
-            {/* TAB MASYARAKAT */}
-            <h2
-              onClick={() => setActiveTab('masyarakat')}
-              style={{
-                margin: 0,
-                fontSize: '26px',
-                fontWeight: '700',
-                color: '#212529',
-                cursor: 'pointer',
-                position: 'relative',
-                transition: 'color 0.2s ease'
-              }}
-            >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '40px', position: 'relative', paddingLeft: '12px' }}>
+            <h2 onClick={() => setActiveTab('masyarakat')} style={{ margin: 0, fontSize: '26px', fontWeight: activeTab === 'masyarakat' ? '800' : '700', color: '#212529', cursor: 'pointer', position: 'relative', transition: 'all 0.3s ease' }}>
               Database Masyarakat
-              <span style={{
-                position: 'absolute',
-                left: 0,
-                right: 0,
-                bottom: '-10px',
-                height: '4px',
-                background: '#d71c1c',
-                borderRadius: '2px',
-                opacity: activeTab === 'masyarakat' ? 1 : 0,
-                transform: activeTab === 'masyarakat' ? 'scaleX(1)' : 'scaleX(0)',
-                transformOrigin: 'left',
-                transition: 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)'
-              }}></span>
+              {activeTab === 'masyarakat' && <span style={{ position: 'absolute', left: 0, right: 0, bottom: '-10px', height: '4px', background: '#d71c1c', borderRadius: '2px' }}></span>}
             </h2>
-
-            {/* TAB PETUGAS */}
-            <h2
-              onClick={() => setActiveTab('petugas')}
-              style={{
-                margin: 0,
-                fontSize: '26px',
-                fontWeight: '700',
-                color: '#212529',
-                cursor: 'pointer',
-                position: 'relative',
-                transition: 'color 0.2s ease'
-              }}
-            >
+            <h2 onClick={() => setActiveTab('petugas')} style={{ margin: 0, fontSize: '26px', fontWeight: activeTab === 'petugas' ? '800' : '700', color: '#212529', cursor: 'pointer', position: 'relative', transition: 'all 0.3s ease' }}>
               Database Petugas
-              <span style={{
-                position: 'absolute',
-                left: 0,
-                right: 0,
-                bottom: '-10px',
-                height: '4px',
-                background: '#d71c1c',
-                borderRadius: '2px',
-                opacity: activeTab === 'petugas' ? 1 : 0,
-                transform: activeTab === 'petugas' ? 'scaleX(1)' : 'scaleX(0)',
-                transformOrigin: 'left',
-                transition: 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)'
-              }}></span>
+              {activeTab === 'petugas' && <span style={{ position: 'absolute', left: 0, right: 0, bottom: '-10px', height: '4px', background: '#d71c1c', borderRadius: '2px' }}></span>}
             </h2>
           </div>
-
-          {/* Garis bawah penuh */}
-          <div style={{
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            bottom: 0,
-            height: '1px',
-            background: '#e5e7eb'
-          }}></div>
+          <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '1px', background: '#e5e7eb' }}></div>
         </header>
 
-        {/* ISI KONTEN — NANTI TERGANTUNG TAB */}
-        <section className={styles.emptyState}>
-          <p>
-            {activeTab === 'masyarakat' 
-              ? 'Menampilkan data masyarakat...' 
-              : 'Menampilkan data petugas...'
-            }
-          </p>
-        </section>
+        {/* TABEL — 100% PERSIS GAMBAR */}
+        <div style={{ background: '#fff', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ background: '#f9fafb', borderBottom: '2px solid #e5e7eb' }}>
+                <th style={{ padding: '16px', textAlign: 'left', fontWeight: 600, color: '#374151' }}>Nama</th>
+                <th style={{ padding: '16px', textAlign: 'left', fontWeight: 600, color: '#374151' }}>Email</th>
+                <th style={{ padding: '16px', textAlign: 'left', fontWeight: 600, color: '#374151' }}>Riwayat Pelaporan</th>
+                <th style={{ padding: '16px' }}></th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr><td colSpan="4" style={{ textAlign: 'center', padding: '40px', color: '#999' }}>Memuat data...</td></tr>
+              ) : users.length === 0 ? (
+                <tr><td colSpan="4" style={{ textAlign: 'center', padding: '40px', color: '#999' }}>Tidak ada data {activeTab}</td></tr>
+              ) : (
+                users.map(user => (
+                  <tr key={user.userID} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                    <td style={{ padding: '16px', fontWeight: 600 }}>{user.nama}</td>
+                    <td style={{ padding: '16px', color: '#666' }}>{user.email}</td>
+                    <td style={{ padding: '16px', color: '#666' }}>{user.jumlah_laporan || 0} Pelaporan</td>
+                    <td style={{ padding: '16px', textAlign: 'right' }}>
+                      <button
+                        onClick={() => handleDelete(user.userID)}
+                        style={{
+                          background: '#ef4444',
+                          color: 'white',
+                          border: 'none',
+                          padding: '8px 20px',
+                          borderRadius: '50px',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Hapus
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* TOMBOL TAMBAH USER — PERSIS DI GAMBAR */}
+        <button style={{
+          position: 'fixed',
+          bottom: '32px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          background: 'transparent',
+          border: 'none',
+          fontSize: '18px',
+          fontWeight: 600,
+          color: '#666',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          cursor: 'pointer',
+          zIndex: 100
+        }}>
+          <div style={{
+            width: '56px',
+            height: '56px',
+            background: '#e5e7eb',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '32px',
+            color: '#666',
+            fontWeight: '300'
+          }}>+</div>
+          Tambah User
+        </button>
       </main>
     </div>
   );
