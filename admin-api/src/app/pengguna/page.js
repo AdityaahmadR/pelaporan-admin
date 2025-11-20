@@ -14,7 +14,6 @@ export default function DatabasePengguna() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // AMBIL DATA DARI RAILWAY MYSQL + HITUNG RIWAYAT PELAPORAN
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
@@ -33,7 +32,6 @@ export default function DatabasePengguna() {
 
   const handleDelete = async (userID) => {
     if (!confirm("Yakin ingin menghapus user ini?")) return;
-
     try {
       await fetch(`/api/pengguna/${userID}`, { method: 'DELETE' });
       setUsers(users.filter(u => u.userID !== userID));
@@ -46,7 +44,6 @@ export default function DatabasePengguna() {
     <div className={`${styles.page} ${!sidebarOpen ? styles.sidebarCollapsed : ''}`}>
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} activePage="/pengguna" />
 
-      {/* TOP BAR — TETAP SAMA */}
       <div className={styles.topBar}>
         <div className={styles.searchWrapper}>
           <div className={styles.searchBar}>
@@ -79,7 +76,6 @@ export default function DatabasePengguna() {
           <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '1px', background: '#e5e7eb' }}></div>
         </header>
 
-        {/* TABEL — 100% PERSIS GAMBAR */}
         <div style={{ background: '#fff', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
@@ -102,19 +98,10 @@ export default function DatabasePengguna() {
                     <td style={{ padding: '16px', color: '#666' }}>{user.email}</td>
                     <td style={{ padding: '16px', color: '#666' }}>{user.jumlah_laporan || 0} Pelaporan</td>
                     <td style={{ padding: '16px', textAlign: 'right' }}>
-                      <button
-                        onClick={() => handleDelete(user.userID)}
-                        style={{
-                          background: '#ef4444',
-                          color: 'white',
-                          border: 'none',
-                          padding: '8px 20px',
-                          borderRadius: '50px',
-                          fontSize: '14px',
-                          fontWeight: 600,
-                          cursor: 'pointer'
-                        }}
-                      >
+                      <button onClick={() => handleDelete(user.userID)} style={{
+                        background: '#ef4444', color: 'white', border: 'none', padding: '8px 20px',
+                        borderRadius: '50px', fontSize: '14px', fontWeight: 600, cursor: 'pointer'
+                      }}>
                         Hapus
                       </button>
                     </td>
@@ -125,34 +112,14 @@ export default function DatabasePengguna() {
           </table>
         </div>
 
-        {/* TOMBOL TAMBAH USER — PERSIS DI GAMBAR */}
         <button style={{
-          position: 'fixed',
-          bottom: '32px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          background: 'transparent',
-          border: 'none',
-          fontSize: '18px',
-          fontWeight: 600,
-          color: '#666',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          cursor: 'pointer',
-          zIndex: 100
+          position: 'fixed', bottom: '32px', left: '50%', transform: 'translateX(-50%)',
+          background: 'transparent', border: 'none', fontSize: '18px', fontWeight: 600, color: '#666',
+          display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', zIndex: 100
         }}>
           <div style={{
-            width: '56px',
-            height: '56px',
-            background: '#e5e7eb',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '32px',
-            color: '#666',
-            fontWeight: '300'
+            width: '56px', height: '56px', background: '#e5e7eb', borderRadius: '50%',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', color: '#666', fontWeight: '300'
           }}>+</div>
           Tambah User
         </button>

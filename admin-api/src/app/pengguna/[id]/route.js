@@ -1,25 +1,28 @@
 import { NextResponse } from 'next/server';
-import { unstable_noStore as noStore } from 'next/cache';
 import mysql from 'mysql2/promise';
-
-export const dynamic = 'force-dynamic';
 
 const pool = mysql.createPool({
   host: process.env.MYSQLHOST,
   user: process.env.MYSQLUSER,
   password: process.env.MYSQLPASSWORD,
   database: process.env.MYSQLDATABASE,
-  port: process.env.MYSQLPORT || 3306
+  port: Number(process.env.MYSQLPORT), // 39744
+  connectTimeout: 30000
 });
 
 export async function DELETE(request, { params }) {
-  noStore();
   const { id } = params;
 
   try {
     await pool.query('DELETE FROM users WHERE userID = ?', [id]);
-    return NextResponse.json({ success: true });
+    return new NextResponse(JSON.stringify({ success: true }), {
+      status: 200,
+      headers: { 'Cache-Control': 'no-store' }
+    });
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return new NextResponse(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { 'Cache-Control': 'no-store' }
+    });
   }
 }

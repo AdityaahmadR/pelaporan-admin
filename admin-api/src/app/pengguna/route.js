@@ -1,23 +1,19 @@
 import { NextResponse } from 'next/server';
-import { unstable_noStore as noStore } from 'next/cache'; // TAMBAH INI
 import mysql from 'mysql2/promise';
-
-export const dynamic = 'force-dynamic'; // TAMBAH INI
 
 const pool = mysql.createPool({
   host: process.env.MYSQLHOST,
   user: process.env.MYSQLUSER,
   password: process.env.MYSQLPASSWORD,
   database: process.env.MYSQLDATABASE,
-  port: process.env.MYSQLPORT || 3306,
+  port: Number(process.env.MYSQLPORT), // 39744
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
+  queueLimit: 0,
+  connectTimeout: 30000 // 30 detik
 });
 
 export async function GET(request) {
-  noStore(); // INI YANG BIKIN VERCEL TAKUT CACHING → LANGSUNG SKIP PRERENDER
-
   const { searchParams } = new URL(request.url);
   const role = searchParams.get('role') || 'masyarakat';
 
@@ -31,9 +27,19 @@ export async function GET(request) {
       ORDER BY u.created_at DESC
     `, [role]);
 
-    return NextResponse.json(rows);
+    return new NextResponse(JSON.stringify(rows), {
+      status: 200,
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    });
   } catch (error) {
-    console.error("Database error:", error);
-    return NextResponse.json({ error: "Gagal mengambil data dari database" }, { status: 500 });
+    console.error('Database error:', error.message);
+    return new NextResponse(JSON.stringify({ error: 'Gagal mengambil data' }), {
+      status: 500,
+      headers: { 'Cache-Control': 'no-store' }
+    });
   }
 }
