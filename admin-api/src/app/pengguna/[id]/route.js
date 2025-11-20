@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
+import { unstable_noStore as noStore } from 'next/cache';
 import mysql from 'mysql2/promise';
+
+export const dynamic = 'force-dynamic';
 
 const pool = mysql.createPool({
   host: process.env.MYSQLHOST,
@@ -10,6 +13,7 @@ const pool = mysql.createPool({
 });
 
 export async function DELETE(request, { params }) {
+  noStore();
   const { id } = params;
 
   try {
