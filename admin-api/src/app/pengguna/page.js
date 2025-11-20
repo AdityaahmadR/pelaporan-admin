@@ -1,12 +1,8 @@
 "use client";
 
-// TAMBAHKAN 2 BARIS INI BIAR VERCEL TAKUT PRERENDER → BUILD HIJAU!
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
 import styles from '../pengguna/pengguna.module.css';
 import Sidebar from '../../components/Sidebar';
-import { useState, useRef, useEffect } from 'react';  // INI YANG KAMU LUPA IMPORT!
+import { useState } from 'react';
 import Image from 'next/image';
 
 export default function DatabasePengguna() {
@@ -15,12 +11,11 @@ export default function DatabasePengguna() {
   const [showModal, setShowModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // INI BARU BISA JALAN KARENA useRef & useEffect SUDAH DI-IMPORT!
   const masyarakatRef = useRef(null);
   const petugasRef = useRef(null);
   const [indicator, setIndicator] = useState({ left: 0, width: 0 });
 
-  // DUMMY DATA
+  // DUMMY DATA — NANTI GANTI DENGAN FETCH DARI API
   const [masyarakat] = useState([
     { id: 1, nama: "Aditya Ahmad", email: "adit@gmail.com", telp: "08123456789", foto: "/logo_kecil.png" },
     { id: 2, nama: "Siti Nurhaliza", email: "siti@gmail.com", telp: "08234567890", foto: "/logo_kecil.png" },
@@ -66,7 +61,7 @@ export default function DatabasePengguna() {
           </div>
         </div>
 
-        {/* TOMBOL TAMBAH USER */}
+        {/* TOMBOL TAMBAH USER — SESUAI GAMBAR */}
         <button onClick={() => setShowModal(true)} className={styles.addButton}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <circle cx="12" cy="12" r="10" />
@@ -76,7 +71,7 @@ export default function DatabasePengguna() {
         </button>
       </div>
 
-      {/* KONTEN UTAMA */}
+      {/* KONTEN */}
       <main className={`${styles.content} ${!sidebarOpen ? styles.collapsed : ''}`}>
         <header className={styles.header} style={{ paddingBottom: '32px', position: 'relative' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '48px', paddingLeft: '12px', position: 'relative' }}>
@@ -102,22 +97,19 @@ export default function DatabasePengguna() {
             <p>Tidak ada data {activeTab === 'masyarakat' ? 'masyarakat' : 'petugas'} ditemukan</p>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px', marginTop: '20px' }}>
+          <div className={styles.userGrid}>
             {filtered.map(user => (
-              <div key={user.id} style={{ background: 'white', borderRadius: '16px', padding: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0', position: 'relative' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
-                  <img src={user.foto} alt={user.nama} style={{ width: '64px', height: '64px', borderRadius: '50%', objectFit: 'cover', border: '3px solid #f0f0f0' }} />
+              <div key={user.id} className={styles.userCard}>
+                <div className={styles.cardHeader}>
+                  <img src={user.foto} alt={user.nama} className={styles.avatar} />
                   <div>
-                    <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700 }}>{user.nama}</h3>
-                    <p style={{ margin: '4px 0 0', color: '#666', fontSize: '14px' }}>{user.email}</p>
-                    {user.telp && <p style={{ fontSize: '13px', color: '#999', marginTop: '6px' }}>{user.telp}</p>}
-                    {user.role && <span style={{ background: '#fef3c7', color: '#92400e', padding: '4px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: 600 }}>{user.role}</span>}
+                    <h3>{user.nama}</h3>
+                    <p>{user.email}</p>
+                    {user.telp && <p className={styles.telp}>{user.telp}</p>}
+                    {user.role && <span className={styles.role}>{user.role}</span>}
                   </div>
                 </div>
-                <button style={{
-                  position: 'absolute', top: '16px', right: '16px', background: '#ef4444', color: 'white',
-                  border: 'none', padding: '8px 16px', borderRadius: '50px', fontWeight: 600, fontSize: '13px', cursor: 'pointer'
-                }}>
+                <button className={styles.deleteBtn}>
                   Hapus
                 </button>
               </div>
@@ -126,12 +118,13 @@ export default function DatabasePengguna() {
         )}
       </main>
 
-      {/* MODAL */}
+      {/* MODAL TAMBAH USER — NANTI KITA BIKIN */}
       {showModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setShowModal(false)}>
-          <div style={{ background: 'white', width: '90%', maxWidth: '500px', borderRadius: '20px', padding: '32px', position: 'relative', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.modalOverlay} onClick={() => setShowModal(false)}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
             <h2>Tambah {activeTab === 'masyarakat' ? 'Masyarakat' : 'Petugas'}</h2>
-            <button onClick={() => setShowModal(false)} style={{ position: 'absolute', top: '16px', right: '20px', width: '40px', height: '40px', border: 'none', background: '#f1f1f1', borderRadius: '50%', fontSize: '24px', cursor: 'pointer' }}>×</button>
+            <button onClick={() => setShowModal(false)} className={styles.closeModal}>×</button>
+            {/* Form nanti di sini */}
             <p style={{ textAlign: 'center', marginTop: '40px', color: '#666' }}>Form coming soon...</p>
           </div>
         </div>
