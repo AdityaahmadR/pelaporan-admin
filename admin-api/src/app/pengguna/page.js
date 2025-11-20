@@ -2,12 +2,27 @@
 
 import styles from '../app/app.module.css';
 import Sidebar from '../../components/Sidebar';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 
 export default function DatabasePengguna() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [activeTab, setActiveTab] = useState('masyarakat'); // masyarakat atau petugas
+  const [activeTab, setActiveTab] = useState('masyarakat');
+
+  const masyarakatRef = useRef(null);
+  const petugasRef = useRef(null);
+  const [indicatorStyle, setIndicatorStyle] = useState({});
+
+  useEffect(() => {
+    const activeEl = activeTab === 'masyarakat' ? masyarakatRef.current : petugasRef.current;
+    if (activeEl) {
+      setIndicatorStyle({
+        left: `${activeEl.offsetLeft}px`,
+        width: `${activeEl.offsetWidth}px`,
+        transition: 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)'
+      });
+    }
+  }, [activeTab]);
 
   return (
     <div className={`${styles.page} ${!sidebarOpen ? styles.sidebarCollapsed : ''}`}>
@@ -35,16 +50,18 @@ export default function DatabasePengguna() {
 
       {/* KONTEN UTAMA */}
       <main className={`${styles.content} ${!sidebarOpen ? styles.collapsed : ''}`}>
-        {/* HEADER DUA TAB — VERSI YANG BENAR-BENAR HANYA SATU GARIS! */}
+        {/* HEADER DUA TAB — INI YANG 100% SESUAI GAMBAR 2! */}
         <header className={styles.header} style={{ paddingBottom: '32px', position: 'relative' }}>
           <div style={{ 
             display: 'flex', 
             alignItems: 'center', 
-            gap: '40px',
-            paddingLeft: '12px'
+            gap: '48px',
+            paddingLeft: '12px',
+            position: 'relative'
           }}>
             {/* TAB MASYARAKAT */}
             <h2
+              ref={masyarakatRef}
               onClick={() => setActiveTab('masyarakat')}
               style={{
                 margin: 0,
@@ -52,9 +69,9 @@ export default function DatabasePengguna() {
                 fontWeight: activeTab === 'masyarakat' ? '800' : '700',
                 color: '#212529',
                 cursor: 'pointer',
+                transition: 'all 0.3s ease',
                 position: 'relative',
-                paddingBottom: '12px',
-                transition: 'all 0.3s ease'
+                zIndex: 2
               }}
             >
               Database Masyarakat
@@ -62,6 +79,7 @@ export default function DatabasePengguna() {
 
             {/* TAB PETUGAS */}
             <h2
+              ref={petugasRef}
               onClick={() => setActiveTab('petugas')}
               style={{
                 margin: 0,
@@ -69,27 +87,25 @@ export default function DatabasePengguna() {
                 fontWeight: activeTab === 'petugas' ? '800' : '700',
                 color: '#212529',
                 cursor: 'pointer',
+                transition: 'all 0.3s ease',
                 position: 'relative',
-                paddingBottom: '12px',
-                transition: 'all 0.3s ease'
+                zIndex: 2
               }}
             >
               Database Petugas
             </h2>
-          </div>
 
-          {/* GARIS MERAH SATU-SATUNYA — HANYA MUNCUL DI TAB AKTIF! */}
-          <div style={{
-            position: 'absolute',
-            left: activeTab === 'masyarakat' ? '12px' : 'calc(12px + 230px)', // 230px ≈ lebar "Database Masyarakat" + gap
-            bottom: '16px',
-            width: '200px',
-            height: '4px',
-            background: '#d71c1c',
-            borderRadius: '2px',
-            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-            transform: activeTab === 'petugas' ? 'translateX(230px)' : 'translateX(0)'
-          }}></div>
+            {/* GARIS MERAH SATU-SATUNYA — MENGIKUTI PANJANG TEKS! */}
+            <div style={{
+              position: 'absolute',
+              bottom: '12px',
+              height: '4px',
+              background: '#d71c1c',
+              borderRadius: '2px',
+              zIndex: 1,
+              ...indicatorStyle
+            }}></div>
+          </div>
 
           {/* Garis bawah penuh */}
           <div style={{
