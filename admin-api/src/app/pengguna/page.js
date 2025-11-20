@@ -5,7 +5,6 @@ import Sidebar from '@/components/Sidebar';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 
-// INI YANG BIKIN VERCEL TAKUT PRERENDER HALAMAN INI
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
@@ -19,18 +18,12 @@ export default function DatabasePengguna() {
     const fetchUsers = async () => {
       setLoading(true);
       try {
-        // YANG INI SUDAH BENAR → /api/users
         const res = await fetch(`/api/users?role=${activeTab}`, { cache: 'no-store' });
-        
-        if (!res.ok) {
-          const errText = await res.text();
-          throw new Error(`HTTP ${res.status}: ${errText.substring(0, 200)}`);
-        }
-        
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         setUsers(data);
       } catch (err) {
-        console.error('Gagal fetch data:', err);
+        console.error(err);
         alert('Gagal mengambil data: ' + err.message);
       } finally {
         setLoading(false);
@@ -41,17 +34,22 @@ export default function DatabasePengguna() {
 
   const hapusUser = async (id) => {
     if (!confirm('Yakin ingin menghapus user ini?')) return;
+
     try {
-      // Kamu bisa ganti ini nanti kalau mau buat API hapus terpisah
-      const res = await fetch(`/api/pengguna/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/pengguna/${id}`, { 
+        method: 'DELETE',
+        cache: 'no-store'
+      });
+
       if (res.ok) {
         setUsers(prev => prev.filter(u => u.userID !== id));
-        alert('User berhasil dihapus');
+        alert('User berhasil dihapus!');
       } else {
-        alert('Gagal menghapus user');
+        const err = await res.json();
+        alert('Gagal hapus: ' + (err.error || 'Unknown error'));
       }
     } catch (err) {
-      alert('Error jaringan');
+      alert('Error jaringan saat menghapus');
     }
   };
 
@@ -84,7 +82,7 @@ export default function DatabasePengguna() {
               style={{
                 margin: 0,
                 fontSize: '26px',
-                fontWeight: activeTab === 'masyarakat' ? '800' : '700',
+                fontWeight: activeTab === 'masyarakat' ? 800 : 700,
                 color: '#212529',
                 cursor: 'pointer',
                 position: 'relative',
@@ -93,15 +91,7 @@ export default function DatabasePengguna() {
             >
               Database Masyarakat
               {activeTab === 'masyarakat' && (
-                <span style={{
-                  position: 'absolute',
-                  left: 0,
-                  right: 0,
-                  bottom: '-10px',
-                  height: '4px',
-                  background: '#d71c1c',
-                  borderRadius: '2px'
-                }}></span>
+                <span style={{ position: 'absolute', left: 0, right: 0, bottom: '-10px', height: '4px', background: '#d71c1c', borderRadius: '2px' }}></span>
               )}
             </h2>
 
@@ -110,7 +100,7 @@ export default function DatabasePengguna() {
               style={{
                 margin: 0,
                 fontSize: '26px',
-                fontWeight: activeTab === 'petugas' ? '800' : '700',
+                fontWeight: activeTab === 'petugas' ? 800 : 700,
                 color: '#212529',
                 cursor: 'pointer',
                 position: 'relative',
@@ -119,15 +109,7 @@ export default function DatabasePengguna() {
             >
               Database Petugas
               {activeTab === 'petugas' && (
-                <span style={{
-                  position: 'absolute',
-                  left: 0,
-                  right: 0,
-                  bottom: '-10px',
-                  height: '4px',
-                  background: '#d71c1c',
-                  borderRadius: '2px'
-                }}></span>
+                <span style={{ position: 'absolute', left: 0, right: 0, bottom: '-10px', height: '4px', background: '#d71c1c', borderRadius: '2px' }}></span>
               )}
             </h2>
           </div>
