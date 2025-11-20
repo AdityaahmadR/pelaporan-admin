@@ -1,4 +1,4 @@
-/* src/app/app/app.module.css */
+/* src/app/pengguna/pengguna.module.css */
 
 /* === PAGE UTAMA === */
 .page {
@@ -140,7 +140,7 @@
 }
 
 /* GARIS MERAH — SESUAI PANJANG TULISAN */
-.header h2::after {
+/* .header h2::after {
   content: '';
   position: absolute;
   left: 0;
@@ -149,7 +149,7 @@
   height: 4px;
   background: #d71c1c;
   border-radius: 2px;
-}
+} */
 
 /* GARIS HITAM — PANJANG PENUH */
 .header::after {
