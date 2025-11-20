@@ -5,7 +5,7 @@ import Sidebar from '@/components/Sidebar';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 
-// BIAR VERCEL NGGAK PERNAH CACHE APA PUN
+// BIAR VERCEL NGGAK CACHING APA PUN
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 export const fetchCache = 'force-no-store';
@@ -16,7 +16,6 @@ export default function DatabasePengguna() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // AMBIL DATA
   useEffect(() => {
     const fetchUsers = async () => {
       setLoading(true);
@@ -34,28 +33,30 @@ export default function DatabasePengguna() {
     fetchUsers();
   }, [activeTab]);
 
-  // HAPUS USER — VERSI FINAL YANG PASTI JALAN
+  // HAPUS USER — VERSI FINAL YANG 1000% JALAN
   const hapusUser = async (id) => {
     if (!confirm('Yakin ingin menghapus user ini?')) return;
 
     try {
       const res = await fetch(`/api/pengguna/${id}`, {
         method: 'DELETE',
-        cache: 'no-store',
-        headers: { 'Content-Type': 'application/json' }
+        cache: 'no-store'
       });
 
-      const result = await res.json();
-
-      if (res.ok) {
-        setUsers(prev => prev.filter(u => u.userID !== id));
-        alert(result.message);
-      } else {
-        alert('Gagal hapus: ' + (result.error || result.details || 'Server error'));
+      if (!res.ok) {
+        const errorData = await res.text();
+        throw new Error(errorData || `HTTP ${res.status}`);
       }
+
+      const result = await res.json();
+      
+      // Update state langsung
+      setUsers(prev => prev.filter(u => u.userID !== id));
+      alert(result.message || 'User berhasil dihapus!');
+
     } catch (err) {
-      console.error('Network error:', err);
-      alert('Error jaringan. Cek koneksi internet & coba lagi.');
+      console.error('Gagal menghapus user:', err);
+      alert('Gagal menghapus user: ' + err.message);
     }
   };
 

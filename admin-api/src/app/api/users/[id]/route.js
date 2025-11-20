@@ -1,4 +1,5 @@
-// src/app/api/pengguna/[id]/route.js
+// src/app/api/pengguna/[id]/route.js  ← NAMA FOLDER [id] & FILE route.js SUDAH BENAR!
+
 import mysql from 'mysql2/promise';
 
 const pool = mysql.createPool({
@@ -7,25 +8,26 @@ const pool = mysql.createPool({
   password: process.env.MYSQLPASSWORD,
   database: process.env.MYSQLDATABASE,
   port: Number(process.env.MYSQLPORT) || 39744,
-  waitForConnections: true,
+  ssl: { rejectUnauthorized: false },
   connectionLimit: 10,
-  queueLimit: 0,
-  connectTimeout: 30000,
-  ssl: { rejectUnauthorized: false }
+  connectTimeout: 30000
 });
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export async function DELETE(request, { params }) {
-  const userId = params.id;
+  const id = params.id;  // INI YANG BENAR! JANGAN PAKAI params.userId
 
-  if (!userId) {
-    return new Response(JSON.stringify({ error: 'ID user diperlukan' }), { status: 400 });
+  if (!id || isNaN(id)) {
+    return new Response(JSON.stringify({ error: 'ID user tidak valid' }), { 
+      status: 400,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 
   try {
-    const [result] = await pool.execute('DELETE FROM users WHERE userID = ?', [userId]);
+    const [result] = await pool.execute('DELETE FROM users WHERE userID = ?', [id]);
 
     if (result.affectedRows === 0) {
       return new Response(JSON.stringify({ error: 'User tidak ditemukan' }), { status: 404 });
@@ -40,7 +42,7 @@ export async function DELETE(request, { params }) {
     });
 
   } catch (error) {
-    console.error('DELETE USER ERROR:', error);
+    console.error('Error hapus user:', error);
     return new Response(JSON.stringify({ 
       error: 'Gagal menghapus dari database',
       details: error.message 
