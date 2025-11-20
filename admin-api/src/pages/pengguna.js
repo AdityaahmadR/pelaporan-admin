@@ -1,112 +1,111 @@
 // pages/pengguna.js
+import { useState, useEffect } from 'react';
 import Head from 'next/head';
 
-// PAKAI STYLE LANGSUNG DI JSX — NGGAK PERLU IMPORT CSS MODULE LAGI!
-// Sidebar juga kita hardcode dulu biar nggak error import
+export const getServerSideProps = async () => {
+  return { props: {} }; // cukup ini → Vercel jadi SSR, nggak timeout lagi
+};
 
-export async function getServerSideProps() {
-  return { props: {} }; // Ini yang bikin Vercel 100% SSR → tidak prerender
-}
+export default function Pengguna() {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('masyarakat');
 
-export default function PenggunaPage() {
+  useEffect(() => {
+    fetch(`/api/pengguna?role=${activeTab}`)
+      .then(r => r.json())
+      .then(data => {
+        setUsers(data);
+        setLoading(false);
+      });
+  }, [activeTab]);
+
+  const hapusUser = async (id) => {
+    if (!confirm('Yakin hapus user ini?')) return;
+    await fetch(`/api/pengguna/${id}`, { method: 'DELETE' });
+    setUsers(users.filter(u => u.userID !== id));
+  };
+
   return (
     <>
-      <Head>
-        <title>Database Pengguna | Admin Panel</title>
-      </Head>
+      <Head><title>Database Pengguna</title></Head>
 
-      <div style={{ minHeight: '100vh', background: '#f3f4f6', fontFamily: 'system-ui, sans-serif' }}>
-        {/* SIDEBAR HARD CODE DULU */}
-        <div style={{
-          position: 'fixed', left: 0, top: 0, bottom: 0, width: '280px', background: '#1f2937',
-          padding: '24px', color: 'white', boxShadow: '4px 0 20px rgba(0,0,0,0.1)'
-        }}>
-          <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '40px' }}>Admin Panel</h1>
+      <div style={{ display: 'flex', minHeight: '100vh', background: '#f9fafb' }}>
+        {/* Sidebar sederhana */}
+        <div style={{ width: '280px', background: '#1f2937', color: 'white', padding: '24px' }}>
+          <h2 style={{ fontWeight: 'bold', marginBottom: '40px' }}>Admin Panel</h2>
           <ul style={{ listStyle: 'none', padding: 0 }}>
-            <li style={{ padding: '12px 16px', background: '#374151', borderRadius: '8px', marginBottom: '8px' }}>
-              Database Pengguna
-            </li>
-            <li style={{ padding: '12px 16px', opacity: 0.7 }}>Laporan</li>
-            <li style={{ padding: '12px 16px', opacity: 0.7 }}>Darurat</li>
+            <li style={{ padding: '12px', background: '#374151', borderRadius: '8px' }}>Database Pengguna</li>
+            <li style={{ padding: '12px', opacity: 0.6 }}>Laporan</li>
+            <li style={{ padding: '12px', opacity: 0.6 }}>Darurat</li>
           </ul>
         </div>
 
-        {/* MAIN CONTENT */}
-        <div style={{ marginLeft: '280px', padding: '32px' }}>
-          {/* TOP BAR */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-            <div style={{ flex: 1, maxWidth: '400px' }}>
-              <div style={{ position: 'relative' }}>
-                <input
-                  type="text"
-                  placeholder="Search"
-                  style={{
-                    width: '100%', padding: '12px 16px 12px 44px', borderRadius: '12px',
-                    border: '1px solid #d1d5db', fontSize: '16px'
-                  }}
-                />
-                <span style={{ position: 'absolute', left: '16px', top: '14px', color: '#9ca3af' }}>Search</span>
-              </div>
+        <div style={{ flex: 1, padding: '32px' }}>
+          {/* Top bar */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '32px' }}>
+            <div style={{ position: 'relative', width: '400px' }}>
+              <input type="text" placeholder="Search" style={{ width: '100%', padding: '12px 48px', borderRadius: '12px', border: '1px solid #ddd' }} />
+              <span style={{ position: 'absolute', left: '16px', top: '14px', color: '#999' }}>Search</span>
             </div>
-            <button style={{
-              background: '#111827', color: 'white', padding: '12px 24px', borderRadius: '12px',
-              display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600'
-            }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="17 8 12 3 7 8" />
-                <line x1="12" y1="3" x2="12" y2="15" />
-              </svg>
-              Upload
-            </button>
+            <button style={{ background: '#111827', color: 'white', padding: '12px 24px', borderRadius: '12px' }}>Upload</button>
           </div>
 
-          {/* HEADER TAB */}
+          {/* Tab */}
           <div style={{ marginBottom: '32px', position: 'relative' }}>
             <div style={{ display: 'flex', gap: '40px', paddingLeft: '12px' }}>
-              <h2 style={{ margin: 0, fontSize: '26px', fontWeight: 800, color: '#212529', position: 'relative' }}>
+              <h2 onClick={() => setActiveTab('masyarakat')} style={{ margin: 0, fontSize: '26px', fontWeight: activeTab === 'masyarakat' ? 800 : 700, cursor: 'pointer', position: 'relative' }}>
                 Database Masyarakat
-                <span style={{ position: 'absolute', left: 0, right: 0, bottom: '-10px', height: '4px', background: '#d71c1c', borderRadius: '2px' }}></span>
+                {activeTab === 'masyarakat' && <span style={{ position: 'absolute', left: 0, right: 0, bottom: '-10px', height: '4px', background: '#d71c1c', borderRadius: '2px' }}></span>}
               </h2>
-              <h2 style={{ margin: 0, fontSize: '26px', fontWeight: 700, color: '#212529', opacity: 0.6 }}>
+              <h2 onClick={() => setActiveTab('petugas')} style={{ margin: 0, fontSize: '26px', fontWeight: activeTab === 'petugas' ? 800 : 700, cursor: 'pointer', position: 'relative' }}>
                 Database Petugas
+                {activeTab === 'petugas' && <span style={{ position: 'absolute', left: 0, right: 0, bottom: '-10px', height: '4px', background: '#d71c1c', borderRadius: '2px' }}></span>}
               </h2>
             </div>
             <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '1px', background: '#e5e7eb' }}></div>
           </div>
 
-          {/* SUCCESS MESSAGE */}
-          <div style={{
-            background: '#fff', borderRadius: '16px', padding: '60px 40px', textAlign: 'center',
-            boxShadow: '0 10px 30px rgba(0,0,0,0.08)', maxWidth: '800px', margin: '0 auto'
-          }}>
-            <div style={{ fontSize: '80px', marginBottom: '20px' }}>Checkmark</div>
-            <h1 style={{ fontSize: '42px', color: '#10b981', marginBottom: '16px', fontWeight: 'bold' }}>
-              BUILD HIJAU!
-            </h1>
-            <p style={{ fontSize: '22px', color: '#374151', marginBottom: '24px' }}>
-              Selamat bro! Timeout sudah mati selamanya.
-            </p>
-            <p style={{ color: '#6b7280', lineHeight: '1.8', fontSize: '18px' }}>
-              Halaman /pengguna sudah pindah ke <code style={{ background: '#f3f4f6', padding: '4px 8px', borderRadius: '6px' }}>pages/pengguna.js</code><br />
-              Vercel tidak akan prerender lagi → <strong>deploy selalu hijau</strong><br /><br />
-              Besok kita lanjut:<br />
-              → Ambil data dari Railway MySQL<br />
-              → Bikin tabel + hapus user<br />
-              → Tambah user baru
-            </p>
+          {/* Tabel — persis seperti gambar */}
+          <div style={{ background: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead style={{ background: '#f9fafb' }}>
+                <tr>
+                  <th style={{ padding: '16px', textAlign: 'left' }}>Nama</th>
+                  <th style={{ padding: '16px', textAlign: 'left' }}>Email</th>
+                  <th style={{ padding: '16px', textAlign: 'left' }}>Riwayat Pelaporan</th>
+                  <th style={{ padding: '16px' }}></th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr><td colSpan={4} style={{ textAlign: 'center', padding: '40px' }}>Loading...</td></tr>
+                ) : users.map(user => (
+                  <tr key={user.userID} style={{ borderBottom: '1px solid #eee' }}>
+                    <td style={{ padding: '16px', fontWeight: 600 }}>{user.nama}</td>
+                    <td style={{ padding: '16px', color: '#666' }}>{user.email}</td>
+                    <td style={{ padding: '16px', color: '#666' }}>{user.jumlah_laporan || 0} Pelaporan</td>
+                    <td style={{ padding: '16px', textAlign: 'right' }}>
+                      <button onClick={() => hapusUser(user.userID)} style={{
+                        background: '#ef4444', color: 'white', border: 'none', padding: '8px 20px',
+                        borderRadius: '50px', fontSize: '14px', fontWeight: 600, cursor: 'pointer'
+                      }}>
+                        Hapus
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
 
-          {/* TOMBOL TAMBAH USER */}
+          {/* Tombol Tambah User */}
           <button style={{
             position: 'fixed', bottom: '32px', left: '50%', transform: 'translateX(-50%)',
-            background: 'transparent', border: 'none', fontSize: '18px', fontWeight: 600, color: '#666',
-            display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', zIndex: 100
+            background: 'transparent', border: 'none', display: 'flex', alignItems: 'center', gap: '12px',
+            fontSize: '18px', fontWeight: 600, color: '#666', cursor: 'pointer'
           }}>
-            <div style={{
-              width: '56px', height: '56px', background: '#e5e7eb', borderRadius: '50%',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', color: '#666'
-            }}>+</div>
+            <div style={{ width: '56px', height: '56px', background: '#e5e7eb', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px' }}>+</div>
             Tambah User
           </button>
         </div>
