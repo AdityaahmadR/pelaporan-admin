@@ -65,7 +65,7 @@ export default function DatabasePengguna() {
                   right: 0,
                   bottom: '-10px',
                   height: '4px',
-                  background: '#d71c1c',
+                  // background: '#d71c1c',
                   borderRadius: '2px',
                   transition: 'all 0.3s ease'
                 }}></span>
@@ -93,7 +93,7 @@ export default function DatabasePengguna() {
                   right: 0,
                   bottom: '-10px',
                   height: '4px',
-                  background: '#d71c1c',
+                  //background: '#d71c1c',
                   borderRadius: '2px',
                   transition: 'all 0.3s ease'
                 }}></span>
