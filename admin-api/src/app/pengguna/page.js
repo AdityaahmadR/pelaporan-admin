@@ -5,7 +5,6 @@ import Sidebar from '@/components/Sidebar';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 
-// BIAR VERCEL NGGAK CACHING APA PUN
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 export const fetchCache = 'force-no-store';
@@ -21,7 +20,7 @@ export default function DatabasePengguna() {
       setLoading(true);
       try {
         const res = await fetch(`/api/users?role=${activeTab}`, { cache: 'no-store' });
-        if (!res.ok) throw new Error(`Gagal ambil data (HTTP ${res.status})`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         setUsers(data);
       } catch (err) {
@@ -33,7 +32,6 @@ export default function DatabasePengguna() {
     fetchUsers();
   }, [activeTab]);
 
-  // HAPUS USER — VERSI FINAL YANG 1000% JALAN
   const hapusUser = async (id) => {
     if (!confirm('Yakin ingin menghapus user ini?')) return;
 
@@ -44,18 +42,16 @@ export default function DatabasePengguna() {
       });
 
       if (!res.ok) {
-        const errorData = await res.text();
-        throw new Error(errorData || `HTTP ${res.status}`);
+        const errText = await res.text();
+        throw new Error(errText || `HTTP ${res.status}`);
       }
 
       const result = await res.json();
-      
-      // Update state langsung
       setUsers(prev => prev.filter(u => u.userID !== id));
-      alert(result.message || 'User berhasil dihapus!');
+      alert(result.message);
 
     } catch (err) {
-      console.error('Gagal menghapus user:', err);
+      console.error('Gagal hapus:', err);
       alert('Gagal menghapus user: ' + err.message);
     }
   };
@@ -134,9 +130,14 @@ export default function DatabasePengguna() {
                       <button
                         onClick={() => hapusUser(user.userID)}
                         style={{
-                          background: '#ef4444', color: 'white', border: 'none',
-                          padding: '8px 20px', borderRadius: '50px', fontSize: '14px',
-                          fontWeight: 600, cursor: 'pointer'
+                          background: '#ef4444',
+                          color: 'white',
+                          border: 'none',
+                          padding: '8px 20px',
+                          borderRadius: '50px',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          cursor: 'pointer'
                         }}
                       >
                         Hapus
