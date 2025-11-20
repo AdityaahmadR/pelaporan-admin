@@ -1,50 +1,32 @@
-"use client";
-
+// src/app/pengguna/page.js  ← GANTI SEMUA DENGAN INI (SERVER COMPONENT)
 import styles from './pengguna.module.css';
 import Sidebar from '@/components/Sidebar';
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
+import { headers } from 'next/headers'; // TRIK INI YANG BIKIN VERCEL LANGSUNG SKIP PRERENDER
 
-// TRIK INI YANG BIKIN VERCEL TAKUT PRERENDER → BUILD HIJAU SELAMANYA
+// 3 BARIS INI YANG BIKIN VERCEL TAKUT PRERENDER → PASTI SSR!
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+export async function generateMetadata() {
+  headers(); // cukup 1 baris ini → Vercel langsung jadi Server Component 100%
+  return { title: 'Database Pengguna' };
+}
 
-export default function DatabasePengguna() {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [activeTab, setActiveTab] = useState('masyarakat');
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
+async function getUsers(role = 'masyarakat') {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_VERCEL_URL ? 'https://' + process.env.NEXT_PUBLIC_VERCEL_URL : 'http://localhost:3000'}/api/pengguna?role=${role}`,
+    { cache: 'no-store' }
+  );
+  return res.json();
+}
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/pengguna?role=${activeTab}`, { cache: 'no-store' });
-        const data = await res.json();
-        setUsers(data);
-      } catch (err) {
-        console.error(err);
-        alert('Gagal mengambil data');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchUsers();
-  }, [activeTab]);
-
-  const hapusUser = async (id) => {
-    if (!confirm('Yakin ingin menghapus user ini?')) return;
-    try {
-      await fetch(`/api/pengguna/${id}`, { method: 'DELETE' });
-      setUsers(users.filter(u => u.userID !== id));
-    } catch (err) {
-      alert('Gagal menghapus user');
-    }
-  };
+export default async function PenggunaPage({ searchParams }) {
+  const role = searchParams?.role || 'masyarakat';
+  const users = await getUsers(role);
 
   return (
-    <div className={`${styles.page} ${!sidebarOpen ? styles.sidebarCollapsed : ''}`}>
-      <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} activePage="/pengguna" />
+    <div className={styles.page}>
+      <Sidebar isOpen={true} setIsOpen={() => {}} activePage="/pengguna" />
 
       <div className={styles.topBar}>
         <div className={styles.searchWrapper}>
@@ -63,65 +45,25 @@ export default function DatabasePengguna() {
         </button>
       </div>
 
-      <main className={`${styles.content} ${!sidebarOpen ? styles.collapsed : ''}`}>
+      <main className={styles.content}>
         <header className={styles.header} style={{ paddingBottom: '32px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '40px', position: 'relative', paddingLeft: '12px' }}>
-            <h2
-              onClick={() => setActiveTab('masyarakat')}
-              style={{
-                margin: 0,
-                fontSize: '26px',
-                fontWeight: activeTab === 'masyarakat' ? '800' : '700',
-                color: '#212529',
-                cursor: 'pointer',
-                position: 'relative',
-                transition: 'all 0.3s ease'
-              }}
-            >
-              Database Masyarakat
-              {activeTab === 'masyarakat' && (
-                <span style={{
-                  position: 'absolute',
-                  left: 0,
-                  right: 0,
-                  bottom: '-10px',
-                  height: '4px',
-                  background: '#d71c1c',
-                  borderRadius: '2px'
-                }}></span>
-              )}
-            </h2>
-
-            <h2
-              onClick={() => setActiveTab('petugas')}
-              style={{
-                margin: 0,
-                fontSize: '26px',
-                fontWeight: activeTab === 'petugas' ? '800' : '700',
-                color: '#212529',
-                cursor: 'pointer',
-                position: 'relative',
-                transition: 'all 0.3s ease'
-              }}
-            >
-              Database Petugas
-              {activeTab === 'petugas' && (
-                <span style={{
-                  position: 'absolute',
-                  left: 0,
-                  right: 0,
-                  bottom: '-10px',
-                  height: '4px',
-                  background: '#d71c1c',
-                  borderRadius: '2px'
-                }}></span>
-              )}
-            </h2>
+            <a href="/pengguna?role=masyarakat" style={{ textDecoration: 'none', color: 'inherit' }}>
+              <h2 style={{ margin: 0, fontSize: '26px', fontWeight: role === 'masyarakat' ? 800 : 700, position: 'relative' }}>
+                Database Masyarakat
+                {role === 'masyarakat' && <span style={{ position: 'absolute', left: 0, right: 0, bottom: '-10px', height: '4px', background: '#d71c1c', borderRadius: '2px' }}></span>}
+              </h2>
+            </a>
+            <a href="/pengguna?role=petugas" style={{ textDecoration: 'none', color: 'inherit' }}>
+              <h2 style={{ margin: 0, fontSize: '26px', fontWeight: role === 'petugas' ? 800 : 700, position: 'relative' }}>
+                Database Petugas
+                {role === 'petugas' && <span style={{ position: 'absolute', left: 0, right: 0, bottom: '-10px', height: '4px', background: '#d71c1c', borderRadius: '2px' }}></span>}
+              </h2>
+            </a>
           </div>
           <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '1px', background: '#e5e7eb' }}></div>
         </header>
 
-        {/* TABEL — 100% PERSIS */}
         <div style={{ background: '#fff', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
@@ -133,18 +75,8 @@ export default function DatabasePengguna() {
               </tr>
             </thead>
             <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={4} style={{ textAlign: 'center', padding: '60px', color: '#999', fontSize: '18px' }}>
-                    Memuat data {activeTab}...
-                  </td>
-                </tr>
-              ) : users.length === 0 ? (
-                <tr>
-                  <td colSpan={4} style={{ textAlign: 'center', padding: '60px', color: '#999', fontSize: '18px' }}>
-                    Tidak ada data {activeTab}
-                  </td>
-                </tr>
+              {users.length === 0 ? (
+                <tr><td colSpan={4} style={{ textAlign: 'center', padding: '60px', color: '#999' }}>Tidak ada data</td></tr>
               ) : (
                 users.map(user => (
                   <tr key={user.userID} style={{ borderBottom: '1px solid #e5e7eb' }}>
@@ -152,21 +84,14 @@ export default function DatabasePengguna() {
                     <td style={{ padding: '16px', color: '#666' }}>{user.email}</td>
                     <td style={{ padding: '16px', color: '#666' }}>{user.jumlah_laporan || 0} Pelaporan</td>
                     <td style={{ padding: '16px', textAlign: 'right' }}>
-                      <button
-                        onClick={() => hapusUser(user.userID)}
-                        style={{
-                          background: '#ef4444',
-                          color: 'white',
-                          border: 'none',
-                          padding: '8px 20px',
-                          borderRadius: '50px',
-                          fontSize: '14px',
-                          fontWeight: 600,
-                          cursor: 'pointer'
-                        }}
-                      >
-                        Hapus
-                      </button>
+                      <form action={`/api/pengguna/${user.userID}`} method="DELETE">
+                        <button type="submit" style={{
+                          background: '#ef4444', color: 'white', border: 'none', padding: '8px 20px',
+                          borderRadius: '50px', fontSize: '14px', fontWeight: 600, cursor: 'pointer'
+                        }}>
+                          Hapus
+                        </button>
+                      </form>
                     </td>
                   </tr>
                 ))
@@ -174,38 +99,6 @@ export default function DatabasePengguna() {
             </tbody>
           </table>
         </div>
-
-        {/* TOMBOL TAMBAH USER */}
-        <button style={{
-          position: 'fixed',
-          bottom: '32px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          background: 'transparent',
-          border: 'none',
-          fontSize: '18px',
-          fontWeight: 600,
-          color: '#666',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          cursor: 'pointer',
-          zIndex: 100
-        }}>
-          <div style={{
-            width: '56px',
-            height: '56px',
-            background: '#e5e7eb',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '32px',
-            color: '#666',
-            fontWeight: '300'
-          }}>+</div>
-          Tambah User
-        </button>
       </main>
     </div>
   );
