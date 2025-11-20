@@ -1,29 +1,23 @@
 "use client";
 
-import styles from '../app/app.module.css';        // PAKAI CSS YANG SAMA!
+import styles from '../app/app.module.css';
 import Sidebar from '../../components/Sidebar';
 import { useState } from 'react';
 import Image from 'next/image';
 
 export default function DatabasePengguna() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [activeTab, setActiveTab] = useState('masyarakat'); // masyarakat atau petugas
 
   return (
     <div className={`${styles.page} ${!sidebarOpen ? styles.sidebarCollapsed : ''}`}>
-      {/* SIDEBAR */}
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} activePage="/pengguna" />
 
-      {/* TOP BAR — 100% SAMA */}
+      {/* TOP BAR */}
       <div className={styles.topBar}>
         <div className={styles.searchWrapper}>
           <div className={styles.searchBar}>
-            <Image
-              src="/Search.png"
-              alt="Search"
-              width={20}
-              height={20}
-              className={styles.searchIcon}
-            />
+            <Image src="/Search.png" alt="Search" width={20} height={20} className={styles.searchIcon} />
             <input
               type="text"
               placeholder="Cari nama, email, atau nomor telepon..."
@@ -31,7 +25,6 @@ export default function DatabasePengguna() {
             />
           </div>
         </div>
-
         <button className={styles.uploadButton}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M12 5v14m-7-7h14" />
@@ -42,59 +35,73 @@ export default function DatabasePengguna() {
 
       {/* KONTEN UTAMA */}
       <main className={`${styles.content} ${!sidebarOpen ? styles.collapsed : ''}`}>
-        {/* HEADER DUA JUDUL — INI YANG KAMU MAU! */}
-        <header className={styles.header} style={{ position: 'relative', paddingBottom: '20px' }}>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-end',
-            width: '100%',
-            padding: '0 20px 0 12px'
+        {/* HEADER DUA TAB — INI YANG KAMU MAU! */}
+        <header className={styles.header} style={{ paddingBottom: '32px' }}>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '40px',
+            position: 'relative',
+            paddingLeft: '12px'
           }}>
-            {/* JUDUL KIRI — Database Masyarakat */}
-            <h2 style={{
-              margin: 0,
-              fontSize: '26px',
-              fontWeight: '700',
-              color: '#212529',
-              position: 'relative',
-              paddingRight: '20px'
-            }}>
+            {/* TAB MASYARAKAT */}
+            <h2
+              onClick={() => setActiveTab('masyarakat')}
+              style={{
+                margin: 0,
+                fontSize: '26px',
+                fontWeight: '700',
+                color: '#212529',
+                cursor: 'pointer',
+                position: 'relative',
+                transition: 'color 0.2s ease'
+              }}
+            >
               Database Masyarakat
-              <span style={{
-                position: 'absolute',
-                left: 0,
-                right: 0,
-                bottom: '-10px',
-                height: '4px',
-                background: '#d71c1c',
-                borderRadius: '2px'
-              }}></span>
+              {activeTab === 'masyarakat' && (
+                <span style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  bottom: '-10px',
+                  height: '4px',
+                  background: '#d71c1c',
+                  borderRadius: '2px',
+                  transition: 'all 0.3s ease'
+                }}></span>
+              )}
             </h2>
 
-            {/* JUDUL KANAN — Database Petugas */}
-            <h2 style={{
-              margin: 0,
-              fontSize: '22px',
-              fontWeight: '700',
-              color: '#d71c1c',
-              position: 'relative',
-              paddingLeft: '20px'
-            }}>
+            {/* TAB PETUGAS */}
+            <h2
+              onClick={() => setActiveTab('petugas')}
+              style={{
+                margin: 0,
+                fontSize: '26px',
+                fontWeight: '700',
+                color: '#212529',
+                cursor: 'pointer',
+                position: 'relative',
+                transition: 'color 0.2s ease'
+              }}
+            >
               Database Petugas
-              <span style={{
-                position: 'absolute',
-                left: '20px',
-                right: 0,
-                bottom: '-10px',
-                height: '4px',
-                background: '#d71c1c',
-                borderRadius: '2px'
-              }}></span>
+              {activeTab === 'petugas' && (
+                <span style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  bottom: '-10px',
+                  height: '4px',
+                  background: '#d71c1c',
+                  borderRadius: '2px',
+                  transition: 'all 0.3s ease'
+                }}></span>
+              )}
             </h2>
           </div>
 
-          {/* Garis bawah penuh (abu-abu tipis) */}
+          {/* Garis bawah penuh */}
           <div style={{
             position: 'absolute',
             left: 0,
@@ -105,9 +112,14 @@ export default function DatabasePengguna() {
           }}></div>
         </header>
 
-        {/* KONTEN KOSONG DULU — NANTI ISI DATA */}
+        {/* ISI KONTEN — NANTI TERGANTUNG TAB */}
         <section className={styles.emptyState}>
-          <p>Pilih tab untuk melihat data masyarakat atau petugas</p>
+          <p>
+            {activeTab === 'masyarakat' 
+              ? 'Menampilkan data masyarakat...' 
+              : 'Menampilkan data petugas...'
+            }
+          </p>
         </section>
       </main>
     </div>
