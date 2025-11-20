@@ -1,4 +1,5 @@
-// src/app/users/index.js
+// src/app/users/route.js   ← PASTI NAMANYA route.js !!!
+
 import mysql from 'mysql2/promise';
 
 const pool = mysql.createPool({
@@ -6,22 +7,23 @@ const pool = mysql.createPool({
   user: process.env.MYSQLUSER,
   password: process.env.MYSQLPASSWORD,
   database: process.env.MYSQLDATABASE,
-  port: Number(process.env.MYSQLPORT || 39744),
+  port: Number(process.env.MYSQLPORT) || 39744,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  connectTimeout: 30000
+  connectTimeout: 30000,
+  ssl: { rejectUnauthorized: false } // penting buat Railway
 });
 
-// TRIK INI YANG BIKIN VERCEL 100% SKIP PRERENDER
+// INI YANG BIKIN VERCEL 100% NGGAK PRERENDER
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export async function GET(request) {
-  const { searchParams } = new URL(request.url);
-  const role = searchParams.get('role') || 'masyarakat';
-
   try {
+    const { searchParams } = new URL(request.url);
+    const role = searchParams.get('role') || 'masyarakat';
+
     const [rows] = await pool.query(`
       SELECT 
         u.userID,
@@ -44,9 +46,13 @@ export async function GET(request) {
         'Expires': '0'
       }
     });
+
   } catch (error) {
-    console.error('Error fetching users:', error);
-    return new Response(JSON.stringify({ error: 'Gagal mengambil data dari database' }), {
+    console.error('API /users/route.js error:', error);
+    return new Response(JSON.stringify({ 
+      error: 'Gagal mengambil data', 
+      message: error.message 
+    }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });

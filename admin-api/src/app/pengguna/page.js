@@ -5,6 +5,7 @@ import Sidebar from '@/components/Sidebar';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 
+// TRIK INI YANG BIKIN VERCEL TAKUT PRERENDER
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
@@ -18,13 +19,17 @@ export default function DatabasePengguna() {
     const fetchUsers = async () => {
       setLoading(true);
       try {
+        // PAKAI /users (bukan /api/pengguna lagi!)
         const res = await fetch(`/users?role=${activeTab}`, { cache: 'no-store' });
-        if (!res.ok) throw new Error('Gagal fetch');
+        if (!res.ok) {
+          const err = await res.text();
+          throw new Error(`HTTP ${res.status}: ${err}`);
+        }
         const data = await res.json();
         setUsers(data);
       } catch (err) {
-        console.error(err);
-        alert('Gagal mengambil data dari server');
+        console.error('Gagal fetch:', err);
+        alert('Gagal mengambil data: ' + err.message);
       } finally {
         setLoading(false);
       }
@@ -35,14 +40,11 @@ export default function DatabasePengguna() {
   const hapusUser = async (id) => {
     if (!confirm('Yakin ingin menghapus user ini?')) return;
     try {
-      const res = await fetch(`/api/pengguna/${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        setUsers(users.filter(u => u.userID !== id));
-      } else {
-        alert('Gagal menghapus user');
-      }
+      // Ganti ini nanti kalau mau buat API hapus terpisah, sementara pakai yang lama kalau ada
+      await fetch(`/api/pengguna/${id}`, { method: 'DELETE' });
+      setUsers(users.filter(u => u.userID !== id));
     } catch (err) {
-      alert('Error jaringan');
+      alert('Gagal menghapus user');
     }
   };
 
@@ -137,9 +139,17 @@ export default function DatabasePengguna() {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={4} style={{ textAlign: 'center', padding: '60px', color: '#999' }}>Memuat data...</td></tr>
+                <tr>
+                  <td colSpan={4} style={{ textAlign: 'center', padding: '60px', color: '#999' }}>
+                    Memuat data {activeTab}...
+                  </td>
+                </tr>
               ) : users.length === 0 ? (
-                <tr><td colSpan={4} style={{ textAlign: 'center', padding: '60px', color: '#999' }}>Tidak ada data</td></tr>
+                <tr>
+                  <td colSpan={4} style={{ textAlign: 'center', padding: '60px', color: '#999' }}>
+                    Tidak ada data {activeTab}
+                  </td>
+                </tr>
               ) : (
                 users.map(user => (
                   <tr key={user.userID} style={{ borderBottom: '1px solid #e5e7eb' }}>
@@ -171,31 +181,13 @@ export default function DatabasePengguna() {
         </div>
 
         <button style={{
-          position: 'fixed',
-          bottom: '32px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          background: 'transparent',
-          border: 'none',
-          fontSize: '18px',
-          fontWeight: 600,
-          color: '#666',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          cursor: 'pointer',
-          zIndex: 100
+          position: 'fixed', bottom: '32px', left: '50%', transform: 'translateX(-50%)',
+          background: 'transparent', border: 'none', fontSize: '18px', fontWeight: 600, color: '#666',
+          display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', zIndex: 100
         }}>
           <div style={{
-            width: '56px',
-            height: '56px',
-            background: '#e5e7eb',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '32px',
-            color: '#666'
+            width: '56px', height: '56px', background: '#e5e7eb', borderRadius: '50%',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', color: '#666'
           }}>+</div>
           Tambah User
         </button>
