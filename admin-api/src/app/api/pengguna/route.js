@@ -1,5 +1,4 @@
-// src/app/api/pengguna/[id]/route.js
-
+// src/app/api/pengguna/route.js
 import mysql from 'mysql2/promise';
 import { NextResponse } from 'next/server';
 
@@ -11,36 +10,28 @@ const pool = mysql.createPool({
   port: Number(process.env.MYSQLPORT) || 39744,
   ssl: { rejectUnauthorized: false },
   connectionLimit: 10,
-  connectTimeout: 30000,
-  queueLimit: 0
+  connectTimeout: 30000
 });
 
-// WAJIB ADA — biar Vercel tahu ini API dinamis
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export async function DELETE(request, { params }) {
-  const id = params.id;
-
-  // Validasi ID
-  if (!id || isNaN(id)) {
-    return NextResponse.json(
-      { error: 'ID user tidak valid' },
-      { status: 400 }
-    );
-  }
-
+export async function DELETE(request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id || isNaN(id)) {
+      return NextResponse.json({ error: 'ID user tidak valid' }, { status: 400 });
+    }
+
     const [result] = await pool.execute(
       'DELETE FROM users WHERE userID = ?',
       [id]
     );
 
     if (result.affectedRows === 0) {
-      return NextResponse.json(
-        { error: 'User tidak ditemukan' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'User tidak ditemukan' }, { status: 404 });
     }
 
     return NextResponse.json(

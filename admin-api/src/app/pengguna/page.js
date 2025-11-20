@@ -32,11 +32,12 @@ export default function DatabasePengguna() {
     fetchUsers();
   }, [activeTab]);
 
+  // HAPUS USER — VERSI FINAL YANG PASTI JALAN
   const hapusUser = async (id) => {
     if (!confirm('Yakin ingin menghapus user ini?')) return;
 
     try {
-      const res = await fetch(`/api/pengguna/${id}`, {
+      const res = await fetch(`/api/pengguna?id=${id}`, {  // PAKAI ?id= ← INI YANG JALAN!
         method: 'DELETE',
         cache: 'no-store'
       });
@@ -48,7 +49,7 @@ export default function DatabasePengguna() {
 
       const result = await res.json();
       setUsers(prev => prev.filter(u => u.userID !== id));
-      alert(result.message);
+      alert(result.message || 'User berhasil dihapus!');
 
     } catch (err) {
       console.error('Gagal hapus:', err);
