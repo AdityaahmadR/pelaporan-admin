@@ -1,5 +1,4 @@
-// src/app/users/route.js   ← PASTI NAMANYA route.js !!!
-
+// src/app/api/users/route.js
 import mysql from 'mysql2/promise';
 
 const pool = mysql.createPool({
@@ -15,7 +14,7 @@ const pool = mysql.createPool({
   ssl: { rejectUnauthorized: false } // penting buat Railway
 });
 
-// INI YANG BIKIN VERCEL 100% NGGAK PRERENDER
+// INI YANG BIKIN VERCEL NGGAK PERNAH PRERENDER API INI
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
@@ -48,10 +47,10 @@ export async function GET(request) {
     });
 
   } catch (error) {
-    console.error('API /users/route.js error:', error);
+    console.error('API Error /api/users:', error);
     return new Response(JSON.stringify({ 
-      error: 'Gagal mengambil data', 
-      message: error.message 
+      error: 'Gagal mengambil data dari database',
+      details: error.message 
     }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }

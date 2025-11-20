@@ -5,7 +5,7 @@ import Sidebar from '@/components/Sidebar';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 
-// TRIK INI YANG BIKIN VERCEL TAKUT PRERENDER
+// INI YANG BIKIN VERCEL TAKUT PRERENDER HALAMAN INI
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
@@ -19,16 +19,18 @@ export default function DatabasePengguna() {
     const fetchUsers = async () => {
       setLoading(true);
       try {
-        // PAKAI /users (bukan /api/pengguna lagi!)
-        const res = await fetch(`/users?role=${activeTab}`, { cache: 'no-store' });
+        // YANG INI SUDAH BENAR → /api/users
+        const res = await fetch(`/api/users?role=${activeTab}`, { cache: 'no-store' });
+        
         if (!res.ok) {
-          const err = await res.text();
-          throw new Error(`HTTP ${res.status}: ${err}`);
+          const errText = await res.text();
+          throw new Error(`HTTP ${res.status}: ${errText.substring(0, 200)}`);
         }
+        
         const data = await res.json();
         setUsers(data);
       } catch (err) {
-        console.error('Gagal fetch:', err);
+        console.error('Gagal fetch data:', err);
         alert('Gagal mengambil data: ' + err.message);
       } finally {
         setLoading(false);
@@ -40,11 +42,16 @@ export default function DatabasePengguna() {
   const hapusUser = async (id) => {
     if (!confirm('Yakin ingin menghapus user ini?')) return;
     try {
-      // Ganti ini nanti kalau mau buat API hapus terpisah, sementara pakai yang lama kalau ada
-      await fetch(`/api/pengguna/${id}`, { method: 'DELETE' });
-      setUsers(users.filter(u => u.userID !== id));
+      // Kamu bisa ganti ini nanti kalau mau buat API hapus terpisah
+      const res = await fetch(`/api/pengguna/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setUsers(prev => prev.filter(u => u.userID !== id));
+        alert('User berhasil dihapus');
+      } else {
+        alert('Gagal menghapus user');
+      }
     } catch (err) {
-      alert('Gagal menghapus user');
+      alert('Error jaringan');
     }
   };
 
@@ -139,17 +146,9 @@ export default function DatabasePengguna() {
             </thead>
             <tbody>
               {loading ? (
-                <tr>
-                  <td colSpan={4} style={{ textAlign: 'center', padding: '60px', color: '#999' }}>
-                    Memuat data {activeTab}...
-                  </td>
-                </tr>
+                <tr><td colSpan={4} style={{ textAlign: 'center', padding: '60px', color: '#999' }}>Memuat data...</td></tr>
               ) : users.length === 0 ? (
-                <tr>
-                  <td colSpan={4} style={{ textAlign: 'center', padding: '60px', color: '#999' }}>
-                    Tidak ada data {activeTab}
-                  </td>
-                </tr>
+                <tr><td colSpan={4} style={{ textAlign: 'center', padding: '60px', color: '#999' }}>Tidak ada data {activeTab}</td></tr>
               ) : (
                 users.map(user => (
                   <tr key={user.userID} style={{ borderBottom: '1px solid #e5e7eb' }}>
