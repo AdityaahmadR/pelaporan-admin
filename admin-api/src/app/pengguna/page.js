@@ -5,8 +5,10 @@ import Sidebar from '@/components/Sidebar';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 
+// BIAR VERCEL NGGAK PERNAH CACHE APA PUN
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+export const fetchCache = 'force-no-store';
 
 export default function DatabasePengguna() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -14,16 +16,16 @@ export default function DatabasePengguna() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // AMBIL DATA
   useEffect(() => {
     const fetchUsers = async () => {
       setLoading(true);
       try {
         const res = await fetch(`/api/users?role=${activeTab}`, { cache: 'no-store' });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) throw new Error(`Gagal ambil data (HTTP ${res.status})`);
         const data = await res.json();
         setUsers(data);
       } catch (err) {
-        console.error(err);
         alert('Gagal mengambil data: ' + err.message);
       } finally {
         setLoading(false);
@@ -32,24 +34,28 @@ export default function DatabasePengguna() {
     fetchUsers();
   }, [activeTab]);
 
+  // HAPUS USER — VERSI FINAL YANG PASTI JALAN
   const hapusUser = async (id) => {
     if (!confirm('Yakin ingin menghapus user ini?')) return;
 
     try {
-      const res = await fetch(`/api/pengguna/${id}`, { 
+      const res = await fetch(`/api/pengguna/${id}`, {
         method: 'DELETE',
-        cache: 'no-store'
+        cache: 'no-store',
+        headers: { 'Content-Type': 'application/json' }
       });
+
+      const result = await res.json();
 
       if (res.ok) {
         setUsers(prev => prev.filter(u => u.userID !== id));
-        alert('User berhasil dihapus!');
+        alert(result.message);
       } else {
-        const err = await res.json();
-        alert('Gagal hapus: ' + (err.error || 'Unknown error'));
+        alert('Gagal hapus: ' + (result.error || result.details || 'Server error'));
       }
     } catch (err) {
-      alert('Error jaringan saat menghapus');
+      console.error('Network error:', err);
+      alert('Error jaringan. Cek koneksi internet & coba lagi.');
     }
   };
 
@@ -80,37 +86,23 @@ export default function DatabasePengguna() {
             <h2
               onClick={() => setActiveTab('masyarakat')}
               style={{
-                margin: 0,
-                fontSize: '26px',
-                fontWeight: activeTab === 'masyarakat' ? 800 : 700,
-                color: '#212529',
-                cursor: 'pointer',
-                position: 'relative',
-                transition: 'all 0.3s ease'
+                margin: 0, fontSize: '26px', fontWeight: activeTab === 'masyarakat' ? 800 : 700,
+                color: '#212529', cursor: 'pointer', position: 'relative', transition: 'all 0.3s ease'
               }}
             >
               Database Masyarakat
-              {activeTab === 'masyarakat' && (
-                <span style={{ position: 'absolute', left: 0, right: 0, bottom: '-10px', height: '4px', background: '#d71c1c', borderRadius: '2px' }}></span>
-              )}
+              {activeTab === 'masyarakat' && <span style={{ position: 'absolute', left: 0, right: 0, bottom: '-10px', height: '4px', background: '#d71c1c', borderRadius: '2px' }}></span>}
             </h2>
 
             <h2
               onClick={() => setActiveTab('petugas')}
               style={{
-                margin: 0,
-                fontSize: '26px',
-                fontWeight: activeTab === 'petugas' ? 800 : 700,
-                color: '#212529',
-                cursor: 'pointer',
-                position: 'relative',
-                transition: 'all 0.3s ease'
+                margin: 0, fontSize: '26px', fontWeight: activeTab === 'petugas' ? 800 : 700,
+                color: '#212529', cursor: 'pointer', position: 'relative', transition: 'all 0.3s ease'
               }}
             >
               Database Petugas
-              {activeTab === 'petugas' && (
-                <span style={{ position: 'absolute', left: 0, right: 0, bottom: '-10px', height: '4px', background: '#d71c1c', borderRadius: '2px' }}></span>
-              )}
+              {activeTab === 'petugas' && <span style={{ position: 'absolute', left: 0, right: 0, bottom: '-10px', height: '4px', background: '#d71c1c', borderRadius: '2px' }}></span>}
             </h2>
           </div>
           <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '1px', background: '#e5e7eb' }}></div>
@@ -141,14 +133,9 @@ export default function DatabasePengguna() {
                       <button
                         onClick={() => hapusUser(user.userID)}
                         style={{
-                          background: '#ef4444',
-                          color: 'white',
-                          border: 'none',
-                          padding: '8px 20px',
-                          borderRadius: '50px',
-                          fontSize: '14px',
-                          fontWeight: 600,
-                          cursor: 'pointer'
+                          background: '#ef4444', color: 'white', border: 'none',
+                          padding: '8px 20px', borderRadius: '50px', fontSize: '14px',
+                          fontWeight: 600, cursor: 'pointer'
                         }}
                       >
                         Hapus

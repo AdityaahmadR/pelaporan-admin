@@ -7,29 +7,43 @@ const pool = mysql.createPool({
   password: process.env.MYSQLPASSWORD,
   database: process.env.MYSQLDATABASE,
   port: Number(process.env.MYSQLPORT) || 39744,
-  ssl: { rejectUnauthorized: false },
-  connectionLimit: 10
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+  connectTimeout: 30000,
+  ssl: { rejectUnauthorized: false }
 });
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export async function DELETE(request, { params }) {
-  const { id } = params;
+  const userId = params.id;
+
+  if (!userId) {
+    return new Response(JSON.stringify({ error: 'ID user diperlukan' }), { status: 400 });
+  }
 
   try {
-    const [result] = await pool.query('DELETE FROM users WHERE userID = ?', [id]);
-    
+    const [result] = await pool.execute('DELETE FROM users WHERE userID = ?', [userId]);
+
     if (result.affectedRows === 0) {
       return new Response(JSON.stringify({ error: 'User tidak ditemukan' }), { status: 404 });
     }
 
-    return new Response(JSON.stringify({ success: true, message: 'User berhasil dihapus' }), { 
+    return new Response(JSON.stringify({ 
+      success: true, 
+      message: 'User berhasil dihapus!' 
+    }), { 
       status: 200,
       headers: { 'Content-Type': 'application/json' }
     });
+
   } catch (error) {
-    console.error('Error hapus user:', error);
-    return new Response(JSON.stringify({ error: 'Gagal menghapus user' }), { status: 500 });
+    console.error('DELETE USER ERROR:', error);
+    return new Response(JSON.stringify({ 
+      error: 'Gagal menghapus dari database',
+      details: error.message 
+    }), { status: 500 });
   }
 }
