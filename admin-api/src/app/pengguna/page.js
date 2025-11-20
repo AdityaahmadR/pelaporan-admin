@@ -35,13 +35,12 @@ export default function DatabasePengguna() {
 
       {/* KONTEN UTAMA */}
       <main className={`${styles.content} ${!sidebarOpen ? styles.collapsed : ''}`}>
-        {/* HEADER DUA TAB — INI YANG KAMU MAU! */}
-        <header className={styles.header} style={{ paddingBottom: '32px' }}>
+        {/* HEADER DUA TAB — VERSI YANG BENAR-BENAR HANYA SATU GARIS! */}
+        <header className={styles.header} style={{ paddingBottom: '32px', position: 'relative' }}>
           <div style={{ 
             display: 'flex', 
             alignItems: 'center', 
             gap: '40px',
-            position: 'relative',
             paddingLeft: '12px'
           }}>
             {/* TAB MASYARAKAT */}
@@ -50,26 +49,15 @@ export default function DatabasePengguna() {
               style={{
                 margin: 0,
                 fontSize: '26px',
-                fontWeight: '700',
+                fontWeight: activeTab === 'masyarakat' ? '800' : '700',
                 color: '#212529',
                 cursor: 'pointer',
                 position: 'relative',
-                transition: 'color 0.2s ease'
+                paddingBottom: '12px',
+                transition: 'all 0.3s ease'
               }}
             >
               Database Masyarakat
-              {activeTab === 'masyarakat' && (
-                <span style={{
-                  position: 'absolute',
-                  left: 0,
-                  right: 0,
-                  bottom: '-10px',
-                  height: '4px',
-                  // background: '#d71c1c',
-                  borderRadius: '2px',
-                  transition: 'all 0.3s ease'
-                }}></span>
-              )}
             </h2>
 
             {/* TAB PETUGAS */}
@@ -78,28 +66,30 @@ export default function DatabasePengguna() {
               style={{
                 margin: 0,
                 fontSize: '26px',
-                fontWeight: '700',
+                fontWeight: activeTab === 'petugas' ? '800' : '700',
                 color: '#212529',
                 cursor: 'pointer',
                 position: 'relative',
-                transition: 'color 0.2s ease'
+                paddingBottom: '12px',
+                transition: 'all 0.3s ease'
               }}
             >
               Database Petugas
-              {activeTab === 'petugas' && (
-                <span style={{
-                  position: 'absolute',
-                  left: 0,
-                  right: 0,
-                  bottom: '-10px',
-                  height: '4px',
-                  //background: '#d71c1c',
-                  borderRadius: '2px',
-                  transition: 'all 0.3s ease'
-                }}></span>
-              )}
             </h2>
           </div>
+
+          {/* GARIS MERAH SATU-SATUNYA — HANYA MUNCUL DI TAB AKTIF! */}
+          <div style={{
+            position: 'absolute',
+            left: activeTab === 'masyarakat' ? '12px' : 'calc(12px + 230px)', // 230px ≈ lebar "Database Masyarakat" + gap
+            bottom: '16px',
+            width: '200px',
+            height: '4px',
+            background: '#d71c1c',
+            borderRadius: '2px',
+            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+            transform: activeTab === 'petugas' ? 'translateX(230px)' : 'translateX(0)'
+          }}></div>
 
           {/* Garis bawah penuh */}
           <div style={{
@@ -112,7 +102,7 @@ export default function DatabasePengguna() {
           }}></div>
         </header>
 
-        {/* ISI KONTEN — NANTI TERGANTUNG TAB */}
+        {/* ISI KONTEN */}
         <section className={styles.emptyState}>
           <p>
             {activeTab === 'masyarakat' 
