@@ -17,7 +17,7 @@ export default function AppPage() {
   useEffect(() => {
     const fetchLaporan = async () => {
       try {
-        const res = await fetch('/api/laporan/[id]', { cache: 'no-store' });
+        const res = await fetch('/api/laporan/ambilLaporan', { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
           setLaporanList(data);
