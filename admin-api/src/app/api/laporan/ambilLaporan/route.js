@@ -1,4 +1,4 @@
-// src/app/api/laporan/[id]/route.js
+// src/app/api/laporan/ambilLaporan/route.js
 import mysql from 'mysql2/promise';
 import { NextResponse } from 'next/server';
 
@@ -9,42 +9,27 @@ const pool = mysql.createPool({
   database: process.env.MYSQLDATABASE,
   port: Number(process.env.MYSQLPORT) || 39744,
   ssl: { rejectUnauthorized: false },
-  waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
 });
 
-export async function GET(request, { params }) {
-  const { id } = params;
-
+export async function GET() {
+  // JANGAN PAKAI { params } karena ini bukan [id]
   try {
-    const [rows] = await pool.execute(
-      `SELECT 
-         l.laporanID,
-         l.isi_laporan,
-         l.tanggal,
-         l.lokasi,
-         u.nama AS nama_pelapor,
-         u.email
-       FROM laporan l
-       JOIN users u ON l.userID = u.userID
-       WHERE l.laporanID = ?`,
-      [id]
-    );
+    const [rows] = await pool.query(`
+      SELECT 
+        l.laporanID,
+        l.isi_laporan,
+        l.tanggal,
+        l.lokasi,
+        u.nama AS nama_pelapor
+      FROM laporan l
+      JOIN users u ON l.userID = u.userID
+      ORDER BY l.tanggal DESC
+    `);
 
-    if (rows.length === 0) {
-      return new NextResponse(JSON.stringify({ message: 'Laporan tidak ditemukan' }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    return NextResponse.json(rows[0]);
+    return NextResponse.json(rows);
   } catch (error) {
-    console.error('Database error:', error);
-    return new NextResponse(JSON.stringify({ message: 'Server error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    console.error('Error ambil laporan:', error);
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
