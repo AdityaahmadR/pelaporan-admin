@@ -1,5 +1,4 @@
 /* src/components/LaporanCard.module.css */
-
 .card {
   background: #ffffff;
   border-radius: 16px;
@@ -7,22 +6,19 @@
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
   border: 1px solid #e5e7eb;
   transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
 }
 
 .card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-6px);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
 }
 
-/* HEADER — JUDUL + BADGE */
 .header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 16px;
   gap: 16px;
+  margin-bottom: 16px;
 }
 
 .judul {
@@ -31,10 +27,8 @@
   font-weight: 800;
   color: #111827;
   line-height: 1.3;
-  flex: 1;
 }
 
-/* BADGE "Laporan Masuk" — MERAH PERSIS GAMBAR */
 .badge {
   background: #fee2e2;
   color: #dc2626;
@@ -48,7 +42,6 @@
   white-space: nowrap;
 }
 
-/* ISI LAPORAN */
 .isi {
   color: #4b5563;
   line-height: 1.7;
@@ -58,7 +51,6 @@
   word-wrap: break-word;
 }
 
-/* FOOTER — PELAPOR + TOMBOL */
 .footer {
   display: flex;
   justify-content: space-between;
@@ -100,7 +92,6 @@
   margin: 2px 0 0;
 }
 
-/* TOMBOL LIHAT DETAIL */
 .tombolDetail {
   background: #f3f4f6;
   color: #374151;
@@ -118,5 +109,5 @@
 
 .tombolDetail:hover {
   background: #e5e7eb;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 }

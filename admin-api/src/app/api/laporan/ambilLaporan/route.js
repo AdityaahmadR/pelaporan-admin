@@ -25,16 +25,21 @@ export async function GET() {
         l.tanggal,
         l.status,
         l.prioritas,
-        u.nama AS nama_pelapor
+        COALESCE(u.nama, 'Masyarakat') AS nama_pelapor
       FROM laporan l
-      JOIN users u ON l.userID = u.userID
-      WHERE l.status = 'baru'
+      LEFT JOIN users u ON l.userID = u.userID
+      WHERE TRIM(l.status) = 'baru'
       ORDER BY l.tanggal DESC
     `);
 
+    console.log(`Berhasil ambil ${rows.length} laporan baru`);
     return NextResponse.json(rows);
+
   } catch (error) {
     console.error('Error ambil laporan:', error);
-    return NextResponse.json({ error: 'Gagal mengambil data' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Gagal mengambil laporan', details: error.message },
+      { status: 500 }
+    );
   }
 }

@@ -23,14 +23,14 @@ export default function AppPage() {
         const data = await res.json();
         setLaporanList(data);
       } catch (err) {
-        console.error(err);
+        console.error('Error fetch laporan:', err);
       } finally {
         setLoading(false);
       }
     };
 
     fetchLaporan();
-    const interval = setInterval(fetchLaporan, 8000); // refresh tiap 8 detik
+    const interval = setInterval(fetchLaporan, 10000);
     return () => clearInterval(interval);
   }, []);
 
@@ -62,7 +62,7 @@ export default function AppPage() {
 
         {loading ? (
           <div style={{ textAlign: 'center', padding: '80px', color: '#999' }}>
-            Memuat laporan terbaru...
+            Memuat laporan...
           </div>
         ) : laporanList.length === 0 ? (
           <div className={styles.emptyState}>

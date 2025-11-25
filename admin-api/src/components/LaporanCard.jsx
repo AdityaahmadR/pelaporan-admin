@@ -1,6 +1,5 @@
 // src/components/LaporanCard.jsx
 import styles from './LaporanCard.module.css';
-import Image from 'next/image';
 
 export default function LaporanCard({ laporan }) {
   const { isi_laporan, nama_pelapor, tanggal } = laporan;
