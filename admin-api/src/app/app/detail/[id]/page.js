@@ -12,17 +12,30 @@ export const revalidate = 0;
 export default async function DetailLaporan({ params }) {
   const { id } = params;
 
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || ''}/api/laporan/${id}`, {
-    cache: 'no-store'
-  });
+  // FIX URL: Jalan di lokal & Vercel (nggak error Invalid URL lagi)
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, '') || '';
+  const apiUrl = baseUrl ? `${baseUrl}/api/laporan/${id}` : `/api/laporan/${id}`;
 
-  if (!res.ok) notFound();
-  const laporan = await res.json();
+  let laporan = null;
 
-  // AMAN DARI NULL / UNDEFINED
-  const isiLaporan = laporan.isi_laporan || '';
-  const namaPelapor = laporan.nama_pelapor || 'Masyarakat';
-  const email = laporan.email || '-';
+  try {
+    const res = await fetch(apiUrl, { cache: 'no-store' });
+
+    if (!res.ok) {
+      if (res.status === 404) return notFound();
+      throw new Error(`HTTP ${res.status}`);
+    }
+
+    laporan = await res.json();
+  } catch (err) {
+    console.error('Gagal fetch laporan:', err);
+    return notFound();
+  }
+
+  // AMAN 100% DARI NULL/UNDEFINED
+  const isiLaporan = String(laporan.isi_laporan || '');
+  const namaPelapor = String(laporan.nama_pelapor || 'Masyarakat').trim();
+  const email = String(laporan.email || '-');
   const tanggal = laporan.tanggal ? new Date(laporan.tanggal) : new Date();
 
   // Ekstrak gambar
@@ -34,7 +47,7 @@ export default async function DetailLaporan({ params }) {
   const judul = isiBersih.split('\n')[0]?.trim() || 'Laporan Darurat';
 
   // Inisial aman
-  const inisial = namaPelapor.trim() ? namaPelapor.trim()[0].toUpperCase() : 'M';
+  const inisial = namaPelapor ? namaPelapor[0].toUpperCase() : 'M';
 
   return (
     <div className={styles.page}>
