@@ -18,7 +18,7 @@ export default function AppPage() {
   useEffect(() => {
     const fetchLaporan = async () => {
       try {
-        const res = await fetch('/api/laporan', { cache: 'no-store' });
+        const res = await fetch('/api/laporan/ambilLaporan', { cache: 'no-store' });
         if (!res.ok) throw new Error('Gagal ambil data');
         const data = await res.json();
         setLaporanList(data);

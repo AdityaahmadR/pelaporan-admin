@@ -25,20 +25,20 @@ export async function GET() {
         l.tanggal,
         l.status,
         l.prioritas,
-        COALESCE(u.nama, 'Masyarakat') AS nama_pelapor
+        u.nama AS nama_pelapor
       FROM laporan l
-      LEFT JOIN users u ON l.userID = u.userID
-      WHERE TRIM(l.status) = 'baru'
+      JOIN users u ON l.userID = u.userID
+      WHERE l.status = 'baru'
       ORDER BY l.tanggal DESC
     `);
 
-    console.log(`Berhasil ambil ${rows.length} laporan baru`);
+    console.log(`Laporan baru ditemukan: ${rows.length}`);
     return NextResponse.json(rows);
 
   } catch (error) {
-    console.error('Error ambil laporan:', error);
+    console.error('Error API laporan:', error);
     return NextResponse.json(
-      { error: 'Gagal mengambil laporan', details: error.message },
+      { error: 'Gagal mengambil laporan', detail: error.message },
       { status: 500 }
     );
   }
