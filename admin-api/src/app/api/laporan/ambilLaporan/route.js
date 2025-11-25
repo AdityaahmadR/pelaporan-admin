@@ -13,7 +13,6 @@ const pool = mysql.createPool({
 });
 
 export async function GET() {
-  // HAPUS { params } — INI BUKAN DYNAMIC ROUTE!
   try {
     const [rows] = await pool.execute(`
       SELECT 
@@ -26,7 +25,6 @@ export async function GET() {
       LEFT JOIN users u ON l.userID = u.userID
       ORDER BY l.tanggal DESC
     `);
-
     return NextResponse.json(rows);
   } catch (error) {
     console.error('Error ambil semua laporan:', error);

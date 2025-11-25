@@ -13,13 +13,11 @@ export const revalidate = 0;
 export default async function DetailLaporan({ params }) {
   const { id } = params;
 
-  // FULL URL YANG PASTI JALAN DI VERCEL
   const host = headers().get('host') || 'localhost:3000';
   const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
   const apiUrl = `${protocol}://${host}/api/laporan/${id}`;
 
-  let laporan;
-
+  let laporan = null;
   try {
     const res = await fetch(apiUrl, { cache: 'no-store' });
     if (!res.ok) return notFound();
@@ -29,14 +27,16 @@ export default async function DetailLaporan({ params }) {
     return notFound();
   }
 
+  if (!laporan || !laporan.isi_laporan) return notFound();
+
   const isiLaporan = String(laporan.isi_laporan || '');
   const namaPelapor = String(laporan.nama_pelapor || 'Masyarakat').trim();
   const email = String(laporan.email || '-');
-  const tanggal = new Date(laporan.tanggal);
+  const tanggal = laporan.tanggal ? new Date(laporan.tanggal) : new Date();
 
-  const gambarMatch = isiLaporan.match(/(https?:\/\/[^\s]+\.(jpg|jpeg|png|webp|gif))/i);
+  const gambarMatch = isiLaporan.match(/(https?:\/\/[^\s]+\.(jpg|jpeg|png|gif|webp))/i);
   const gambarUrl = gambarMatch ? gambarMatch[0] : null;
-  const isiBersih = isiLaporan.replace(/(https?:\/\/[^\s]+\.(jpg|jpeg|png|webp|gif))/gi, '').trim();
+  const isiBersih = isiLaporan.replace(/(https?:\/\/[^\s]+\.(jpg|jpeg|png|gif|webp))/gi, '').trim();
   const judul = isiBersih.split('\n')[0]?.trim() || 'Laporan Darurat';
   const inisial = namaPelapor ? namaPelapor[0].toUpperCase() : 'M';
 
