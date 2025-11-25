@@ -3,8 +3,8 @@
 .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 20px; }
 .backLink { font-size: 36px; color: #666; text-decoration: none; font-weight: 900; }
 .title { margin: 0; font-size: 36px; font-weight: 900; color: #111827; }
-.terimaButton { background:#6b7280; color:white; padding:14px 36px; border-radius:50px; font-weight:700; font-size:16px; border:none; cursor:pointer; box-shadow:0 4px 15px rgba(107,114,128,0.3); transition: all 0.3s; }
-.terimaButton:hover { background:#4b5563; transform: translateY(-2px); }
+.terimaButton { background:#6b7280; color:white; padding:14px 36px; border-radius:50px; font-weight:700; font-size:16px; border:none; cursor:pointer; box-shadow:0 4px 15px rgba(107,114,128,0.3); transition:all 0.3s; }
+.terimaButton:hover { background:#4b5563; transform:translateY(-2px); }
 .pelaporCard { background:#f8fafc; padding:28px; border-radius:16px; display:flex; align-items:center; gap:24px; margin-bottom:32px; box-shadow:0 6px 20px rgba(0,0,0,0.06); }
 .avatar { width:72px; height:72px; border-radius:50%; background:#e5e7eb; display:flex; align-items:center; justify-content:center; font-size:32px; font-weight:900; color:#374151; flex-shrink:0; }
 .pelaporName { margin:0 0 6px 0; font-size:22px; font-weight:800; color:#111827; }

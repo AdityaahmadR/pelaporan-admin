@@ -16,21 +16,25 @@ export async function GET(request, { params }) {
   const { id } = params;
 
   try {
-    const [rows] = await pool.execute(
-      `SELECT 
-         l.laporanID,
-         l.deskripsi AS isi_laporan,
-         l.tanggal,
-         l.lokasi,
-         COALESCE(u.nama, 'Masyarakat') AS nama_pelapor,
-         COALESCE(u.email, '-') AS email
-       FROM laporan l
-       LEFT JOIN users u ON l.userID = u.userID
-       WHERE l.laporanID = ?`,
-      [id]
-    );
+    const [rows] = await pool.execute(`
+      SELECT 
+        l.laporanID,
+        l.deskripsi AS isi_laporan,
+        l.tanggal,
+        l.lokasi,
+        l.status,
+        l.prioritas,
+        COALESCE(u.nama, 'Masyarakat') AS nama_pelapor,
+        COALESCE(u.email, '-') AS email
+      FROM laporan l
+      LEFT JOIN users u ON l.userID = u.userID
+      WHERE l.laporanID = ?
+    `, [id]);
 
-    if (rows.length === 0) return new NextResponse('Not Found', { status: 404 });
+    if (rows.length === 0) {
+      return new NextResponse('Not Found', { status: 404 });
+    }
+
     return NextResponse.json(rows[0]);
   } catch (error) {
     console.error('Error detail laporan:', error);

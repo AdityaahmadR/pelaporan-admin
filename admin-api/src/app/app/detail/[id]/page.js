@@ -29,21 +29,16 @@ export default async function DetailLaporan({ params }) {
 
   if (!laporan) return notFound();
 
-  const isiLaporan = String(laporan.isi_laporan || laporan.deskripsi || '');
+  const isiLaporan = String(laporan.isi_laporan || laporan.deskripsi || '').trim();
   const namaPelapor = String(laporan.nama_pelapor || 'Masyarakat').trim() || 'Masyarakat';
   const email = String(laporan.email || '-');
 
-  // AMAN DARI INVALID DATE
-  let tanggal = new Date();
-  if (laporan.tanggal) {
-    const parsed = new Date(laporan.tanggal);
-    if (!isNaN(parsed.getTime())) tanggal = parsed;
-  }
+  const tanggal = laporan.tanggal && !isNaN(new Date(laporan.tanggal).getTime())
+    ? new Date(laporan.tanggal)
+    : new Date();
 
-  // EKSTRAK GAMBAR AMAN
   const gambarMatch = isiLaporan.match(/(https?:\/\/[^\s]+\.(jpg|jpeg|png|gif|webp)(\?[^\s]*)?)/i);
   const gambarUrl = gambarMatch ? gambarMatch[0] : null;
-
   const isiBersih = isiLaporan.replace(/(https?:\/\/[^\s]+\.(jpg|jpeg|png|gif|webp)(\?[^\s]*)?)/gi, '').trim();
   const judul = isiBersih.split('\n')[0]?.trim() || 'Laporan Darurat';
   const inisial = namaPelapor[0]?.toUpperCase() || 'M';
@@ -91,11 +86,7 @@ export default async function DetailLaporan({ params }) {
 
           {gambarUrl && (
             <div className={detailStyles.gambarContainer}>
-              <img 
-                src={gambarUrl} 
-                alt="Bukti laporan" 
-                onError={(e) => e.currentTarget.style.display = 'none'} 
-              />
+              <img src={gambarUrl} alt="Bukti laporan" onError={(e) => e.currentTarget.style.display = 'none'} />
             </div>
           )}
 
