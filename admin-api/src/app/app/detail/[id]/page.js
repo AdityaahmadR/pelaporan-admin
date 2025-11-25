@@ -19,11 +19,22 @@ export default async function DetailLaporan({ params }) {
   if (!res.ok) notFound();
   const laporan = await res.json();
 
+  // AMAN DARI NULL / UNDEFINED
   const isiLaporan = laporan.isi_laporan || '';
+  const namaPelapor = laporan.nama_pelapor || 'Masyarakat';
+  const email = laporan.email || '-';
+  const tanggal = laporan.tanggal ? new Date(laporan.tanggal) : new Date();
+
+  // Ekstrak gambar
   const gambarMatch = isiLaporan.match(/(https?:\/\/[^\s]+\.(jpg|jpeg|png|webp|gif))/i);
   const gambarUrl = gambarMatch ? gambarMatch[0] : null;
+
+  // Bersihkan gambar dari teks
   const isiBersih = isiLaporan.replace(/(https?:\/\/[^\s]+\.(jpg|jpeg|png|webp|gif))/gi, '').trim();
   const judul = isiBersih.split('\n')[0]?.trim() || 'Laporan Darurat';
+
+  // Inisial aman
+  const inisial = namaPelapor.trim() ? namaPelapor.trim()[0].toUpperCase() : 'M';
 
   return (
     <div className={styles.page}>
@@ -41,6 +52,7 @@ export default async function DetailLaporan({ params }) {
 
       <main className={styles.content}>
         <div className={detailStyles.container}>
+          {/* HEADER */}
           <div className={detailStyles.header}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
               <Link href="/app" className={detailStyles.backLink}>Back</Link>
@@ -49,31 +61,40 @@ export default async function DetailLaporan({ params }) {
             <button className={detailStyles.terimaButton}>Terima Laporan</button>
           </div>
 
+          {/* PELAPOR */}
           <div className={detailStyles.pelaporCard}>
-            <div className={detailStyles.avatar}>
-              {laporan.nama_pelapor?.[0]?.toUpperCase() || 'M'}
-            </div>
+            <div className={detailStyles.avatar}>{inisial}</div>
             <div>
-              <h3 className={detailStyles.pelaporName}>{laporan.nama_pelapor || 'Masyarakat'}</h3>
-              <p className={detailStyles.pelaporEmail}>{laporan.email || '-'}</p>
+              <h3 className={detailStyles.pelaporName}>{namaPelapor}</h3>
+              <p className={detailStyles.pelaporEmail}>{email}</p>
             </div>
             <div className={detailStyles.waktu}>
-              {new Date(laporan.tanggal).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+              {tanggal.toLocaleDateString('id-ID', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+              })}
               <br />
-              <strong>{new Date(laporan.tanggal).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</strong>
+              <strong>
+                {tanggal.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+              </strong>
             </div>
           </div>
 
+          {/* ISI LAPORAN */}
           <div className={detailStyles.isiLaporan}>
             {isiBersih || 'Tidak ada deskripsi.'}
           </div>
 
+          {/* GAMBAR BUKTI */}
           {gambarUrl && (
             <div className={detailStyles.gambarContainer}>
               <img src={gambarUrl} alt="Bukti laporan" />
             </div>
           )}
 
+          {/* LOKASI */}
           <div className={detailStyles.lokasi}>
             <span>Location</span>
             <div className={detailStyles.pulseDot}></div>
