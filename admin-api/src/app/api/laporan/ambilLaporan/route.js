@@ -27,7 +27,7 @@ export async function GET() {
     `);
     return NextResponse.json(rows);
   } catch (error) {
-    console.error('Error ambil semua laporan:', error);
+    console.error('Error ambil laporan:', error);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
