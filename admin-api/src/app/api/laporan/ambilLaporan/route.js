@@ -10,11 +10,9 @@ const pool = mysql.createPool({
   port: Number(process.env.MYSQLPORT) || 39744,
   ssl: { rejectUnauthorized: false },
   connectionLimit: 10,
-  connectTimeout: 30000
 });
 
 export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
 export async function GET() {
   try {
@@ -23,23 +21,17 @@ export async function GET() {
         l.laporanID,
         l.deskripsi AS isi_laporan,
         l.tanggal,
-        l.status,
-        l.prioritas,
-        u.nama AS nama_pelapor
+        l.lokasi,
+        u.nama AS nama_pelapor,
+        u.email
       FROM laporan l
       JOIN users u ON l.userID = u.userID
       WHERE l.status = 'baru'
       ORDER BY l.tanggal DESC
     `);
-
-    console.log(`Laporan baru ditemukan: ${rows.length}`);
     return NextResponse.json(rows);
-
   } catch (error) {
-    console.error('Error API laporan:', error);
-    return NextResponse.json(
-      { error: 'Gagal mengambil laporan', detail: error.message },
-      { status: 500 }
-    );
+    console.error('Error:', error);
+    return NextResponse.json({ error: 'Gagal ambil data' }, { status: 500 });
   }
 }

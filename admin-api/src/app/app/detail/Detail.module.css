@@ -1,0 +1,192 @@
+/* src/app/app/detail/Detail.module.css */
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* HEADER + TOMBOL KEMBALI */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.backButton {
+  font-size: 32px;
+  color: #666;
+  text-decoration: none;
+  font-weight: 900;
+  transition: color 0.2s;
+}
+
+.backButton:hover {
+  color: #333;
+}
+
+.title {
+  margin: 0;
+  font-size: 34px;
+  font-weight: 900;
+  color: #111827;
+}
+
+/* TOMBOL TERIMA LAPORAN */
+.terimaButton {
+  background: #6b7280;
+  color: white;
+  border: none;
+  padding: 14px 36px;
+  border-radius: 50px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(107, 114, 128, 0.3);
+}
+
+.terimaButton:hover {
+  background: #4b5563;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(107, 114, 128, 0.4);
+}
+
+/* INFO PELAPOR */
+.pelaporCard {
+  background: #f8fafc;
+  padding: 28px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 32px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+}
+
+.avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 900;
+  color: #374151;
+  flex-shrink: 0;
+}
+
+.pelaporInfo h3 {
+  margin: 0 0 6px 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: #111827;
+}
+
+.pelaporInfo p {
+  margin: 0;
+  color: #64748b;
+  font-size: 15px;
+}
+
+.waktu {
+  margin-left: auto;
+  text-align: right;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.waktu strong {
+  color: #374151;
+  font-weight: 600;
+}
+
+/* ISI LAPORAN */
+.isiLaporan {
+  background: white;
+  padding: 36px;
+  border-radius: 20px;
+  box-shadow: 0 10px 35px rgba(0,0,0,0.08);
+  margin-bottom: 40px;
+  line-height: 1.9;
+  font-size: 17.5px;
+  color: #374151;
+  white-space: pre-wrap;
+  border: 1px solid #f1f5f9;
+}
+
+/* GAMBAR BUKTI */
+.gambarContainer {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.gambarContainer img {
+  max-width: 100%;
+  height: auto;
+  max-height: 650px;
+  border-radius: 24px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.22);
+  transition: transform 0.3s ease;
+}
+
+.gambarContainer img:hover {
+  transform: scale(1.02);
+}
+
+/* LOKASI */
+.lokasi {
+  text-align: right;
+  font-size: 22px;
+  font-weight: 800;
+  color: #dc2626;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 14px;
+}
+
+.pulse {
+  width: 20px;
+  height: 20px;
+  background: #dc2626;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 14px rgba(220, 38, 38, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+  }
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .pelaporCard {
+    flex-direction: column;
+    text-align: center;
+  }
+  .waktu {
+    margin-left: 0;
+    margin-top: 12px;
+  }
+  .lokasi {
+    justify-content: center;
+  }
+}
