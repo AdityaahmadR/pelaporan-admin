@@ -1,4 +1,4 @@
-// src/app/api/laporan/[id]/route.js
+// src/app/api/laporan/ambilLaporan/route.js
 import mysql from 'mysql2/promise';
 import { NextResponse } from 'next/server';
 
@@ -12,31 +12,24 @@ const pool = mysql.createPool({
   connectionLimit: 10,
 });
 
-export async function GET(request, { params }) {
-  const { id } = params;
-
+export async function GET() {
+  // HAPUS { params } — INI BUKAN DYNAMIC ROUTE!
   try {
-    const [rows] = await pool.execute(
-      `SELECT 
-         l.laporanID,
-         l.deskripsi AS isi_laporan,
-         l.tanggal,
-         l.lokasi,
-         COALESCE(u.nama, 'Masyarakat') AS nama_pelapor,
-         COALESCE(u.email, '-') AS email
-       FROM laporan l
-       LEFT JOIN users u ON l.userID = u.userID
-       WHERE l.laporanID = ?`,
-      [id]
-    );
+    const [rows] = await pool.execute(`
+      SELECT 
+        l.laporanID,
+        l.deskripsi,
+        l.tanggal,
+        l.lokasi,
+        COALESCE(u.nama, 'Masyarakat') AS nama_pelapor
+      FROM laporan l
+      LEFT JOIN users u ON l.userID = u.userID
+      ORDER BY l.tanggal DESC
+    `);
 
-    if (rows.length === 0) {
-      return new NextResponse('Not Found', { status: 404 });
-    }
-
-    return NextResponse.json(rows[0]);
+    return NextResponse.json(rows);
   } catch (error) {
-    console.error('Error API detail:', error);
-    return new NextResponse('Server Error', { status: 500 });
+    console.error('Error ambil semua laporan:', error);
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
