@@ -9,9 +9,7 @@ const pool = mysql.createPool({
   database: process.env.MYSQLDATABASE,
   port: Number(process.env.MYSQLPORT) || 39744,
   ssl: { rejectUnauthorized: false },
-  waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
 });
 
 export async function GET(request, { params }) {
@@ -21,30 +19,24 @@ export async function GET(request, { params }) {
     const [rows] = await pool.execute(
       `SELECT 
          l.laporanID,
-         l.isi_laporan,
+         l.deskripsi AS isi_laporan,   -- INI YANG BENAR!
          l.tanggal,
          l.lokasi,
-         u.nama AS nama_pelapor,
-         u.email
+         COALESCE(u.nama, 'Masyarakat') AS nama_pelapor,
+         COALESCE(u.email, '-') AS email
        FROM laporan l
-       JOIN users u ON l.userID = u.userID
+       LEFT JOIN users u ON l.userID = u.userID
        WHERE l.laporanID = ?`,
       [id]
     );
 
     if (rows.length === 0) {
-      return new NextResponse(JSON.stringify({ message: 'Laporan tidak ditemukan' }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return new NextResponse('Not Found', { status: 404 });
     }
 
     return NextResponse.json(rows[0]);
   } catch (error) {
     console.error('Database error:', error);
-    return new NextResponse(JSON.stringify({ message: 'Server error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return new NextResponse('Server Error', { status: 500 });
   }
 }
