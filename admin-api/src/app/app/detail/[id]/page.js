@@ -2,7 +2,7 @@
 import Sidebar from '@/components/Sidebar';
 import Image from 'next/image';
 import Link from 'next/link';
-import styles from '../../Detail.module.css';
+import styles from '../../detai/[id]/Detail.module.css';
 import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
