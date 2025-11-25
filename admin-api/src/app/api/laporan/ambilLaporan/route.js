@@ -28,6 +28,6 @@ export async function GET() {
     return NextResponse.json(rows);
   } catch (error) {
     console.error('Error ambil laporan:', error);
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+    return NextResponse.json([], { status: 200 }); // Kembalikan array kosong biar tidak crash
   }
 }

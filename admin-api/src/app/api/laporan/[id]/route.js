@@ -22,8 +22,6 @@ export async function GET(request, { params }) {
         l.deskripsi AS isi_laporan,
         l.tanggal,
         l.lokasi,
-        l.status,
-        l.prioritas,
         COALESCE(u.nama, 'Masyarakat') AS nama_pelapor,
         COALESCE(u.email, '-') AS email
       FROM laporan l
@@ -31,13 +29,10 @@ export async function GET(request, { params }) {
       WHERE l.laporanID = ?
     `, [id]);
 
-    if (rows.length === 0) {
-      return new NextResponse('Not Found', { status: 404 });
-    }
-
+    if (rows.length === 0) return new NextResponse('Not Found', { status: 404 });
     return NextResponse.json(rows[0]);
   } catch (error) {
-    console.error('Error detail laporan:', error);
-    return new NextResponse('Server Error', { status: 500 });
+    console.error('Error detail:', error);
+    return new NextResponse('Error', { status: 500 });
   }
 }
