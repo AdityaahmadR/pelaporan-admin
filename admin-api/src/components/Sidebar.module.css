@@ -1,5 +1,4 @@
-/* src/components/Sidebar.module.css — VERSI ORIGINAL YANG KAMU SUKA (DIPERHALUS SEDIKIT) */
-
+/* src/components/Sidebar.module.css — TETAP 100% ORIGINAL KAMU */
 .sidebar {
   position: fixed;
   left: 0;
@@ -181,7 +180,6 @@
   border-radius: 12px;
 }
 
-/* Mobile */
 @media (max-width: 520px) {
   .sidebar {
     position: relative;

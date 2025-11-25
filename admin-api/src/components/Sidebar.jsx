@@ -1,26 +1,20 @@
-"use client";
+// src/components/Sidebar.jsx
+'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation'; // GUNAKAN INI — PALING AKURAT!
+import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import styles from './Sidebar.module.css';
 
 const navItems = [
   { name: 'Laporan Masyarakat', href: '/app', icon: '/oui_nav-reports.png' },
   { name: 'Laporan Darurat', href: '/darurat', icon: '/Phone call.png' },
-  { name: 'Database Pengguna', href: '/pengguna', icon: '/Database.png' },     // DIPERBAIKI: /pengguna
+  { name: 'Database Pengguna', href: '/pengguna', icon: '/Database.png' },
   { name: 'Monitoring Sensor', href: '/monitoring', icon: '/Vector (1).png' },
 ];
 
-export default function Sidebar({ 
-  isOpen: controlledOpen, 
-  setIsOpen: setControlledOpen 
-}) {
-  const [internalOpen, setInternalOpen] = useState(true);
-  const isOpen = controlledOpen !== undefined ? controlledOpen : internalOpen;
-  const setIsOpen = setControlledOpen || setInternalOpen;
-
-  // PAKAI usePathname() → PALING AKURAT & AMAN DI NEXT.JS APP ROUTER
+export default function Sidebar() {
+  const [isOpen, setIsOpen] = useState(true);
   const pathname = usePathname();
 
   return (
@@ -30,7 +24,6 @@ export default function Sidebar({
       </div>
 
       <aside className={`${styles.sidebar} ${isOpen ? '' : styles.collapsed}`}>
-        {/* HEADER + TOGGLE BUTTON */}
         <div className={`${styles.header} ${styles.alignLeft}`}>
           <button 
             onClick={() => setIsOpen(!isOpen)} 
@@ -47,7 +40,6 @@ export default function Sidebar({
           </button>
         </div>
 
-        {/* NAVIGASI */}
         <nav className={styles.nav}>
           {navItems.map((item) => {
             const isActive = pathname === item.href;
@@ -80,7 +72,6 @@ export default function Sidebar({
           })}
         </nav>
 
-        {/* LOGOUT DI BAWAH */}
         <div className={styles.bottom}>
           <button className={styles.logout} title={!isOpen ? 'Log Out' : ''}>
             <img src="/Log out.png" alt="Logout" className={styles.logoutIcon} />
