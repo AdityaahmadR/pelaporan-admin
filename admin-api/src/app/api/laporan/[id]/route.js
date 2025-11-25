@@ -19,7 +19,7 @@ export async function GET(request, { params }) {
     const [rows] = await pool.execute(
       `SELECT 
          l.laporanID,
-         l.deskripsi AS isi_laporan,   -- INI YANG BENAR!
+         l.deskripsi AS isi_laporan,
          l.tanggal,
          l.lokasi,
          COALESCE(u.nama, 'Masyarakat') AS nama_pelapor,
@@ -36,7 +36,7 @@ export async function GET(request, { params }) {
 
     return NextResponse.json(rows[0]);
   } catch (error) {
-    console.error('Database error:', error);
+    console.error('Error API detail:', error);
     return new NextResponse('Server Error', { status: 500 });
   }
 }
