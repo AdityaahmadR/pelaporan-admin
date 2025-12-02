@@ -20,6 +20,7 @@ export default function LaporanMasyarakat() {
 
   return (
     <div className={`${styles.page} ${!sidebarOpen ? styles.sidebarCollapsed : ''}`}>
+      
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} activePage="/app" />
 
       <div className={styles.topBar}>
@@ -29,6 +30,7 @@ export default function LaporanMasyarakat() {
             <input type="text" placeholder="Cari laporan..." className={styles.searchInput} />
           </div>
         </div>
+
         <button className={styles.uploadButton}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />

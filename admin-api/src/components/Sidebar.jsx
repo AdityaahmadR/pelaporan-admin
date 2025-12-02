@@ -3,7 +3,6 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
 import styles from './Sidebar.module.css';
 
 const navItems = [
@@ -13,8 +12,7 @@ const navItems = [
   { name: 'Monitoring Sensor', href: '/monitoring', icon: '/Vector (1).png' },
 ];
 
-export default function Sidebar() {
-  const [isOpen, setIsOpen] = useState(true);
+export default function Sidebar({ isOpen, setIsOpen }) {
   const pathname = usePathname();
 
   return (
