@@ -12,6 +12,10 @@
   transition: all 0.25s ease;
 }
 
+.searchWrapper {
+  max-width: 600px;
+  width: 100%;
+}
 /* ===========================
    TOP BAR
 =========================== */
