@@ -5,37 +5,35 @@ import Sidebar from "../../components/Sidebar";
 import styles from "../darurat/darurat.module.css";
 import LaporanPreviewCard from "../../components/LaporanPreviewCard";
 
-export default function LaporanDarurat() {
+export default function LaporanPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [laporan, setLaporan] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState("");
 
   useEffect(() => {
-    async function fetchData() {
+    async function loadData() {
       try {
         const res = await fetch("/api/laporan");
-        const data = await res.json();
 
+        if (!res.ok) throw new Error(`Error: ${res.status}`);
+
+        const data = await res.json();
         setLaporan(Array.isArray(data) ? data : []);
+
       } catch (err) {
-        console.error("❌ Fetch gagal:", err);
+        setFetchError(err.message);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchData();
+    loadData();
   }, []);
 
   return (
-    <div
-      className={`${styles.page} ${!sidebarOpen ? styles.sidebarCollapsed : ""}`}
-    >
-      <Sidebar
-        isOpen={sidebarOpen}
-        setIsOpen={setSidebarOpen}
-        activePage="/darurat"
-      />
+    <div className={`${styles.page} ${!sidebarOpen ? styles.sidebarCollapsed : ""}`}>
+      <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} activePage="/app" />
 
       <main className={`${styles.content} ${!sidebarOpen ? styles.collapsed : ""}`}>
         <header className={styles.header}>
@@ -43,23 +41,19 @@ export default function LaporanDarurat() {
         </header>
 
         {loading && <p>Memuat data...</p>}
+        {fetchError && <p style={{ color: "red" }}>⚠ {fetchError}</p>}
 
         {!loading && laporan.length === 0 && (
-          <p className={styles.emptyState}>Belum ada laporan darurat</p>
+          <p className={styles.emptyState}>Belum ada laporan</p>
         )}
 
-        {/* LIST DATA */}
         <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
           {laporan.map((item) => (
             <LaporanPreviewCard
               key={item.laporanID}
-              title={
-                item.deskripsi.length > 25
-                  ? item.deskripsi.substring(0, 25) + "..."
-                  : item.deskripsi
-              }
+              title={item.deskripsi?.split("\n")[0] || "Tanpa Judul"}
               description={item.deskripsi}
-              status={item.status || "Laporan Masuk"}
+              status={item.status}
             />
           ))}
         </div>
