@@ -3,24 +3,26 @@
 import { useState, useEffect } from "react";
 import Sidebar from "../../components/Sidebar";
 import styles from "../darurat/darurat.module.css";
-import LaporanPreviewCard from "../../components/LaporanPreviewCard"; // IMPORT PreviewCard
+import LaporanPreviewCard from "../../components/LaporanPreviewCard"; 
 
 export default function LaporanDarurat() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [laporan, setLaporan] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch laporan dari backend
   useEffect(() => {
     async function fetchData() {
       try {
         const token = localStorage.getItem("token");
+
         const res = await fetch("/api/laporan", {
           headers: { Authorization: `Bearer ${token}` }
         });
 
         const data = await res.json();
-        setLaporan(data || []);
+
+        // Pastikan datanya array supaya tidak error
+        setLaporan(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Gagal fetch laporan:", error);
       } finally {
@@ -37,7 +39,7 @@ export default function LaporanDarurat() {
       {/* Sidebar */}
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} activePage="/darurat" />
 
-      {/* Top Bar */}
+      {/* Topbar */}
       <div className={styles.topBar}>
         <div className={styles.searchWrapper}>
           <div className={styles.searchBar}>
@@ -56,7 +58,7 @@ export default function LaporanDarurat() {
         </button>
       </div>
 
-      {/* CONTENT */}
+      {/* MAIN CONTENT */}
       <main className={`${styles.content} ${!sidebarOpen ? styles.collapsed : ""}`}>
         
         <header className={styles.header}>
@@ -71,14 +73,14 @@ export default function LaporanDarurat() {
           <p className={styles.emptyState}>Belum ada laporan darurat</p>
         )}
 
-        {/* LIST PREVIEW */}
+        {/* LIST CARD */}
         <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
           {laporan.map((item) => (
             <LaporanPreviewCard
               key={item.id}
-              title={item.judul}
-              description={item.keterangan}
-              status={item.status}
+              title={item.judul || item.nama || "Tanpa Judul"}
+              description={item.keterangan || item.lokasi || "Tidak ada deskripsi"}
+              status={item.status || "Laporan Masuk"}
             />
           ))}
         </div>
