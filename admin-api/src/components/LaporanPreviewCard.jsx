@@ -1,39 +1,39 @@
-// src/components/LaporanPreviewCard.jsx
-import { useRouter } from 'next/navigation';
-import styles from './LaporanPreviewCard.module.css';
+"use client";
+import styles from "./LaporanPreviewCard.module.css";
+import { useState } from "react";
 
-export default function LaporanPreviewCard({ laporan }) {
-  const router = useRouter();
-  const { laporanID, isi_laporan, nama_pelapor, email, tanggal } = laporan;
+export default function LaporanPreviewCard({ title, description, status }) {
+  const [currentStatus, setCurrentStatus] = useState(status || "Laporan Masuk");
 
-  // Ambil judul dari baris pertama
-  const judul = isi_laporan.split('\n')[0].trim() || 'Laporan Darurat';
+  const statusStyle = {
+    "Laporan Masuk": styles.badgeMasuk,
+    "Sedang Diproses": styles.badgeProses,
+    "Selesai": styles.badgeSelesai,
+  };
 
-  // Ambil isi tanpa judul
-  const isi = isi_laporan.split('\n').slice(1).join('\n').trim() || isi_laporan;
-
-  const handleClick = () => {
-    router.push(`/app/detail/${laporanID}`);
+  const handleChange = (value) => {
+    setCurrentStatus(value);
   };
 
   return (
-    <div className={styles.card} onClick={handleClick}>
-      <div className={styles.header}>
-        <h3 className={styles.judul}>{judul}</h3>
-        <span className={styles.badge}>Laporan Masuk</span>
+    <div className={styles.card}>
+      {/* Left Section: Title + Description */}
+      <div className={styles.textSection}>
+        <h3 className={styles.title}>{title}</h3>
+        <p className={styles.desc}>{description}</p>
       </div>
 
-      <p className={styles.isi}>{isi || 'Tidak ada deskripsi tambahan.'}</p>
-
-      <div className={styles.footer}>
-        <span className={styles.time}>
-          {new Date(tanggal).toLocaleString('id-ID', {
-            weekday: 'long',
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric'
-          })}
-        </span>
+      {/* Right: Status Dropdown */}
+      <div className={styles.dropdownWrapper}>
+        <select
+          className={`${styles.dropdown} ${statusStyle[currentStatus]}`}
+          value={currentStatus}
+          onChange={(e) => handleChange(e.target.value)}
+        >
+          <option value="Laporan Masuk">Laporan Masuk</option>
+          <option value="Sedang Diproses">Sedang Diproses</option>
+          <option value="Selesai">Selesai</option>
+        </select>
       </div>
     </div>
   );
