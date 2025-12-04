@@ -3,9 +3,10 @@
     "baseUrl": "src",
     "paths": {
       "@/*": ["*"],
+      "@/app/*": ["app/*"],
       "@/components/*": ["app/components/*"],
       "@/lib/*": ["app/lib/*"],
-      "@/app/*": ["app/*"]
+      "@/api/*": ["app/api/*"]
     }
   }
 }
