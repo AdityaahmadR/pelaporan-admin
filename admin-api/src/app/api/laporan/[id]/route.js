@@ -1,27 +1,32 @@
 import connectDB from "@/lib/db";
 import { NextResponse } from "next/server";
 
-// 1. GET: Untuk mengambil detail laporan
 export async function GET(request, { params }) {
   let connection;
 
   try {
     const { id } = params;
 
-    // Langkah 1: Buka koneksi database
+    // 1. Buka Koneksi
     connection = await connectDB();
 
-    // Langkah 2: Query data dengan JOIN ke tabel users untuk dapat nama pelapor
+    // 2. Query Database
+    // PERBAIKAN: 
+    // - Menggunakan 'laporan.laporanID' (bukan 'id')
+    // - Menggunakan 'laporan.userID' (bukan 'user_id')
+    // - JOIN ke tabel users (Asumsi PK users adalah 'id'. Jika error, ganti jadi 'users.userID')
     const query = `
-      SELECT laporan.*, users.nama as user_nama 
+      SELECT 
+        laporan.*, 
+        users.nama as user_nama 
       FROM laporan 
-      LEFT JOIN users ON laporan.user_id = users.id 
-      WHERE laporan.id = ?
+      LEFT JOIN users ON laporan.userID = users.id 
+      WHERE laporan.laporanID = ?
     `;
 
     const [rows] = await connection.query(query, [id]);
 
-    // Jika data tidak ditemukan
+    // Cek jika data tidak ditemukan
     if (rows.length === 0) {
       return NextResponse.json(
         { message: "Laporan tidak ditemukan" }, 
@@ -31,16 +36,28 @@ export async function GET(request, { params }) {
 
     const dataRaw = rows[0];
 
-    // Langkah 3: Format data agar sesuai dengan yang diminta Frontend
-    // Frontend kamu membaca: laporan.user.nama
+    // 3. Data Mapping (PENTING)
+    // Frontend kamu meminta: 'subject', 'isi_laporan', 'createdAt'
+    // Database kamu punya: 'deskripsi', 'tanggal'
+    
+    // Logika ekstra: Coba ambil "Subjek: ..." dari deskripsi jika ada
+    let subjectDisplay = `Laporan #${dataRaw.laporanID}`;
+    if (dataRaw.deskripsi && dataRaw.deskripsi.includes("Subjek:")) {
+      const parts = dataRaw.deskripsi.split('\n');
+      subjectDisplay = parts[0].replace("Subjek:", "").trim();
+    }
+
     const formattedData = {
       ...dataRaw,
+      // Mapping Field DB -> Field Frontend
+      subject: subjectDisplay,            // Frontend butuh 'subject'
+      isi_laporan: dataRaw.deskripsi,     // Frontend butuh 'isi_laporan', DB punya 'deskripsi'
+      createdAt: dataRaw.tanggal,         // Frontend butuh 'createdAt', DB punya 'tanggal'
       user: {
-        nama: dataRaw.user_nama || "Anonim" // Fallback jika user dihapus/null
+        nama: dataRaw.user_nama || "Anonim"
       }
     };
 
-    // Kirim response dalam format { data: ... }
     return NextResponse.json({ data: formattedData }, { status: 200 });
 
   } catch (error) {
@@ -50,14 +67,10 @@ export async function GET(request, { params }) {
       { status: 500 }
     );
   } finally {
-    // Langkah 4: Wajib tutup koneksi agar server tidak overload (PENTING di Vercel)
-    if (connection) {
-      await connection.end();
-    }
+    if (connection) await connection.end();
   }
 }
 
-// 2. PUT: Untuk update status (Sedang Diproses / Selesai)
 export async function PUT(request, { params }) {
   let connection;
 
@@ -67,23 +80,16 @@ export async function PUT(request, { params }) {
     const { status } = body;
 
     if (!status) {
-      return NextResponse.json(
-        { message: "Status harus diisi" }, 
-        { status: 400 }
-      );
+      return NextResponse.json({ message: "Status harus diisi" }, { status: 400 });
     }
 
-    // Buka koneksi lagi untuk request ini
     connection = await connectDB();
 
-    // Jalankan Query Update
-    const query = "UPDATE laporan SET status = ? WHERE id = ?";
+    // PERBAIKAN: Gunakan 'laporanID' di WHERE clause
+    const query = "UPDATE laporan SET status = ? WHERE laporanID = ?";
     await connection.query(query, [status, id]);
 
-    return NextResponse.json(
-      { message: "Status berhasil diupdate" }, 
-      { status: 200 }
-    );
+    return NextResponse.json({ message: "Status berhasil diupdate" }, { status: 200 });
 
   } catch (error) {
     console.error("Database Error (PUT):", error);
@@ -92,8 +98,6 @@ export async function PUT(request, { params }) {
       { status: 500 }
     );
   } finally {
-    if (connection) {
-      await connection.end();
-    }
+    if (connection) await connection.end();
   }
 }
