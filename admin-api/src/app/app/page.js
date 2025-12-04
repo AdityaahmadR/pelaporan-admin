@@ -56,7 +56,7 @@ export default function LaporanPage() {
         {/* 3. UPDATE TOMBOL UPLOAD */}
         <button 
           className={styles.uploadButton} 
-          onClick={() => router.push('/app/edukasi')} // Arahkan ke halaman Edukasi
+          onClick={() => router.push('/edukasi')} // Arahkan ke halaman Edukasi
         >
           <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
