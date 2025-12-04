@@ -1,32 +1,260 @@
-.container {
-  display: flex;
-  width: 100%;
+/* === LAYOUT UTAMA (Mirip Darurat) === */
+.page {
+  display: block;
   min-height: 100vh;
+  background: #f8f9fa; /* Abu-abu terang agar konten putih menonjol */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  overflow-x: hidden;
+  position: relative;
 }
 
-.content {
+/* === TOP BAR (Sama Persis) === */
+.topBar {
+  position: fixed;
+  top: 0;
+  left: 280px;
+  right: 0;
+  height: 72px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  z-index: 30;
+  transition: left 0.25s ease;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.sidebarCollapsed .topBar {
+  left: 72px;
+}
+
+/* Search Bar Styles */
+.searchWrapper {
+  display: flex;
+  align-items: center;
+  max-width: 800px;
   flex: 1;
-  padding: 20px;
-  background: #f9f9f9;
+  justify-content: center;
+  margin: 0 auto;
 }
 
+.searchBar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 800px;
+  background: #fff;
+  border-radius: 9999px;
+  padding: 10px 18px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.25s ease;
+}
+
+.searchIcon {
+  margin-right: 12px;
+  opacity: 0.5;
+  width: 18px;
+  height: 18px;
+}
+
+.searchInput {
+  background: none;
+  border: none;
+  outline: none;
+  flex: 1;
+  font-size: 15px;
+  color: #1a202c;
+}
+
+/* Upload Button */
+.uploadButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  color: #2d3748;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.uploadButton:hover {
+  background: #f7fafc;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+/* === CONTENT WRAPPER === */
+.content {
+  margin-left: 280px;
+  margin-top: 72px;
+  min-height: calc(100vh - 72px);
+  padding: 32px;
+  transition: margin-left 0.25s ease;
+}
+
+.content.collapsed {
+  margin-left: 72px;
+}
+
+/* === DETAIL CARD (Container Putih di Tengah) === */
 .card {
   background: white;
-  padding: 20px;
-  border-radius: 12px;
-  margin-top: 20px;
-  box-shadow: 0px 4px 10px rgba(0,0,0,0.08);
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03); /* Shadow halus */
+  max-width: 1000px;
+  margin: 0 auto; /* Tengah */
 }
 
-.status button {
-  margin-right: 10px;
-  background: #2573ff;
-  padding: 10px 18px;
-  color: white;
-  border-radius: 6px;
+/* === DETAIL HEADER (Judul, Back, Status) === */
+.detailHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 20px;
+}
+
+.titleGroup {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.backButton {
+  background: none;
   border: none;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 50%;
+  transition: background 0.2s;
+  color: #1a202c;
 }
-.status button:hover {
-  background: #1b5ee0;
+
+.backButton:hover {
+  background-color: #f0f0f0;
+}
+
+.detailTitle {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0;
+}
+
+/* Meta Info (Kanan Atas) */
+.metaInfo {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.dateText {
+  font-size: 13px;
+  color: #718096;
+  font-weight: 500;
+}
+
+.statusActions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Tombol Status */
+.statusButton {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  color: #718096;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.statusButton:hover {
+  background: #f7fafc;
+  border-color: #cbd5e0;
+}
+
+.statusButton.active {
+  background: #1a202c; /* Hitam saat aktif */
+  color: white;
+  border-color: #1a202c;
+}
+
+/* === USER PROFILE === */
+.userSection {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4a5568;
+}
+
+.userInfo h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #2d3748;
+}
+
+.userInfo p {
+  margin: 2px 0 0;
+  font-size: 14px;
+  color: #718096;
+}
+
+/* === REPORT BODY & IMAGE === */
+.reportBody {
+  font-size: 16px;
+  line-height: 1.7;
+  color: #4a5568;
+  white-space: pre-line;
+  margin-bottom: 30px;
+}
+
+.imageContainer {
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+.reportImage {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .topBar { padding: 10px 16px; flex-direction: column; height: auto; gap: 10px; }
+  .detailHeader { flex-direction: column; gap: 15px; }
+  .metaInfo { align-items: flex-start; text-align: left; width: 100%; }
+  .statusActions { width: 100%; justify-content: space-between; }
+  .statusButton { flex: 1; text-align: center; }
 }

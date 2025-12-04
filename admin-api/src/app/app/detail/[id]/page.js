@@ -1,121 +1,177 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import Sidebar from '@/components/Sidebar';
-import SearchBar from '@/components/SearchBar';
-
-// PERBAIKAN 1: Hapus atau komentar import yang tidak dipakai untuk menghindari "duplicate identifier"
-// import styles from './Detail.module.css'; 
-import styles from '@/app/darurat/darurat.module.css'; // Kita pakai yang ini sesuai catatanmu
+import styles from './Detail.module.css'; // Kita pakai CSS yang baru dibuat di atas
 
 export default function DetailPage({ params }) {
   const { id } = params;
+  const router = useRouter();
+  
   const [laporan, setLaporan] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null); // State untuk menyimpan pesan error
+  const [sidebarOpen, setSidebarOpen] = useState(true); // State untuk Sidebar
 
   useEffect(() => {
-    if (!id) return;
-
     fetch(`/api/laporan/${id}`)
-      .then(async (res) => {
-        // Cek apakah response sukses (200 OK)
-        if (!res.ok) {
-          throw new Error(`Server Error: ${res.status}`); 
-        }
-        return res.json();
-      })
+      .then(res => res.json())
       .then(result => {
-        // Pastikan result.data ada isinya
-        if (result.data) {
-          setLaporan(result.data);
-        } else {
-          setError("Data laporan tidak ditemukan.");
-        }
+        if (result.data) setLaporan(result.data);
         setLoading(false);
       })
-      .catch(err => {
-        console.error("Gagal mengambil data:", err);
-        setError(err.message); // Simpan pesan error agar tampil di layar
-        setLoading(false);
-      });
+      .catch(err => setLoading(false));
   }, [id]);
 
   async function updateStatus(newStatus) {
+    if(!laporan) return;
+    setLaporan(prev => ({ ...prev, status: newStatus })); 
     try {
-      const res = await fetch(`/api/laporan/${id}`, {
+      await fetch(`/api/laporan/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
       });
-
-      if (!res.ok) throw new Error("Gagal update status");
-
-      setLaporan(prev => ({ ...prev, status: newStatus }));
-      alert(`Status berhasil diubah menjadi: ${newStatus}`);
-    } catch (err) {
-      alert("Terjadi kesalahan saat update status.");
+    } catch (error) {
+      alert("Gagal update status");
     }
   }
 
-  function formatTime(dateString) {
+  function formatDateDetail(dateString) {
     if (!dateString) return '-';
-    const diff = (new Date() - new Date(dateString)) / (1000 * 60 * 60);
-    return `${Math.floor(diff)} jam lalu`;
+    const date = new Date(dateString);
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    
+    // Hitung waktu relatif
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMinutes = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMinutes / 60);
+
+    let timeAgo = "";
+    if (diffMinutes < 1) timeAgo = "Baru saja";
+    else if (diffMinutes < 60) timeAgo = `(${diffMinutes} Menit lalu)`;
+    else if (diffHours < 24) timeAgo = `(${diffHours} Jam lalu)`;
+    
+    return `${date.toLocaleDateString('id-ID', options)} ${timeAgo}`;
   }
 
-  // Tampilan saat Loading
   if (loading) {
     return (
-      <div className={styles.container}>
-        <Sidebar />
-        <main className={styles.content} style={{ padding: 20 }}>
-          <p>Sedang memuat data...</p>
+      <div className={`${styles.page} ${!sidebarOpen ? styles.sidebarCollapsed : ''}`}>
+        <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} activePage="/detail" />
+        <main className={`${styles.content} ${!sidebarOpen ? styles.collapsed : ''}`}>
+           <p style={{padding: 40, textAlign: 'center', color: '#888'}}>Memuat Data...</p>
         </main>
       </div>
     );
   }
 
-  // PERBAIKAN 2 & 3: Tampilan saat Error atau Data Kosong (Mencegah Crash)
-  if (error || !laporan) {
+  if (!laporan) {
     return (
-      <div className={styles.container}>
-        <Sidebar />
-        <main className={styles.content} style={{ padding: 20 }}>
-          <SearchBar />
-          <div className={styles.card} style={{ color: 'red', textAlign: 'center' }}>
-            <h3>Terjadi Kesalahan</h3>
-            <p>{error || "Data tidak ditemukan"}</p>
-            <button onClick={() => window.location.reload()}>Coba Refresh</button>
-          </div>
+      <div className={`${styles.page} ${!sidebarOpen ? styles.sidebarCollapsed : ''}`}>
+        <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} activePage="/detail" />
+        <main className={`${styles.content} ${!sidebarOpen ? styles.collapsed : ''}`}>
+           <p style={{padding: 40, textAlign: 'center', color: '#888'}}>Data tidak ditemukan.</p>
         </main>
       </div>
     );
   }
 
-  // Tampilan Utama (Hanya muncul jika laporan ADA isinya)
   return (
-    <div className={styles.container}>
-      <Sidebar />
-      <main className={styles.content}>
-        <SearchBar />
+    <div className={`${styles.page} ${!sidebarOpen ? styles.sidebarCollapsed : ''}`}>
+      {/* SIDEBAR */}
+      <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} activePage="/detail" />
 
+      {/* TOP BAR (Layout sama persis seperti darurat) */}
+      <div className={styles.topBar}>
+        <div className={styles.searchWrapper}>
+          <div className={styles.searchBar}>
+            {/* Pastikan file /Search.png ada di folder public kamu */}
+            <Image src="/Search.png" alt="Search" width={18} height={18} className={styles.searchIcon} />
+            <input type="text" placeholder="Search" className={styles.searchInput} />
+          </div>
+        </div>
+        <button className={styles.uploadButton}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="3" x2="12" y2="15" />
+          </svg>
+          <span>Upload</span>
+        </button>
+      </div>
+
+      {/* KONTEN UTAMA */}
+      <main className={`${styles.content} ${!sidebarOpen ? styles.collapsed : ''}`}>
         <div className={styles.card}>
-          <h2>Detail Laporan</h2>
+          
+          {/* HEADER: Judul, Back, Tanggal, Status */}
+          <div className={styles.detailHeader}>
+            <div className={styles.titleGroup}>
+              <button onClick={() => router.back()} className={styles.backButton}>
+                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                 </svg>
+              </button>
+              <h1 className={styles.detailTitle}>{laporan.subject}</h1>
+            </div>
 
-          {/* Optional Chaining (?.) digunakan untuk keamanan ekstra */}
-          <p><strong>Subject:</strong> {laporan?.subject || '-'}</p>
-          <p><strong>Deskripsi:</strong> {laporan?.isi_laporan || '-'}</p>
-          <p><strong>Pengguna:</strong> {laporan?.user?.nama || 'Anonim'}</p>
-          <p><strong>Waktu:</strong> {formatTime(laporan?.createdAt)}</p>
-
-          <div className={styles.status}>
-            <p>Status: <span>{laporan?.status}</span></p>
-            <div style={{ marginTop: 10 }}>
-                <button onClick={() => updateStatus("Sedang Diproses")} style={{ marginRight: 5 }}>Proses</button>
-                <button onClick={() => updateStatus("Selesai")}>Selesai</button>
+            <div className={styles.metaInfo}>
+              <span className={styles.dateText}>{formatDateDetail(laporan.createdAt)}</span>
+              <div className={styles.statusActions}>
+                <button 
+                  className={`${styles.statusButton} ${laporan.status === 'baru' ? styles.active : ''}`}
+                  onClick={() => updateStatus('baru')}
+                >
+                  Laporan Masuk
+                </button>
+                <button 
+                  className={`${styles.statusButton} ${laporan.status === 'Sedang Diproses' ? styles.active : ''}`}
+                  onClick={() => updateStatus('Sedang Diproses')}
+                >
+                  Sedang Berlangsung
+                </button>
+                <button 
+                  className={`${styles.statusButton} ${laporan.status === 'Selesai' ? styles.active : ''}`}
+                  onClick={() => updateStatus('Selesai')}
+                >
+                  Selesai
+                </button>
+              </div>
             </div>
           </div>
+
+          {/* USER PROFILE */}
+          <div className={styles.userSection}>
+            <div className={styles.avatar}>
+               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+               </svg>
+            </div>
+            <div className={styles.userInfo}>
+              <h4>{laporan.user?.nama}</h4>
+              <p>{laporan.user?.email}</p>
+            </div>
+          </div>
+
+          {/* ISI LAPORAN */}
+          <div className={styles.reportBody}>
+            {laporan.isi_laporan}
+          </div>
+
+          {/* GAMBAR */}
+          {laporan.gambar ? (
+             <div className={styles.imageContainer}>
+                <img src={laporan.gambar} alt="Bukti Laporan" className={styles.reportImage} />
+             </div>
+          ) : (
+            <p style={{fontSize:'13px', color: '#aaa', fontStyle: 'italic'}}>*Tidak ada lampiran gambar</p>
+          )}
+
         </div>
       </main>
     </div>
