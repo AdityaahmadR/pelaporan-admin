@@ -1,36 +1,27 @@
-import db from "@/lib/db";
-import { NextResponse } from "next/server";
-
-export async function GET(req, { params }) {
-  try {
-    const [rows] = await db.query(
-      `SELECT laporan.*, users.nama 
-       FROM laporan 
-       LEFT JOIN users ON laporan.userID = users.userID 
-       WHERE laporan.laporanID = ?`,
-      [params.id]
-    );
-
-    if (!rows.length) return NextResponse.json({ error: "Not Found" }, { status: 404 });
-
-    return NextResponse.json(rows[0]);
-  } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-}
+import connectDB from "@/app/lib/db";
 
 export async function PUT(req, { params }) {
-  try {
-    const body = await req.json();
-    const { status } = body;
+  const { id } = params;
+  const { status } = await req.json();
+  const db = await connectDB();
 
-    await db.query(`UPDATE laporan SET status = ? WHERE laporanID = ?`, [
-      status,
-      params.id,
-    ]);
+  await db.execute(`UPDATE laporan SET status = ? WHERE laporanID = ?`, [status, id]);
+  await db.end();
 
-    return NextResponse.json({ success: true, status });
-  } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
+  return new Response(JSON.stringify({ success: true }), { status: 200 });
+}
+
+export async function GET(req, { params }) {
+  const { id } = params;
+  const db = await connectDB();
+  const [rows] = await db.execute(
+    `SELECT laporan.*, masyarakat.nama, masyarakat.email 
+     FROM laporan 
+     LEFT JOIN masyarakat ON laporan.userID = masyarakat.userID 
+     WHERE laporan.laporanID = ?`, 
+     [id]
+  );
+
+  await db.end();
+  return new Response(JSON.stringify(rows[0] || null), { status: 200 });
 }
