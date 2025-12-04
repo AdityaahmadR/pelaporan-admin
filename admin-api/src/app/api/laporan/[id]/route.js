@@ -1,38 +1,46 @@
-// src/app/api/laporan/[id]/route.js
-import mysql from 'mysql2/promise';
-import { NextResponse } from 'next/server';
+import connectDB from "../../../../db";
+import { NextResponse } from "next/server";
 
-const pool = mysql.createPool({
-  host: process.env.MYSQLHOST,
-  user: process.env.MYSQLUSER,
-  password: process.env.MYSQLPASSWORD,
-  database: process.env.MYSQLDATABASE,
-  port: Number(process.env.MYSQLPORT) || 39744,
-  ssl: { rejectUnauthorized: false },
-  connectionLimit: 10,
-});
-
-export async function GET(request, { params }) {
+export async function GET(_, { params }) {
   const { id } = params;
 
   try {
-    const [rows] = await pool.execute(`
-      SELECT 
-        l.laporanID,
-        l.deskripsi AS isi_laporan,
-        l.tanggal,
-        l.lokasi,
-        COALESCE(u.nama, 'Masyarakat') AS nama_pelapor,
-        COALESCE(u.email, '-') AS email
-      FROM laporan l
-      LEFT JOIN users u ON l.userID = u.userID
-      WHERE l.laporanID = ?
-    `, [id]);
+    const db = await connectDB();
+    const [rows] = await db.execute(
+      `SELECT l.*, u.nama AS nama_pelapor, u.email
+       FROM laporan l
+       LEFT JOIN users u ON l.userID = u.userID
+       WHERE laporanID = ?`,
+      [id]
+    );
 
-    if (rows.length === 0) return new NextResponse('Not Found', { status: 404 });
+    await db.end();
+
+    if (rows.length === 0) {
+      return NextResponse.json({ message: "Laporan tidak ditemukan" }, { status: 404 });
+    }
+
     return NextResponse.json(rows[0]);
-  } catch (error) {
-    console.error('Error detail:', error);
-    return new NextResponse('Error', { status: 500 });
+  } catch (err) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
+
+export async function PUT(request, { params }) {
+  const { id } = params;
+  const { status } = await request.json();
+
+  if (!status) {
+    return NextResponse.json({ message: "Status kosong" }, { status: 400 });
+  }
+
+  try {
+    const db = await connectDB();
+    await db.execute(`UPDATE laporan SET status = ? WHERE laporanID = ?`, [status, id]);
+    await db.end();
+
+    return NextResponse.json({ message: "Status diperbarui", status });
+  } catch (err) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
