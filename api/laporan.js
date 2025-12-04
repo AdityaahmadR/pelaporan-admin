@@ -1,38 +1,33 @@
-// api/laporan.js
-import connectDB from '../admin-api/db.js'; // Pastikan path ini benar sesuai struktur proyek Anda
+// api/laporan.js (Versi Diagnostik)
+import connectDB from '../admin-api/db.js';
 
 export default async function handler(req, res) {
-  // Hanya izinkan metode POST
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
-  // Mengambil data dari body request aplikasi Android
-  const { userID, prioritas, deskripsi } = req.body;
-
-  // Validasi sederhana
-  if (!userID || !prioritas) {
-    return res.status(400).json({ message: 'Error: Field userID dan prioritas wajib diisi.' });
-  }
+  // Kita hanya akan mengambil userID dari aplikasi untuk tes ini
+  const { userID, deskripsi } = req.body;
 
   let connection;
   try {
     connection = await connectDB();
     
-    // Query yang sudah benar sesuai dengan tabel 'laporan' Anda
+    // Query tidak berubah, tetapi nilai yang kita masukkan akan diubah
     const query = 'INSERT INTO laporan (userID, prioritas, deskripsi, status) VALUES (?, ?, ?, ?)';
     
     const deskripsiLaporan = deskripsi || 'Laporan darurat dari tombol panik.';
-    const statusLaporan = 'baru'; // Status default untuk laporan baru
+    const statusLaporan = 'baru';
+    // --- PERUBAHAN UTAMA: NILAI "darurat" DI-HARDCODE DI SINI ---
+    const prioritasDarurat = 'darurat'; 
     
-    // Menjalankan query
-    await connection.execute(query, [userID, prioritas, deskripsiLaporan, statusLaporan]);
+    // Menjalankan query dengan nilai prioritas yang sudah dipaksa
+    await connection.execute(query, [userID, prioritasDarurat, deskripsiLaporan, statusLaporan]);
     
-    // Menutup koneksi database
     await connection.end();
     
-    // Mengirim respons sukses kembali ke aplikasi Android
-    res.status(201).json({ success: true, message: 'Laporan darurat berhasil disimpan ke database!' });
+    // Mengirim pesan sukses yang berbeda untuk menandakan ini adalah tes
+    res.status(201).json({ success: true, message: 'Laporan (tes hardcode) berhasil disimpan!' });
 
   } catch (error) {
     console.error('❌ Terjadi error saat menyimpan laporan:', error);
