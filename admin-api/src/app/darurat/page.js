@@ -1,6 +1,6 @@
 "use client";
 
-import styles from '../darurat/darurat.module.css';        // PAKAI CSS YANG SAMA!
+import styles from '@/app/darurat/darurat.module.css';        // PAKAI CSS YANG SAMA!
 import Sidebar from '../components/Sidebar';
 import { useState } from 'react';
 import Image from 'next/image';

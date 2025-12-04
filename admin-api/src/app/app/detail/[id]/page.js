@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Sidebar from '@/components/Sidebar';
 import SearchBar from '@/components/SearchBar';
 import styles from './Detail.module.css';
+import styles from '@/app/darurat/darurat.module.css';  // PAKAI CSS YANG SAMA!
 
 export default function DetailPage({ params }) {
   const { id } = params;
