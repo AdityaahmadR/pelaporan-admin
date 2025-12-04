@@ -1,32 +1,31 @@
 import connectDB from "@/lib/db";
 import { NextResponse } from "next/server";
 
+// 1. GET: Mengambil Detail Laporan
 export async function GET(request, { params }) {
   let connection;
 
   try {
     const { id } = params;
 
-    // 1. Buka Koneksi
+    // Buka Koneksi ke Database
     connection = await connectDB();
 
-    // 2. Query Database
-    // PERBAIKAN: 
-    // - Menggunakan 'laporan.laporanID' (bukan 'id')
-    // - Menggunakan 'laporan.userID' (bukan 'user_id')
-    // - JOIN ke tabel users (Asumsi PK users adalah 'id'. Jika error, ganti jadi 'users.userID')
+    // Query Database (SUDAH DIPERBAIKI SESUAI SKEMA KAMU)
+    // - Menggunakan laporan.userID = users.userID (Bukan users.id)
+    // - Menggunakan laporan.laporanID (Bukan laporan.id)
     const query = `
       SELECT 
         laporan.*, 
         users.nama as user_nama 
       FROM laporan 
-      LEFT JOIN users ON laporan.userID = users.id 
+      LEFT JOIN users ON laporan.userID = users.userID 
       WHERE laporan.laporanID = ?
     `;
 
     const [rows] = await connection.query(query, [id]);
 
-    // Cek jika data tidak ditemukan
+    // Jika data tidak ditemukan
     if (rows.length === 0) {
       return NextResponse.json(
         { message: "Laporan tidak ditemukan" }, 
@@ -36,23 +35,24 @@ export async function GET(request, { params }) {
 
     const dataRaw = rows[0];
 
-    // 3. Data Mapping (PENTING)
-    // Frontend kamu meminta: 'subject', 'isi_laporan', 'createdAt'
-    // Database kamu punya: 'deskripsi', 'tanggal'
+    // MAPPING DATA (Database -> Frontend)
+    // Frontend kamu butuh variabel: subject, isi_laporan, createdAt
+    // Database kamu punya: deskripsi, tanggal
     
-    // Logika ekstra: Coba ambil "Subjek: ..." dari deskripsi jika ada
+    // 1. Logika ambil Subject dari baris pertama deskripsi (karena formatmu: "Subjek: ...")
     let subjectDisplay = `Laporan #${dataRaw.laporanID}`;
-    if (dataRaw.deskripsi && dataRaw.deskripsi.includes("Subjek:")) {
+    if (dataRaw.deskripsi && dataRaw.deskripsi.toLowerCase().includes("subjek:")) {
       const parts = dataRaw.deskripsi.split('\n');
-      subjectDisplay = parts[0].replace("Subjek:", "").trim();
+      // Ambil baris pertama, hapus kata "Subjek:", lalu rapikan spasi
+      subjectDisplay = parts[0].replace(/subjek:/i, "").trim();
     }
 
+    // 2. Susun object data baru
     const formattedData = {
       ...dataRaw,
-      // Mapping Field DB -> Field Frontend
-      subject: subjectDisplay,            // Frontend butuh 'subject'
-      isi_laporan: dataRaw.deskripsi,     // Frontend butuh 'isi_laporan', DB punya 'deskripsi'
-      createdAt: dataRaw.tanggal,         // Frontend butuh 'createdAt', DB punya 'tanggal'
+      subject: subjectDisplay,            
+      isi_laporan: dataRaw.deskripsi,     // DB: deskripsi -> Frontend: isi_laporan
+      createdAt: dataRaw.tanggal,         // DB: tanggal -> Frontend: createdAt
       user: {
         nama: dataRaw.user_nama || "Anonim"
       }
@@ -67,10 +67,12 @@ export async function GET(request, { params }) {
       { status: 500 }
     );
   } finally {
+    // Tutup koneksi (Wajib)
     if (connection) await connection.end();
   }
 }
 
+// 2. PUT: Update Status Laporan
 export async function PUT(request, { params }) {
   let connection;
 
@@ -85,7 +87,7 @@ export async function PUT(request, { params }) {
 
     connection = await connectDB();
 
-    // PERBAIKAN: Gunakan 'laporanID' di WHERE clause
+    // Update status menggunakan laporanID
     const query = "UPDATE laporan SET status = ? WHERE laporanID = ?";
     await connection.query(query, [status, id]);
 
