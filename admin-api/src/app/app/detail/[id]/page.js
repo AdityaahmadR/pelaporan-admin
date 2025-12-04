@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Sidebar from '@/components/Sidebar';
-import styles from './Detail.module.css'; // Kita pakai CSS yang baru dibuat di atas
+import styles from './Detail.module.css'; // Pastikan import CSS ini benar
 
 export default function DetailPage({ params }) {
   const { id } = params;
@@ -12,7 +12,7 @@ export default function DetailPage({ params }) {
   
   const [laporan, setLaporan] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [sidebarOpen, setSidebarOpen] = useState(true); // State untuk Sidebar
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
     fetch(`/api/laporan/${id}`)
@@ -43,7 +43,6 @@ export default function DetailPage({ params }) {
     const date = new Date(dateString);
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     
-    // Hitung waktu relatif
     const now = new Date();
     const diffMs = now - date;
     const diffMinutes = Math.floor(diffMs / 60000);
@@ -81,14 +80,13 @@ export default function DetailPage({ params }) {
 
   return (
     <div className={`${styles.page} ${!sidebarOpen ? styles.sidebarCollapsed : ''}`}>
-      {/* SIDEBAR */}
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} activePage="/detail" />
 
-      {/* TOP BAR (Layout sama persis seperti darurat) */}
+      {/* TOP BAR */}
       <div className={styles.topBar}>
         <div className={styles.searchWrapper}>
           <div className={styles.searchBar}>
-            {/* Pastikan file /Search.png ada di folder public kamu */}
+            {/* Ganti src sesuai lokasi icon di folder public */}
             <Image src="/Search.png" alt="Search" width={18} height={18} className={styles.searchIcon} />
             <input type="text" placeholder="Search" className={styles.searchInput} />
           </div>
@@ -107,7 +105,6 @@ export default function DetailPage({ params }) {
       <main className={`${styles.content} ${!sidebarOpen ? styles.collapsed : ''}`}>
         <div className={styles.card}>
           
-          {/* HEADER: Judul, Back, Tanggal, Status */}
           <div className={styles.detailHeader}>
             <div className={styles.titleGroup}>
               <button onClick={() => router.back()} className={styles.backButton}>
@@ -144,7 +141,6 @@ export default function DetailPage({ params }) {
             </div>
           </div>
 
-          {/* USER PROFILE */}
           <div className={styles.userSection}>
             <div className={styles.avatar}>
                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -158,12 +154,11 @@ export default function DetailPage({ params }) {
             </div>
           </div>
 
-          {/* ISI LAPORAN */}
           <div className={styles.reportBody}>
             {laporan.isi_laporan}
           </div>
 
-          {/* GAMBAR */}
+          {/* GAMBAR DENGAN UKURAN TERBATAS */}
           {laporan.gambar ? (
              <div className={styles.imageContainer}>
                 <img src={laporan.gambar} alt="Bukti Laporan" className={styles.reportImage} />
