@@ -1,139 +1,96 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Sidebar from "@/components/Sidebar";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import detailStyles from "./Detail.module.css";
-import styles from "../../darurat/darurat.module.css";
-import Image from "next/image";
+import SearchBar from "@/components/SearchBar";
+import styles from "../../dashboard/dashboard.module.css";
 
 export default function DetailPage({ params }) {
   const { id } = params;
-  const router = useRouter();
 
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [laporan, setLaporan] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [timeAgo, setTimeAgo] = useState("");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  const statusOptions = {
-    baru: "Laporan Masuk",
-    diproses: "Sedang Diproses",
-    selesai: "Selesai",
-  };
-
-  const reverseStatus = {
-    "Laporan Masuk": "baru",
-    "Sedang Diproses": "diproses",
-    "Selesai": "selesai",
-  };
-
-  useEffect(() => {
-    async function fetchDetail() {
-      try {
-        const res = await fetch(`/api/laporan/${id}`);
-        const data = await res.json();
-        setLaporan(data);
-
-        updateTime(data.tanggal);
-
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchDetail();
-  }, [id]);
-
-  function updateTime(dateString) {
-    const date = new Date(dateString);
-    const selisih = Math.floor((Date.now() - date.getTime()) / 60000);
-
-    setTimeAgo(
-      selisih < 1 ? "Baru saja" :
-      selisih < 60 ? `${selisih} menit lalu` :
-      `${Math.floor(selisih / 60)} jam lalu`
-    );
+  async function fetchLaporan() {
+    const res = await fetch(`/api/laporan/${id}`);
+    const data = await res.json();
+    setLaporan(data);
+    setLoading(false);
   }
 
-  async function handleStatusChange(e) {
-    const newStatus = reverseStatus[e.target.value];
+  useEffect(() => {
+    fetchLaporan();
+  }, []);
 
-    await fetch(`/api/laporan/${id}`, {
+  const updateStatus = async (newStatus) => {
+    const res = await fetch(`/api/laporan/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: newStatus }),
     });
 
-    setLaporan((prev) => ({ ...prev, status: newStatus }));
+    if (res.ok) {
+      setLaporan((prev) => ({ ...prev, status: newStatus }));
+    }
+  };
 
-    // Trigger refresh preview list
-    localStorage.setItem("laporan_updated", Date.now());
-  }
+  const extractMedia = (text) => {
+    const urlMatch = text.match(/https?:\/\/[^\s]+/);
+    return urlMatch ? urlMatch[0] : null;
+  };
 
-  if (loading) return <p>Loading...</p>;
-  if (!laporan) return <p>Data tidak ditemukan</p>;
+  const extractSubject = (text) => {
+    const match = text.match(/Subjek:(.+)/i);
+    return match ? match[1].trim() : "Tanpa Subjek";
+  };
 
-  const gambarMatch = laporan.deskripsi?.match(/(https?:\/\/[^\s]+\.(jpg|jpeg|png|gif|webp))/i);
-  const gambarUrl = gambarMatch ? gambarMatch[0] : null;
-  const isiBersih = laporan.deskripsi.replace(gambarMatch?.[0] || "", "").trim();
+  const formatTimeAgo = (dateString) => {
+    const diffMs = new Date() - new Date(dateString);
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    return diffHours > 0 ? `${diffHours} jam lalu` : "Baru saja";
+  };
+
+  if (loading) return <p style={{ padding: 20 }}>Loading...</p>;
+
+  const image = extractMedia(laporan.deskripsi);
+  const subject = extractSubject(laporan.deskripsi);
 
   return (
-    <div className={`${styles.page} ${!sidebarOpen ? styles.sidebarCollapsed : ""}`}>
+    <div className={styles.container}>
+      <Sidebar isOpen={sidebarOpen} toggle={() => setSidebarOpen(!sidebarOpen)} />
 
-      <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+      <div className={styles.content}>
+        <SearchBar placeholder="Cari laporan..." />
 
-      <div className={styles.topBar}>
-        {/* Search bar sama seperti list */}
-        <div className={styles.searchWrapper}>
-          <div className={styles.searchBar}>
-            <Image src="/Search.png" width={20} height={20} alt="search"/>
-            <input placeholder="Search laporan..." disabled/>
+        <div className={styles.card}>
+          <h2>{subject}</h2>
+
+          <p><strong>Pelapor:</strong> {laporan.nama || "Tidak diketahui"}</p>
+          <p><strong>Status:</strong> {laporan.status}</p>
+          <p><strong>Waktu:</strong> {formatTimeAgo(laporan.tanggal)}</p>
+
+          <div style={{ marginTop: 10 }}>
+            <button onClick={() => updateStatus("Sedang Diproses")}>
+              Sedang Diproses
+            </button>
+            <button style={{ marginLeft: 10 }} onClick={() => updateStatus("Selesai")}>
+              Selesaikan
+            </button>
           </div>
-        </div>
 
-        <button className={styles.uploadButton}>Upload</button>
+          <hr style={{ margin: "20px 0" }} />
+
+          <p style={{ whiteSpace: "pre-wrap" }}>{laporan.deskripsi}</p>
+
+          {image && (
+            <img
+              src={image}
+              alt="Bukti Laporan"
+              style={{ width: "100%", marginTop: 15, borderRadius: 6 }}
+            />
+          )}
+        </div>
       </div>
-
-      <main className={`${styles.content} ${!sidebarOpen ? styles.collapsed : ""}`}>
-
-        <div className={detailStyles.header}>
-          <button onClick={() => router.back()} className={detailStyles.backBtn}>←</button>
-
-          <h1 className={detailStyles.title}>{isiBersih.split("\n")[0] || "Tanpa Judul"}</h1>
-
-          <select
-            className={detailStyles.dropdown}
-            value={statusOptions[laporan.status]}
-            onChange={handleStatusChange}
-          >
-            <option>Laporan Masuk</option>
-            <option>Sedang Diproses</option>
-            <option>Selesai</option>
-          </select>
-        </div>
-
-        <p className={detailStyles.time}>{timeAgo}</p>
-
-        <div className={detailStyles.userCard}>
-          <div className={detailStyles.avatar}>{laporan.nama_pelapor?.charAt(0)}</div>
-          <div>
-            <h3>{laporan.nama_pelapor}</h3>
-            <p>{laporan.email}</p>
-          </div>
-        </div>
-
-        <div className={detailStyles.isi}>{isiBersih}</div>
-
-        {gambarUrl && (
-          <div className={detailStyles.imageBox}>
-            <img src={gambarUrl} alt="Bukti"/>
-          </div>
-        )}
-
-      </main>
     </div>
   );
 }

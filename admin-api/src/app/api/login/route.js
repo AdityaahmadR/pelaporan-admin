@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import connectDB from '../../../../db'; // Ganti ini
+import connectDB from '../../../lib/db'; // Ganti ini
 import bcrypt from 'bcryptjs';
 
 export async function POST(request) {

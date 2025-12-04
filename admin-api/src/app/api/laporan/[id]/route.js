@@ -1,46 +1,36 @@
-import connectDB from "../../../../db";
+import db from "@/lib/db";
 import { NextResponse } from "next/server";
 
-export async function GET(_, { params }) {
-  const { id } = params;
-
+export async function GET(req, { params }) {
   try {
-    const db = await connectDB();
-    const [rows] = await db.execute(
-      `SELECT l.*, u.nama AS nama_pelapor, u.email
-       FROM laporan l
-       LEFT JOIN users u ON l.userID = u.userID
-       WHERE laporanID = ?`,
-      [id]
+    const [rows] = await db.query(
+      `SELECT laporan.*, users.nama 
+       FROM laporan 
+       LEFT JOIN users ON laporan.userID = users.userID 
+       WHERE laporan.laporanID = ?`,
+      [params.id]
     );
 
-    await db.end();
-
-    if (rows.length === 0) {
-      return NextResponse.json({ message: "Laporan tidak ditemukan" }, { status: 404 });
-    }
+    if (!rows.length) return NextResponse.json({ error: "Not Found" }, { status: 404 });
 
     return NextResponse.json(rows[0]);
-  } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
-export async function PUT(request, { params }) {
-  const { id } = params;
-  const { status } = await request.json();
-
-  if (!status) {
-    return NextResponse.json({ message: "Status kosong" }, { status: 400 });
-  }
-
+export async function PUT(req, { params }) {
   try {
-    const db = await connectDB();
-    await db.execute(`UPDATE laporan SET status = ? WHERE laporanID = ?`, [status, id]);
-    await db.end();
+    const body = await req.json();
+    const { status } = body;
 
-    return NextResponse.json({ message: "Status diperbarui", status });
-  } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    await db.query(`UPDATE laporan SET status = ? WHERE laporanID = ?`, [
+      status,
+      params.id,
+    ]);
+
+    return NextResponse.json({ success: true, status });
+  } catch (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
