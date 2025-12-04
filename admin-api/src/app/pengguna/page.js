@@ -3,6 +3,7 @@
 import styles from './pengguna.module.css';
 import Sidebar from '@/components/Sidebar';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation'; // 1. Import Router
 import { useState, useEffect } from 'react';
 
 export const dynamic = 'force-dynamic';
@@ -10,6 +11,7 @@ export const revalidate = 0;
 export const fetchCache = 'force-no-store';
 
 export default function DatabasePengguna() {
+  const router = useRouter(); // 2. Definisi Router
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState('masyarakat');
   const [users, setUsers] = useState([]);
@@ -32,25 +34,20 @@ export default function DatabasePengguna() {
     fetchUsers();
   }, [activeTab]);
 
-  // HAPUS USER — VERSI FINAL YANG PASTI JALAN
   const hapusUser = async (id) => {
     if (!confirm('Yakin ingin menghapus user ini?')) return;
-
     try {
-      const res = await fetch(`/api/pengguna?id=${id}`, {  // PAKAI ?id= ← INI YANG JALAN!
+      const res = await fetch(`/api/pengguna?id=${id}`, {
         method: 'DELETE',
         cache: 'no-store'
       });
-
       if (!res.ok) {
         const errText = await res.text();
         throw new Error(errText || `HTTP ${res.status}`);
       }
-
       const result = await res.json();
       setUsers(prev => prev.filter(u => u.userID !== id));
       alert(result.message || 'User berhasil dihapus!');
-
     } catch (err) {
       console.error('Gagal hapus:', err);
       alert('Gagal menghapus user: ' + err.message);
@@ -68,7 +65,12 @@ export default function DatabasePengguna() {
             <input type="text" placeholder="Search" className={styles.searchInput} />
           </div>
         </div>
-        <button className={styles.uploadButton}>
+        
+        {/* 3. UPDATE TOMBOL UPLOAD */}
+        <button 
+          className={styles.uploadButton}
+          onClick={() => router.push('/app/edukasi')} // Navigasi ke Edukasi
+        >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M21 15v4a2 2 0 1-2 2H5a2 2 0 1-2-2v-4" />
             <polyline points="17 8 12 3 7 8" />
@@ -81,24 +83,11 @@ export default function DatabasePengguna() {
       <main className={`${styles.content} ${!sidebarOpen ? styles.collapsed : ''}`}>
         <header className={styles.header} style={{ paddingBottom: '32px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '40px', position: 'relative', paddingLeft: '12px' }}>
-            <h2
-              onClick={() => setActiveTab('masyarakat')}
-              style={{
-                margin: 0, fontSize: '26px', fontWeight: activeTab === 'masyarakat' ? 800 : 700,
-                color: '#212529', cursor: 'pointer', position: 'relative', transition: 'all 0.3s ease'
-              }}
-            >
+            <h2 onClick={() => setActiveTab('masyarakat')} style={{ margin: 0, fontSize: '26px', fontWeight: activeTab === 'masyarakat' ? 800 : 700, color: '#212529', cursor: 'pointer', position: 'relative', transition: 'all 0.3s ease' }}>
               Database Masyarakat
               {activeTab === 'masyarakat' && <span style={{ position: 'absolute', left: 0, right: 0, bottom: '-10px', height: '4px', background: '#d71c1c', borderRadius: '2px' }}></span>}
             </h2>
-
-            <h2
-              onClick={() => setActiveTab('petugas')}
-              style={{
-                margin: 0, fontSize: '26px', fontWeight: activeTab === 'petugas' ? 800 : 700,
-                color: '#212529', cursor: 'pointer', position: 'relative', transition: 'all 0.3s ease'
-              }}
-            >
+            <h2 onClick={() => setActiveTab('petugas')} style={{ margin: 0, fontSize: '26px', fontWeight: activeTab === 'petugas' ? 800 : 700, color: '#212529', cursor: 'pointer', position: 'relative', transition: 'all 0.3s ease' }}>
               Database Petugas
               {activeTab === 'petugas' && <span style={{ position: 'absolute', left: 0, right: 0, bottom: '-10px', height: '4px', background: '#d71c1c', borderRadius: '2px' }}></span>}
             </h2>
@@ -128,19 +117,7 @@ export default function DatabasePengguna() {
                     <td style={{ padding: '16px', color: '#666' }}>{user.email}</td>
                     <td style={{ padding: '16px', color: '#666' }}>{user.jumlah_laporan} Pelaporan</td>
                     <td style={{ padding: '16px', textAlign: 'right' }}>
-                      <button
-                        onClick={() => hapusUser(user.userID)}
-                        style={{
-                          background: '#ef4444',
-                          color: 'white',
-                          border: 'none',
-                          padding: '8px 20px',
-                          borderRadius: '50px',
-                          fontSize: '14px',
-                          fontWeight: 600,
-                          cursor: 'pointer'
-                        }}
-                      >
+                      <button onClick={() => hapusUser(user.userID)} style={{ background: '#ef4444', color: 'white', border: 'none', padding: '8px 20px', borderRadius: '50px', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}>
                         Hapus
                       </button>
                     </td>
@@ -151,15 +128,8 @@ export default function DatabasePengguna() {
           </table>
         </div>
 
-        <button style={{
-          position: 'fixed', bottom: '32px', left: '50%', transform: 'translateX(-50%)',
-          background: 'transparent', border: 'none', fontSize: '18px', fontWeight: 600, color: '#666',
-          display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', zIndex: 100
-        }}>
-          <div style={{
-            width: '56px', height: '56px', background: '#e5e7eb', borderRadius: '50%',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', color: '#666'
-          }}>+</div>
+        <button style={{ position: 'fixed', bottom: '32px', left: '50%', transform: 'translateX(-50%)', background: 'transparent', border: 'none', fontSize: '18px', fontWeight: 600, color: '#666', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', zIndex: 100 }}>
+          <div style={{ width: '56px', height: '56px', background: '#e5e7eb', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', color: '#666' }}>+</div>
           Tambah User
         </button>
       </main>

@@ -4,11 +4,11 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Sidebar from '@/components/Sidebar';
-import styles from './Detail.module.css'; // Pastikan import CSS ini benar
+import styles from './Detail.module.css';
 
 export default function DetailPage({ params }) {
   const { id } = params;
-  const router = useRouter();
+  const router = useRouter(); // Router sudah terdefinisi
   
   const [laporan, setLaporan] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -82,16 +82,19 @@ export default function DetailPage({ params }) {
     <div className={`${styles.page} ${!sidebarOpen ? styles.sidebarCollapsed : ''}`}>
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} activePage="/detail" />
 
-      {/* TOP BAR */}
       <div className={styles.topBar}>
         <div className={styles.searchWrapper}>
           <div className={styles.searchBar}>
-            {/* Ganti src sesuai lokasi icon di folder public */}
             <Image src="/Search.png" alt="Search" width={18} height={18} className={styles.searchIcon} />
             <input type="text" placeholder="Search" className={styles.searchInput} />
           </div>
         </div>
-        <button className={styles.uploadButton}>
+        
+        {/* 1. UPDATE TOMBOL UPLOAD DI SINI */}
+        <button 
+          className={styles.uploadButton}
+          onClick={() => router.push('/app/edukasi')} // Navigasi ke Edukasi
+        >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
             <polyline points="17 8 12 3 7 8" />
@@ -101,10 +104,8 @@ export default function DetailPage({ params }) {
         </button>
       </div>
 
-      {/* KONTEN UTAMA */}
       <main className={`${styles.content} ${!sidebarOpen ? styles.collapsed : ''}`}>
         <div className={styles.card}>
-          
           <div className={styles.detailHeader}>
             <div className={styles.titleGroup}>
               <button onClick={() => router.back()} className={styles.backButton}>
@@ -158,7 +159,6 @@ export default function DetailPage({ params }) {
             {laporan.isi_laporan}
           </div>
 
-          {/* GAMBAR DENGAN UKURAN TERBATAS */}
           {laporan.gambar ? (
              <div className={styles.imageContainer}>
                 <img src={laporan.gambar} alt="Bukti Laporan" className={styles.reportImage} />

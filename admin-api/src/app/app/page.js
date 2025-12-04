@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Sidebar from "@/app/components/Sidebar";
-import LaporanPreviewCard from "@/app/components/LaporanPreviewCard";
+import { useRouter } from "next/navigation"; // 1. Import useRouter
+import Sidebar from "@/components/Sidebar"; // Pastikan path import komponen benar
+import LaporanPreviewCard from "@/components/LaporanPreviewCard";
 import styles from "@/app/darurat/darurat.module.css";
 import Image from "next/image";
 
 export default function LaporanPage() {
+  const router = useRouter(); // 2. Definisi Router
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [laporan, setLaporan] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,19 +19,15 @@ export default function LaporanPage() {
     async function loadData() {
       try {
         const res = await fetch("/api/laporan");
-
         if (!res.ok) throw new Error(`Error: ${res.status}`);
-
         const data = await res.json();
         setLaporan(Array.isArray(data) ? data : []);
-
       } catch (err) {
         setFetchError(err.message);
       } finally {
         setLoading(false);
       }
     }
-
     loadData();
   }, []);
 
@@ -39,21 +37,12 @@ export default function LaporanPage() {
 
   return (
     <div className={`${styles.page} ${!sidebarOpen ? styles.sidebarCollapsed : ""}`}>
-
-      {/* SIDEBAR */}
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} activePage="/app" />
 
-      {/* TOP BAR */}
       <div className={styles.topBar}>
         <div className={styles.searchWrapper}>
           <div className={styles.searchBar}>
-            <Image
-              src="/Search.png"
-              alt="Search"
-              width={20}
-              height={20}
-              className={styles.searchIcon}
-            />
+            <Image src="/Search.png" alt="Search" width={20} height={20} className={styles.searchIcon} />
             <input
               type="text"
               placeholder="Search laporan..."
@@ -64,7 +53,11 @@ export default function LaporanPage() {
           </div>
         </div>
 
-        <button className={styles.uploadButton} onClick={() => alert("Upload fitur belum aktif ⚠")}>
+        {/* 3. UPDATE TOMBOL UPLOAD */}
+        <button 
+          className={styles.uploadButton} 
+          onClick={() => router.push('/app/edukasi')} // Arahkan ke halaman Edukasi
+        >
           <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
             <polyline points="17 8 12 3 7 8" />
@@ -74,7 +67,6 @@ export default function LaporanPage() {
         </button>
       </div>
 
-      {/* CONTENT */}
       <main className={`${styles.content} ${!sidebarOpen ? styles.collapsed : ""}`}>
         <header className={styles.header}>
           <h2>Laporan Masyarakat</h2>
@@ -87,7 +79,6 @@ export default function LaporanPage() {
           <p className={styles.emptyState}>🚫 Tidak ada laporan ditemukan</p>
         )}
 
-        {/* LIST */}
         <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
           {filteredLaporan.map((item) => (
             <LaporanPreviewCard

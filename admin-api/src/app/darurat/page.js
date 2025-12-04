@@ -1,38 +1,32 @@
 "use client";
 
-import styles from '@/app/darurat/darurat.module.css';        // PAKAI CSS YANG SAMA!
-import Sidebar from '../components/Sidebar';
+import styles from '@/app/darurat/darurat.module.css';
+import Sidebar from '@/components/Sidebar';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation'; // 1. Import Router
 import Image from 'next/image';
 
 export default function LaporanDarurat() {
+  const router = useRouter(); // 2. Definisi Router
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
     <div className={`${styles.page} ${!sidebarOpen ? styles.sidebarCollapsed : ''}`}>
-      {/* SIDEBAR — KITA BILANG INI HALAMAN DARURAT */}
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} activePage="/darurat" />
 
-      {/* TOP BAR — 100% SAMA */}
       <div className={styles.topBar}>
         <div className={styles.searchWrapper}>
           <div className={styles.searchBar}>
-            <Image
-              src="/Search.png"
-              alt="Search"
-              width={20}
-              height={20}
-              className={styles.searchIcon}
-            />
-            <input
-              type="text"
-              placeholder="Search"
-              className={styles.searchInput}
-            />
+            <Image src="/Search.png" alt="Search" width={20} height={20} className={styles.searchIcon} />
+            <input type="text" placeholder="Search" className={styles.searchInput} />
           </div>
         </div>
 
-        <button className={styles.uploadButton}>
+        {/* 3. UPDATE TOMBOL UPLOAD */}
+        <button 
+          className={styles.uploadButton}
+          onClick={() => router.push('/app/edukasi')} // Navigasi ke Edukasi
+        >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
             <polyline points="17 8 12 3 7 8" />
@@ -42,12 +36,10 @@ export default function LaporanDarurat() {
         </button>
       </div>
 
-      {/* KONTEN — JUDUL BERBEDA */}
       <main className={`${styles.content} ${!sidebarOpen ? styles.collapsed : ''}`}>
         <header className={styles.header}>
           <h2>Laporan Masyarakat</h2>
         </header>
-
         <section className={styles.emptyState}>
           <p>Belum ada laporan darurat</p>
         </section>
