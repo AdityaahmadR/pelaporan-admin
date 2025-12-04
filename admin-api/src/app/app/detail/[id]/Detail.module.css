@@ -1,19 +1,172 @@
-/* src/app/app/detail/[id]/Detail.module.css */
-.container { max-width: 1000px; margin: 0 auto; padding: 0 20px; }
-.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 20px; }
-.backLink { font-size: 36px; color: #666; text-decoration: none; font-weight: 900; }
-.title { margin: 0; font-size: 36px; font-weight: 900; color: #111827; }
-.terimaButton { background:#6b7280; color:white; padding:14px 36px; border-radius:50px; font-weight:700; font-size:16px; border:none; cursor:pointer; box-shadow:0 4px 15px rgba(107,114,128,0.3); transition:all 0.3s; }
-.terimaButton:hover { background:#4b5563; transform:translateY(-2px); }
-.pelaporCard { background:#f8fafc; padding:28px; border-radius:16px; display:flex; align-items:center; gap:24px; margin-bottom:32px; box-shadow:0 6px 20px rgba(0,0,0,0.06); }
-.avatar { width:72px; height:72px; border-radius:50%; background:#e5e7eb; display:flex; align-items:center; justify-content:center; font-size:32px; font-weight:900; color:#374151; flex-shrink:0; }
-.pelaporName { margin:0 0 6px 0; font-size:22px; font-weight:800; color:#111827; }
-.pelaporEmail { margin:0; color:#64748b; font-size:15px; }
-.waktu { margin-left:auto; text-align:right; color:#64748b; font-size:14px; line-height:1.4; }
-.waktu strong { color:#374151; font-weight:600; }
-.isiLaporan { background:white; padding:36px; border-radius:20px; box-shadow:0 10px 35px rgba(0,0,0,0.08); margin-bottom:40px; line-height:1.9; font-size:17.5px; color:#374151; white-space:pre-wrap; border:1px solid #f1f5f9; }
-.gambarContainer { text-align:center; margin-bottom:48px; }
-.gambarContainer img { max-width:100%; max-height:650px; border-radius:24px; box-shadow:0 20px 50px rgba(0,0,0,0.22); }
-.lokasi { text-align:right; font-size:22px; font-weight:800; color:#dc2626; display:flex; justify-content:flex-end; align-items:center; gap:14px; }
-@keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(220,38,38,0.6);} 70%{box-shadow:0 0 0 14px rgba(220,38,38,0);} 100%{box-shadow:0 0 0 0 rgba(220,38,38,0);} }
-.pulseDot { width:20px; height:20px; background:#dc2626; border-radius:50%; animation:pulse 2s infinite; }
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main {
+  flex: 1;
+  padding: 32px;
+  margin-left: 80px;
+}
+
+
+/* ================= TOP BAR ================= */
+
+.topBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.searchBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f1f5f9;
+  padding: 10px 16px;
+  border-radius: 10px;
+  width: 300px;
+}
+
+.searchBar input {
+  border: none;
+  outline: none;
+  background: transparent;
+  width: 100%;
+}
+
+.uploadBtn {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  background: #dc2626;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+}
+
+
+/* ================= HEADER ================= */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+
+.backBtn {
+  font-size: 32px;
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 900;
+}
+
+.rightInfo {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+
+/* ================= STATUS DROPDOWN ================= */
+
+.statusDropdown {
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  font-weight: 600;
+}
+
+
+/* ================= USER CARD ================= */
+
+.userCard {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #f8fafc;
+  padding: 18px;
+  border-radius: 12px;
+  margin-bottom: 28px;
+}
+
+.avatar {
+  width: 60px;
+  height: 60px;
+  background: #ddd;
+  border-radius: 50%;
+  font-size: 26px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.nama {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.email {
+  font-size: 14px;
+  color: gray;
+}
+
+
+/* ================= DESKRIPSI ================= */
+
+.deskripsi {
+  background: #fff;
+  padding: 22px;
+  border-radius: 14px;
+  margin-bottom: 30px;
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+
+/* ================= GAMBAR ================= */
+
+.gambarContainer {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.gambarContainer img {
+  width: 100%;
+  max-width: 650px;
+  border-radius: 16px;
+}
+
+
+/* ================= LOKASI ================= */
+
+.lokasi {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #dc2626;
+}
+
+.pulseDot {
+  width: 14px;
+  height: 14px;
+  background: #dc2626;
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(220,38,38,0.5); }
+  100% { box-shadow: 0 0 0 20px rgba(220,38,38,0); }
+}
