@@ -1,24 +1,13 @@
-// db.js
-import mysql from "mysql2/promise";
+// db.js (versi yang sudah diperbaiki)
+import mysql from 'mysql2/promise';
 
-let pool;
-
-if (!global._mysqlPool) {
-  global._mysqlPool = mysql.createPool({
+export default async function connectDB() {
+  const connection = await mysql.createConnection({
     host: process.env.MYSQLHOST,
     user: process.env.MYSQLUSER,
     password: process.env.MYSQLPASSWORD,
     database: process.env.MYSQLDATABASE,
     port: Number(process.env.MYSQLPORT),
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0,
-    ssl: {
-      rejectUnauthorized: false
-    }
   });
+  return connection;
 }
-
-pool = global._mysqlPool;
-
-export default pool;
