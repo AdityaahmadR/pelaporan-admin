@@ -79,7 +79,7 @@ export default function EditVideoPage() {
         // Delay sedikit agar user lihat progress penuh
         setTimeout(() => {
           alert("Video Berhasil Diunggah!");
-          router.push('/app/edukasi'); // Balik ke halaman list
+          router.push('/edukasi'); // Balik ke halaman list
         }, 500);
       } else {
         alert("Gagal mengunggah");
