@@ -2,7 +2,7 @@
 .page {
   display: block;
   min-height: 100vh;
-  background: #fff; /* Background putih sesuai gambar */
+  background: #fff;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
   position: relative;
   overflow-x: hidden;
@@ -10,30 +10,35 @@
 
 /* === CONTENT WRAPPER === */
 .content {
-  margin-left: 280px; /* Memberi ruang untuk sidebar */
-  padding: 40px 60px; /* Padding agar konten tidak mepet */
+  margin-left: 280px;
+  padding: 40px 60px;
   transition: margin-left 0.25s ease;
   min-height: 100vh;
+  /* Kita gunakan flex column agar mudah mengatur alignment per section */
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebarCollapsed .content {
   margin-left: 72px;
 }
 
-/* === UPLOAD BOX SECTION === */
+/* === SECTION 1: UPLOAD BOX (CENTER) === */
 .uploadContainer {
   width: 100%;
-  max-width: 800px; /* Batasi lebar agar rapi */
+  max-width: 800px;
   height: 350px;
   background: white;
-  border: 1px solid #333; /* Border hitam tipis sesuai gambar */
+  border: 1px solid #333;
   border-radius: 12px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  margin-bottom: 40px;
   text-align: center;
+  
+  /* PERUBAHAN: Membuat elemen ini berada di tengah */
+  margin: 0 auto 40px auto; 
 }
 
 .uploadIcon {
@@ -48,12 +53,11 @@
   font-weight: 500;
 }
 
-/* Tombol Merah "Pilih File" */
 .selectFileButton {
-  background-color: #e60000; /* Merah terang */
+  background-color: #e60000;
   color: white;
   border: none;
-  padding: 12px 60px; /* Tombol lebar */
+  padding: 12px 60px;
   border-radius: 8px;
   font-size: 18px;
   font-weight: 700;
@@ -65,36 +69,56 @@
   background-color: #cc0000;
 }
 
-/* === BERITA SECTION === */
+/* === SECTION 2: BERITA INPUT (CENTER) === */
+.newsInputContainer {
+  width: 100%;
+  max-width: 800px;
+  
+  /* PERUBAHAN: Membuat elemen ini berada di tengah */
+  margin: 0 auto 40px auto;
+  
+  /* Opsional: Agar judul 'Masukkan Berita' juga center */
+  text-align: center; 
+}
+
 .sectionTitle {
   font-size: 24px;
   font-weight: 500;
   color: #000;
   margin-bottom: 15px;
+  text-align: left; /* Judul tetap rata kiri agar rapi dengan input, atau ubah center jika mau */
 }
 
-.newsInputContainer {
-  max-width: 800px;
-  margin-bottom: 40px;
-}
+/* Jika ingin judul berita rata tengah juga, ubah text-align di atas jadi center */
+/* Namun biasanya input lebih bagus jika judulnya sejajar dengan inputnya */
 
 .newsInput {
   width: 100%;
   padding: 12px 20px;
   font-size: 16px;
-  border: 1px solid #333; /* Border hitam tegas */
+  border: 1px solid #333;
   border-radius: 8px;
   outline: none;
   color: #333;
+  background: white;
 }
 
 .newsInput::placeholder {
   color: #999;
 }
 
-/* === VIDEO LIST SECTION === */
+/* === SECTION 3: VIDEO LIST (TETAP DI KIRI) === */
 .videoSection {
+  width: 100%;
   max-width: 800px;
+  
+  /* TIDAK ADA margin: 0 auto, jadi dia akan tetap align default (Kiri) */
+  margin-bottom: 40px;
+}
+
+/* Agar judul "Video Anda" tetap rapi */
+.videoSection .sectionTitle {
+  text-align: left; 
 }
 
 .videoGrid {
@@ -143,7 +167,7 @@
 /* Responsive */
 @media (max-width: 768px) {
   .content {
-    margin-left: 72px; /* Sidebar otomatis kecil di mobile */
+    margin-left: 72px;
     padding: 20px;
   }
   
