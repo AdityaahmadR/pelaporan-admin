@@ -42,7 +42,7 @@ export default function EdukasiPage() {
     const fileName = encodeURIComponent(file.name);
     
     // Pindah ke halaman upload baru dengan membawa data
-    router.push(`/app/edukasi/upload?name=${fileName}&size=${sizeMB}`);
+    router.push(`/edukasi/upload?name=${fileName}&size=${sizeMB}`);
   };
 
   const handleButtonClick = () => {
