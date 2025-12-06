@@ -34,7 +34,7 @@ export async function POST(req) {
     
     // Mengirim respons sukses dengan format yang benar untuk Next.js App Router
     return new Response(
-      JSON.stringify({ success: true, message: 'Laporan darurat berhasil disimpan!' }),
+      JSON.stringify({ success: true, message: 'Laporan ini berhasil disimpan!' }),
       { status: 201, headers: { 'Content-Type': 'application/json' } }
     );
 
