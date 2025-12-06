@@ -1,18 +1,21 @@
-// api/laporan-darurat.js (Versi Final yang Benar)
-import connectDB from '../admin-api/db.js'; // Pastikan path ini benar
+// src/app/api/laporan/darurat/route.js (Versi Final dengan Path Benar)
 
-export default async function handler(req, res) {
-  // Hanya izinkan metode POST
-  if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method Not Allowed' });
-  }
+// --- PATH IMPORT DIPERBAIKI ---
+// Keluar 5 tingkat folder (darurat -> laporan -> api -> app -> src) untuk mencapai root
+import connectDB from '../../../../../admin-api/db.js'; 
 
-  // Mengambil data yang dikirim dari aplikasi Android
-  const { userID, prioritas, deskripsi } = req.body;
+// Di Next.js App Router, nama fungsi harus POST, PUT, GET, dll.
+export async function POST(req) {
+  
+  // Mengambil data JSON dari body request
+  const { userID, prioritas, deskripsi } = await req.json();
 
   // Validasi sederhana
   if (!userID || !prioritas) {
-    return res.status(400).json({ message: 'Error: Field userID dan prioritas wajib diisi.' });
+    return new Response(
+      JSON.stringify({ message: 'Error: Field userID dan prioritas wajib diisi.' }),
+      { status: 400, headers: { 'Content-Type': 'application/json' } }
+    );
   }
 
   let connection;
@@ -29,12 +32,19 @@ export default async function handler(req, res) {
     
     await connection.end();
     
-    // Mengirim pesan sukses kembali ke aplikasi Android
-    res.status(201).json({ success: true, message: 'Laporan darurat berhasil disimpan!' });
+    // Mengirim respons sukses dengan format yang benar untuk Next.js App Router
+    return new Response(
+      JSON.stringify({ success: true, message: 'Laporan darurat berhasil disimpan!' }),
+      { status: 201, headers: { 'Content-Type': 'application/json' } }
+    );
 
   } catch (error) {
     console.error('❌ Terjadi error saat menyimpan laporan:', error);
     if (connection) await connection.end();
-    res.status(500).json({ success: false, message: 'Gagal menyimpan laporan ke database.', error: error.message });
+    
+    return new Response(
+      JSON.stringify({ success: false, message: 'Gagal menyimpan laporan ke database.', error: error.message }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    );
   }
 }
