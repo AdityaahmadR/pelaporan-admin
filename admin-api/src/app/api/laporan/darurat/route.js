@@ -2,7 +2,7 @@
 
 // --- PATH IMPORT DIPERBAIKI ---
 // Keluar 5 tingkat folder (darurat -> laporan -> api -> app -> src) untuk mencapai root, lalu masuk ke admin-api
-import connectDB from '../../../../../../admin-api/db.js'; 
+import connectDB from '../../../../../../admin-api//src/app/lib/db.js'; 
 
 // Di Next.js App Router, nama fungsi harus POST, PUT, GET, dll.
 export async function POST(req) {
