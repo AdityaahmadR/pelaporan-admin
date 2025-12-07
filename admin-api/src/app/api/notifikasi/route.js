@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 // Pastikan Anda mengimpor instance Firebase Admin yang sudah diinisialisasi.
 // Path ini mungkin perlu disesuaikan dengan struktur proyek backend Anda,
 // contoh: '../../lib/firebase-admin'
-import { admin } from '@/lib/firebase-admin';
+import { admin } from 'firebase-admin';
 
 // Instruksi penting untuk Vercel agar tidak terjadi build timeout.
 export const dynamic = 'force-dynamic';
