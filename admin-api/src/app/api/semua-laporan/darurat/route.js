@@ -1,7 +1,8 @@
-// src/app/api/laporan/darurat/route.js (Versi Perbaikan)
-
-import { NextResponse } from "next/server";
+// src/app/api/laporan/darurat/route.js
 import connectDB from "@/lib/db";
+
+// PERBAIKAN: Beritahu Vercel untuk tidak membangun (build) route ini secara statis.
+export const dynamic = 'force-dynamic';
 
 export async function POST(req) {
   const { userID, deskripsi, lokasi } = await req.json();
@@ -22,7 +23,6 @@ export async function POST(req) {
     const deskripsiLaporan = deskripsi || 'Laporan darurat dari tombol panik.';
     const statusLaporan = 'baru';
     const prioritasLaporan = 'darurat';
-    // --- PERBAIKAN: Jika lokasi tidak ada, gunakan NULL ---
     const lokasiLaporan = lokasi || null;
     
     await connection.execute(query, [userID, prioritasLaporan, deskripsiLaporan, statusLaporan, lokasiLaporan]);
