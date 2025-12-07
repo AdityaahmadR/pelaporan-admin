@@ -1,16 +1,15 @@
-// src/app/api/laporan/darurat/route.js (Versi Final dengan Path Benar)
+// src/app/api/laporan/darurat/route.js (Versi Final dengan Logika Lokasi)
 
-// --- PATH IMPORT DIPERBAIKI ---
-// Keluar 5 tingkat folder (darurat -> laporan -> api -> app -> src) untuk mencapai root, lalu masuk ke admin-api
-import connectDB from '../../../../../../admin-api//src/app/lib/db.js'; 
+// Path import ini mungkin perlu Anda sesuaikan lagi jika struktur berubah
+import connectDB from '../../../../../../admin-api/src/app/lib/db.js';
 
 // Di Next.js App Router, nama fungsi harus POST, PUT, GET, dll.
 export async function POST(req) {
-  
-  // Mengambil data JSON dari body request
-  const { userID, prioritas, deskripsi } = await req.json();
 
-  // Validasi sederhana
+  // --- PERUBAHAN: Menambahkan 'lokasi' saat mengambil data ---
+  const { userID, prioritas, deskripsi, lokasi } = await req.json();
+
+  // Validasi dasar tidak berubah
   if (!userID || !prioritas) {
     return new Response(
       JSON.stringify({ message: 'Error: Field userID dan prioritas wajib diisi.' }),
@@ -21,27 +20,29 @@ export async function POST(req) {
   let connection;
   try {
     connection = await connectDB();
-    
-    const query = 'INSERT INTO laporan (userID, prioritas, deskripsi, status) VALUES (?, ?, ?, ?)';
-    
+
+    // --- PERUBAHAN: Menambahkan kolom 'lokasi' ke dalam query INSERT ---
+    const query = 'INSERT INTO laporan (userID, prioritas, deskripsi, status, lokasi) VALUES (?, ?, ?, ?, ?)';
+
     const deskripsiLaporan = deskripsi || 'Laporan darurat dari tombol panik.';
     const statusLaporan = 'baru';
-    
-    // Menjalankan query dengan data yang benar dari aplikasi Android
-    await connection.execute(query, [userID, prioritas, deskripsiLaporan, statusLaporan]);
-    
+
+    // --- PERUBAHAN: Menambahkan variabel 'lokasi' ke dalam execute ---
+    // Jika 'lokasi' kosong atau null dari aplikasi, akan disimpan sebagai NULL di DB
+    await connection.execute(query, [userID, prioritas, deskripsiLaporan, statusLaporan, lokasi]);
+
     await connection.end();
-    
-    // Mengirim respons sukses dengan format yang benar untuk Next.js App Router
+
+    // Pesan sukses diubah untuk konfirmasi
     return new Response(
-      JSON.stringify({ success: true, message: 'Laporan ini berhasil disimpan!' }),
+      JSON.stringify({ success: true, message: 'Laporan darurat (dengan lokasi) berhasil disimpan!' }),
       { status: 201, headers: { 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
     console.error('❌ Terjadi error saat menyimpan laporan:', error);
     if (connection) await connection.end();
-    
+
     return new Response(
       JSON.stringify({ success: false, message: 'Gagal menyimpan laporan ke database.', error: error.message }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
