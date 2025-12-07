@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 
+// Memastikan API selalu dijalankan di server (lambda function) dan tidak di-cache
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
@@ -14,13 +15,13 @@ export async function GET(request) {
     
     connection = await connectDB();
     
-    // PERBAIKAN SQL: Pastikan tidak ada spasi/newline berlebihan di awal query.
+    // PERBAIKAN SQL: Query disederhanakan dan dibersihkan dari karakter whitespace/tab non-standar.
     let query = `SELECT 
-      l.*, 
-      u.nama AS nama_pelapor, 
-      u.email AS email_pelapor
-    FROM laporan l
-    JOIN users u ON l.userID = u.userID`;
+l.*, 
+u.nama AS nama_pelapor, 
+u.email AS email_pelapor
+FROM laporan l
+JOIN users u ON l.userID = u.userID`;
     
     const values = [];
     
@@ -33,13 +34,13 @@ export async function GET(request) {
     
     const [rows] = await connection.query(query, values);
 
-    // Menggunakan NextResponse.json untuk respons yang benar
+    // Penggunaan NextResponse.json yang benar
     return NextResponse.json(rows, { status: 200 });
 
   } catch (error) {
     console.error("❌ Error GET /api/semua-laporan:", error);
     
-    // Menggunakan NextResponse.json untuk error
+    // Penggunaan NextResponse.json yang benar untuk error
     return NextResponse.json({ 
       error: error.message,
       message: "Gagal mengambil data laporan dari database."
@@ -51,6 +52,7 @@ export async function GET(request) {
 
 // --- FUNGSI POST (MEMBUAT LAPORAN BARU) ---
 export async function POST(request) {
+  // Memastikan parsing JSON terjadi di awal
   const { userID, deskripsi, lokasi } = await request.json();
 
   if (!userID || !deskripsi) {
