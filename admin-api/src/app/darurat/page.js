@@ -21,7 +21,7 @@ export default function LaporanDarurat() {
     async function loadData() {
       try {
         // PERUBAHAN DI SINI: Filter khusus 'darurat'
-        const res = await fetch("/api/laporan?prioritas=darurat");
+        const res = await fetch("/api/semua-laporan?prioritas=darurat");
         const data = await res.json();
         
         if (Array.isArray(data)) {

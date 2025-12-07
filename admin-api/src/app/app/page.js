@@ -19,7 +19,7 @@ export default function LaporanPage() {
     async function loadData() {
       try {
         // PERUBAHAN DI SINI: Filter khusus 'sedang'
-        const res = await fetch("/api/laporan?prioritas=sedang");
+        const res = await fetch("/api/semua-laporan?prioritas=sedang");
         
         if (!res.ok) throw new Error(`Error: ${res.status}`);
         const data = await res.json();
