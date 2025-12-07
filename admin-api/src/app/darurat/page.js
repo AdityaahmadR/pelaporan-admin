@@ -74,7 +74,7 @@ export default function LaporanDarurat() {
       <main className={`${styles.content} ${!sidebarOpen ? styles.collapsed : ''}`}>
         <header className={styles.header}>
           {/* Judul Merah agar terlihat beda dan urgent */}
-          <h2 style={{color: '#d71c1c'}}>Laporan Darurat</h2>
+          <h2 style={{color: '#000000ff'}}>Laporan Darurat</h2>
         </header>
         
         {loading && <p>⏳ Memuat data darurat...</p>}
