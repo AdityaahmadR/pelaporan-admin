@@ -1,14 +1,44 @@
 "use client";
 
-import styles from '@/app/darurat/darurat.module.css';
-import Sidebar from '@/components/Sidebar';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation'; // 1. Import Router
-import Image from 'next/image';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Sidebar from "@/components/Sidebar";
+import LaporanPreviewCard from "@/components/LaporanPreviewCard"; // Import Card
+import styles from "@/app/darurat/darurat.module.css";
+import Image from "next/image";
 
 export default function LaporanDarurat() {
-  const router = useRouter(); // 2. Definisi Router
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  
+  // State Data
+  const [laporanDarurat, setLaporanDarurat] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+
+  // Fetch Data Khusus Darurat
+  useEffect(() => {
+    async function loadData() {
+      try {
+        // PERUBAHAN DI SINI: Filter khusus 'darurat'
+        const res = await fetch("/api/laporan?prioritas=darurat");
+        const data = await res.json();
+        
+        if (Array.isArray(data)) {
+          setLaporanDarurat(data);
+        }
+      } catch (err) {
+        console.error("Gagal ambil data darurat:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, []);
+
+  const filteredData = laporanDarurat.filter((item) =>
+    item.deskripsi?.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <div className={`${styles.page} ${!sidebarOpen ? styles.sidebarCollapsed : ''}`}>
@@ -18,14 +48,19 @@ export default function LaporanDarurat() {
         <div className={styles.searchWrapper}>
           <div className={styles.searchBar}>
             <Image src="/Search.png" alt="Search" width={20} height={20} className={styles.searchIcon} />
-            <input type="text" placeholder="Search" className={styles.searchInput} />
+            <input 
+              type="text" 
+              placeholder="Search Darurat..." 
+              className={styles.searchInput} 
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
         </div>
 
-        {/* 3. UPDATE TOMBOL UPLOAD */}
         <button 
           className={styles.uploadButton}
-          onClick={() => router.push('/edukasi')} // Navigasi ke Edukasi
+          onClick={() => router.push('/app/edukasi')}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -38,11 +73,31 @@ export default function LaporanDarurat() {
 
       <main className={`${styles.content} ${!sidebarOpen ? styles.collapsed : ''}`}>
         <header className={styles.header}>
-          <h2>Laporan Masyarakat</h2>
+          {/* Judul Merah agar terlihat beda dan urgent */}
+          <h2 style={{color: '#d71c1c'}}>Laporan Darurat</h2>
         </header>
-        <section className={styles.emptyState}>
-          <p>Belum ada laporan darurat</p>
-        </section>
+        
+        {loading && <p>⏳ Memuat data darurat...</p>}
+
+        {!loading && filteredData.length === 0 && (
+          <section className={styles.emptyState}>
+            <p>Tidak ada laporan darurat saat ini.</p>
+          </section>
+        )}
+
+        {/* Render Card Laporan Darurat */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+          {filteredData.map((item) => (
+             <LaporanPreviewCard
+               key={item.laporanID}
+               laporanID={item.laporanID}  
+               title={item.deskripsi?.split("\n")[0] || "DARURAT"} // Ambil baris pertama deskripsi sbg judul
+               description={item.deskripsi}
+               status={item.status}
+             />
+          ))}
+        </div>
+
       </main>
     </div>
   );

@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation"; // 1. Import useRouter
-import Sidebar from "@/components/Sidebar"; // Pastikan path import komponen benar
+import { useRouter } from "next/navigation";
+import Sidebar from "@/components/Sidebar";
 import LaporanPreviewCard from "@/components/LaporanPreviewCard";
-import styles from "@/app/darurat/darurat.module.css";
+import styles from "@/app/darurat/darurat.module.css"; // Pakai CSS yang sama
 import Image from "next/image";
 
 export default function LaporanPage() {
-  const router = useRouter(); // 2. Definisi Router
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [laporan, setLaporan] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,7 +18,9 @@ export default function LaporanPage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const res = await fetch("/api/laporan");
+        // PERUBAHAN DI SINI: Filter khusus 'sedang'
+        const res = await fetch("/api/laporan?prioritas=sedang");
+        
         if (!res.ok) throw new Error(`Error: ${res.status}`);
         const data = await res.json();
         setLaporan(Array.isArray(data) ? data : []);
@@ -53,10 +55,9 @@ export default function LaporanPage() {
           </div>
         </div>
 
-        {/* 3. UPDATE TOMBOL UPLOAD */}
         <button 
           className={styles.uploadButton} 
-          onClick={() => router.push('/edukasi')} // Arahkan ke halaman Edukasi
+          onClick={() => router.push('/app/edukasi')} 
         >
           <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -76,7 +77,7 @@ export default function LaporanPage() {
         {fetchError && <p style={{ color: "red" }}>⚠ {fetchError}</p>}
 
         {!loading && filteredLaporan.length === 0 && (
-          <p className={styles.emptyState}>🚫 Tidak ada laporan ditemukan</p>
+          <p className={styles.emptyState}>🚫 Tidak ada laporan masyarakat.</p>
         )}
 
         <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
