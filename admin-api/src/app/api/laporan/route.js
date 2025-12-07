@@ -3,6 +3,9 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 
+// PERBAIKAN FINAL: Beritahu Vercel untuk tidak membangun (build) route ini secara statis.
+export const dynamic = 'force-dynamic';
+
 export async function GET(request) {
   let connection;
   try {
