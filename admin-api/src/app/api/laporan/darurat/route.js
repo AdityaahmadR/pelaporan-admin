@@ -1,17 +1,11 @@
-// src/app/api/laporan/darurat/route.js
+// src/app/api/laporan/darurat/route.js (Versi Perbaikan)
 
 import { NextResponse } from "next/server";
-import connectDB from "@/lib/db"; // Menggunakan alias path dari jsconfig.json
+import connectDB from "@/lib/db";
 
-/**
- * Membuat laporan darurat dengan prioritas 'darurat'.
- */
 export async function POST(req) {
-  
-  // Mengambil semua data yang dikirim dari aplikasi
   const { userID, deskripsi, lokasi } = await req.json();
 
-  // Validasi sederhana, hanya butuh userID
   if (!userID) {
     return new Response(
       JSON.stringify({ message: 'Error: Field userID wajib diisi.' }),
@@ -27,14 +21,14 @@ export async function POST(req) {
     
     const deskripsiLaporan = deskripsi || 'Laporan darurat dari tombol panik.';
     const statusLaporan = 'baru';
-    const prioritasLaporan = 'darurat'; // Prioritas dipaksa di server
+    const prioritasLaporan = 'darurat';
+    // --- PERBAIKAN: Jika lokasi tidak ada, gunakan NULL ---
+    const lokasiLaporan = lokasi || null;
     
-    // Menjalankan query dengan semua data
-    await connection.execute(query, [userID, prioritasLaporan, deskripsiLaporan, statusLaporan, lokasi]);
+    await connection.execute(query, [userID, prioritasLaporan, deskripsiLaporan, statusLaporan, lokasiLaporan]);
     
     await connection.end();
     
-    // Mengirim respons sukses
     return new Response(
       JSON.stringify({ success: true, message: 'Laporan darurat berhasil disimpan!' }),
       { status: 201, headers: { 'Content-Type': 'application/json' } }
