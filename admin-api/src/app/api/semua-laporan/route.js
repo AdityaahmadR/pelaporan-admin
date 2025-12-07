@@ -20,7 +20,7 @@ export async function GET(request) {
     const [rows] = await connection.query(query, values);
     return NextResponse.json(rows, { status: 200 });
   } catch (error) {
-    console.error("❌ Error GET /api/laporan:", error);
+    console.error("❌ Error GET /api/semua-laporan:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   } finally {
     if (connection) await connection.end();
