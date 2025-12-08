@@ -28,7 +28,7 @@ export default function DetailPage({ params }) {
     if(!laporan) return;
     setLaporan(prev => ({ ...prev, status: newStatus })); 
     try {
-      await fetch(`/api/laporan/${id}`, {
+      await fetch(`/api/semua-laporan/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
