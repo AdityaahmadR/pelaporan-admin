@@ -15,7 +15,7 @@ export default function DetailPage({ params }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
-    fetch(`/api/semua-laporan/${id}`)
+    fetch(`/api/laporan/${id}`)
       .then(res => res.json())
       .then(result => {
         if (result.data) setLaporan(result.data);
