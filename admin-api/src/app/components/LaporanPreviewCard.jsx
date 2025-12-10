@@ -47,7 +47,7 @@ export default function LaporanPreviewCard({ laporanID, title, description, stat
   return (
     <div
       className={styles.card}
-      onClick={() => router.push(`/detail/${laporanID}`)} 
+      onClick={() => router.push(`/app/detail/${laporanID}`)} 
       style={{ cursor: "pointer" }}
     >
       {/* BAGIAN KIRI: TEKS */}
