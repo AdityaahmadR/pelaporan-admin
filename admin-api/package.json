@@ -1,7 +1,8 @@
 {
-  "name": "admin-api",
-  "version": "0.1.0",
-  "private": true,
+  "name": "api-gateway-pelaporan",
+  "version": "1.0.0",
+  "description": "API untuk Aplikasi Pelaporan Insiden",
+  "main": "api/index.js",
   "type": "module",
   "scripts": {
     "dev": "next dev",
@@ -10,12 +11,17 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "bcryptjs": "^3.0.3",
-    "firebase-admin": "^13.6.0",
-    "mysql2": "^3.15.3",
-    "next": "13.3.4",
-    "prisma": "^7.0.0",
-    "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "@prisma/client": "^6.19.0",
+    "bcrypt": "^5.1.1",
+    "firebase-admin": "^12.7.0",
+    "mysql2": "^3.9.7",
+    "next": "^16.0.8",
+    "prisma": "^6.19.0",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1"
+  },
+  "devDependencies": {
+    "eslint": "^9.39.1",
+    "eslint-config-next": "^16.0.3"
   }
 }
