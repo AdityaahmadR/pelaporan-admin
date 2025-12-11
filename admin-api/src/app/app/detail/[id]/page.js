@@ -1,13 +1,16 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation'; // Wajib pakai useParams
 import Image from 'next/image';
 import Sidebar from '@/components/Sidebar';
 import styles from './Detail.module.css';
 
-export default function DetailPage({ params }) {
-  const { id } = params;
+export default function DetailPage() {
+  // JANGAN ambil dari props { params }, tapi pakai hook useParams()
+  const params = useParams();
+  const id = params?.id; 
+
   const router = useRouter(); 
   
   const [laporan, setLaporan] = useState(null);
@@ -15,7 +18,9 @@ export default function DetailPage({ params }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
-    // URL API yang sudah disesuaikan dengan folder Anda
+    // Pastikan ID sudah ada sebelum fetch
+    if (!id) return;
+
     fetch(`/api/semua-laporan/${id}`)
       .then(res => {
         if (!res.ok) throw new Error("Gagal mengambil data");
@@ -36,7 +41,7 @@ export default function DetailPage({ params }) {
   }, [id]);
 
   async function updateStatus(newStatus) {
-    if(!laporan) return;
+    if(!laporan || !id) return;
     setLaporan(prev => ({ ...prev, status: newStatus })); 
     try {
       await fetch(`/api/semua-laporan/${id}`, {
@@ -67,7 +72,6 @@ export default function DetailPage({ params }) {
     return `${date.toLocaleDateString('id-ID', options)} ${timeAgo}`;
   }
 
-  // Handle Klik Tombol Lokasi
   const handleLocationClick = () => {
     if (laporan?.lokasi) {
       window.open(laporan.lokasi, '_blank');
@@ -111,7 +115,6 @@ export default function DetailPage({ params }) {
           </div>
         </div>
         
-        {/* Tombol Upload Mengarah ke Halaman Edukasi */}
         <button 
           className={styles.uploadButton}
           onClick={() => router.push('/app/edukasi')} 
@@ -171,12 +174,10 @@ export default function DetailPage({ params }) {
             <p style={{fontSize:'13px', color: '#aaa', fontStyle: 'italic'}}>*Tidak ada lampiran gambar</p>
           )}
 
-          {/* === TOMBOL LOKASI === */}
           {laporan.lokasi && (
             <div className={styles.locationWrapper}>
               <button className={styles.locationButton} onClick={handleLocationClick}>
                 <span className={styles.locationText}>Location</span>
-                {/* Menggunakan gambar location.png dari folder public */}
                 <img src="/location.png" alt="Location Pin" className={styles.locationIcon} />
               </button>
             </div>

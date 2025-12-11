@@ -1,16 +1,14 @@
-// src/app/api/semua-laporan/[id]/route.js
 import connectDB from "@/lib/db";
 import { NextResponse } from "next/server";
 
-// Mencegah caching statis agar data selalu fresh
 export const dynamic = 'force-dynamic';
 
 // --- FUNGSI GET (Ambil Detail Laporan) ---
 export async function GET(request, { params }) {
   let connection;
   try {
-    // FIX NEXT.JS 16: Params harus di-await
-    const { id } = await params;
+    // FIX NEXT.JS 16: Tambahkan AWAIT di sini!
+    const { id } = await params; 
 
     connection = await connectDB();
 
@@ -26,10 +24,7 @@ export async function GET(request, { params }) {
     const [rows] = await connection.query(query, [id]);
 
     if (rows.length === 0) {
-      return NextResponse.json(
-        { message: "Laporan tidak ditemukan" }, 
-        { status: 404 }
-      );
+      return NextResponse.json({ message: "Laporan tidak ditemukan" }, { status: 404 });
     }
 
     const dataRaw = rows[0];
@@ -37,7 +32,6 @@ export async function GET(request, { params }) {
     let finalDeskripsi = dataRaw.deskripsi || "";
     let imageUrl = null;
 
-    // Logika Pemisahan Gambar & Subject dari Deskripsi
     if (finalDeskripsi) {
       const imageRegex = /(https?:\/\/[^\s]+?\.(?:jpg|jpeg|png|gif|webp))/i;
       const imageMatch = finalDeskripsi.match(imageRegex);
@@ -45,7 +39,6 @@ export async function GET(request, { params }) {
         imageUrl = imageMatch[0];
         finalDeskripsi = finalDeskripsi.replace(imageUrl, "").replace(/Gambar:\s*/i, "");
       }
-      
       let lines = finalDeskripsi.split('\n');
       const subjectIndex = lines.findIndex(line => line.toLowerCase().includes("subjek:"));
       if (subjectIndex !== -1) {
@@ -71,10 +64,7 @@ export async function GET(request, { params }) {
 
   } catch (error) {
     console.error("API Error:", error);
-    return NextResponse.json(
-      { message: "Internal Server Error", error: error.message }, 
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Internal Server Error", error: error.message }, { status: 500 });
   } finally {
     if (connection) await connection.end();
   }
@@ -84,10 +74,9 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   let connection;
   try {
-    // FIX NEXT.JS 16: Params harus di-await
+    // FIX NEXT.JS 16: Tambahkan AWAIT di sini juga!
     const { id } = await params;
     
-    // Parse JSON body
     const body = await request.json();
     const { status } = body;
 
@@ -101,7 +90,6 @@ export async function PUT(request, { params }) {
     return NextResponse.json({ message: "Status berhasil diupdate" }, { status: 200 });
 
   } catch (error) {
-    console.error("API PUT Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   } finally {
     if (connection) await connection.end();
