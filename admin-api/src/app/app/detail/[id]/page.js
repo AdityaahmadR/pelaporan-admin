@@ -8,20 +8,31 @@ import styles from './Detail.module.css';
 
 export default function DetailPage({ params }) {
   const { id } = params;
-  const router = useRouter(); // Router sudah terdefinisi
+  const router = useRouter(); 
   
   const [laporan, setLaporan] = useState(null);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
+    // URL API yang sudah disesuaikan dengan folder Anda
     fetch(`/api/semua-laporan/${id}`)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error("Gagal mengambil data");
+        return res.json();
+      })
       .then(result => {
-        if (result.data) setLaporan(result.data);
+        if (result.data) {
+          setLaporan(result.data);
+        } else {
+          console.log("Data kosong:", result);
+        }
         setLoading(false);
       })
-      .catch(err => setLoading(false));
+      .catch(err => {
+        console.error("Fetch Error:", err);
+        setLoading(false);
+      });
   }, [id]);
 
   async function updateStatus(newStatus) {
@@ -56,6 +67,15 @@ export default function DetailPage({ params }) {
     return `${date.toLocaleDateString('id-ID', options)} ${timeAgo}`;
   }
 
+  // Handle Klik Tombol Lokasi
+  const handleLocationClick = () => {
+    if (laporan?.lokasi) {
+      window.open(laporan.lokasi, '_blank');
+    } else {
+      alert("Lokasi tidak tersedia untuk laporan ini.");
+    }
+  };
+
   if (loading) {
     return (
       <div className={`${styles.page} ${!sidebarOpen ? styles.sidebarCollapsed : ''}`}>
@@ -82,6 +102,7 @@ export default function DetailPage({ params }) {
     <div className={`${styles.page} ${!sidebarOpen ? styles.sidebarCollapsed : ''}`}>
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} activePage="/detail" />
 
+      {/* TOP BAR */}
       <div className={styles.topBar}>
         <div className={styles.searchWrapper}>
           <div className={styles.searchBar}>
@@ -90,10 +111,10 @@ export default function DetailPage({ params }) {
           </div>
         </div>
         
-        {/* 1. UPDATE TOMBOL UPLOAD DI SINI */}
+        {/* Tombol Upload Mengarah ke Halaman Edukasi */}
         <button 
           className={styles.uploadButton}
-          onClick={() => router.push('/edukasi')} // Navigasi ke Edukasi
+          onClick={() => router.push('/app/edukasi')} 
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -106,6 +127,7 @@ export default function DetailPage({ params }) {
 
       <main className={`${styles.content} ${!sidebarOpen ? styles.collapsed : ''}`}>
         <div className={styles.card}>
+          
           <div className={styles.detailHeader}>
             <div className={styles.titleGroup}>
               <button onClick={() => router.back()} className={styles.backButton}>
@@ -120,34 +142,16 @@ export default function DetailPage({ params }) {
             <div className={styles.metaInfo}>
               <span className={styles.dateText}>{formatDateDetail(laporan.createdAt)}</span>
               <div className={styles.statusActions}>
-                <button 
-                  className={`${styles.statusButton} ${laporan.status === 'baru' ? styles.active : ''}`}
-                  onClick={() => updateStatus('baru')}
-                >
-                  Laporan Masuk
-                </button>
-                <button 
-                  className={`${styles.statusButton} ${laporan.status === 'Sedang Diproses' ? styles.active : ''}`}
-                  onClick={() => updateStatus('Sedang Diproses')}
-                >
-                  Sedang Berlangsung
-                </button>
-                <button 
-                  className={`${styles.statusButton} ${laporan.status === 'Selesai' ? styles.active : ''}`}
-                  onClick={() => updateStatus('Selesai')}
-                >
-                  Selesai
-                </button>
+                <button className={`${styles.statusButton} ${laporan.status === 'baru' ? styles.active : ''}`} onClick={() => updateStatus('baru')}>Laporan Masuk</button>
+                <button className={`${styles.statusButton} ${laporan.status === 'Sedang Diproses' ? styles.active : ''}`} onClick={() => updateStatus('Sedang Diproses')}>Sedang Berlangsung</button>
+                <button className={`${styles.statusButton} ${laporan.status === 'Selesai' ? styles.active : ''}`} onClick={() => updateStatus('Selesai')}>Selesai</button>
               </div>
             </div>
           </div>
 
           <div className={styles.userSection}>
             <div className={styles.avatar}>
-               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="12" cy="7" r="4"></circle>
-               </svg>
+               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
             </div>
             <div className={styles.userInfo}>
               <h4>{laporan.user?.nama}</h4>
@@ -167,10 +171,19 @@ export default function DetailPage({ params }) {
             <p style={{fontSize:'13px', color: '#aaa', fontStyle: 'italic'}}>*Tidak ada lampiran gambar</p>
           )}
 
+          {/* === TOMBOL LOKASI === */}
+          {laporan.lokasi && (
+            <div className={styles.locationWrapper}>
+              <button className={styles.locationButton} onClick={handleLocationClick}>
+                <span className={styles.locationText}>Location</span>
+                {/* Menggunakan gambar location.png dari folder public */}
+                <img src="/location.png" alt="Location Pin" className={styles.locationIcon} />
+              </button>
+            </div>
+          )}
+
         </div>
       </main>
     </div>
   );
 }
-
-//test
