@@ -1,7 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Bagian experimental appDir dihapus karena sudah default di versi terbaru
-  
+  // TAMBAHKAN BARIS INI (Wajib di Next.js 16 jika pakai Webpack custom)
+  turbopack: {},
+
   // Konfigurasi Webpack (Penting untuk kompatibilitas mysql2)
   webpack: (config) => {
     config.experiments = {
