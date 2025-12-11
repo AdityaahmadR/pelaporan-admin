@@ -3,15 +3,15 @@
 import styles from './pengguna.module.css';
 import Sidebar from '@/components/Sidebar';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation'; // 1. Import Router
+import { useRouter } from 'next/navigation'; 
 import { useState, useEffect } from 'react';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-export const fetchCache = 'force-no-store';
+// --- PERBAIKAN: KONFIGURASI SERVER DIHAPUS ---
+// Baris export const dynamic/revalidate dihapus karena konflik dengan "use client".
+// Fetching data di client (useEffect) sudah otomatis dinamis.
 
 export default function DatabasePengguna() {
-  const router = useRouter(); // 2. Definisi Router
+  const router = useRouter(); 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState('masyarakat');
   const [users, setUsers] = useState([]);
@@ -21,6 +21,7 @@ export default function DatabasePengguna() {
     const fetchUsers = async () => {
       setLoading(true);
       try {
+        // cache: 'no-store' memastikan browser selalu mengambil data terbaru
         const res = await fetch(`/api/users?role=${activeTab}`, { cache: 'no-store' });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
@@ -66,10 +67,9 @@ export default function DatabasePengguna() {
           </div>
         </div>
         
-        {/* 3. UPDATE TOMBOL UPLOAD */}
         <button 
           className={styles.uploadButton}
-          onClick={() => router.push('/edukasi')} // Navigasi ke Edukasi
+          onClick={() => router.push('/app/edukasi')} 
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M21 15v4a2 2 0 1-2 2H5a2 2 0 1-2-2v-4" />
