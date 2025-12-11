@@ -2,22 +2,35 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation'; // 1. Import useRouter
 import styles from './Sidebar.module.css';
 
 const navItems = [
   { name: 'Laporan Masyarakat', href: '/app', icon: '/oui_nav-reports.png' },
   { name: 'Laporan Darurat', href: '/darurat', icon: '/Phone call.png' },
   { name: 'Database Pengguna', href: '/pengguna', icon: '/Database.png' },
+  // Saya tambahkan Edukasi agar fitur Upload Video bisa diakses
+  { name: 'Edukasi', href: '/edukasi', icon: '/Vector (1).png' }, 
   { name: 'Monitoring Sensor', href: '/monitoring', icon: '/Vector (1).png' },
 ];
 
 export default function Sidebar({ isOpen, setIsOpen }) {
   const pathname = usePathname();
+  const router = useRouter(); // 2. Definisi Router
+
+  // 3. FUNGSI LOGOUT
+  const handleLogout = () => {
+    // Hapus Cookie Token (Set expired date ke masa lalu)
+    document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+    
+    // Redirect paksa ke halaman Login
+    router.push('/login');
+  };
 
   return (
     <>
       <div className={styles.fixedLogo}>
+        {/* Pastikan file logo_kecil.png ada di folder public */}
         <img src="/logo_kecil.png" alt="Logo" className="w-12 h-12" />
       </div>
 
@@ -40,7 +53,9 @@ export default function Sidebar({ isOpen, setIsOpen }) {
 
         <nav className={styles.nav}>
           {navItems.map((item) => {
-            const isActive = pathname === item.href;
+            // Logika aktif: Jika path sama persis ATAU path diawali href item (untuk sub-halaman seperti /edukasi/upload)
+            // Kecuali untuk /app (dashboard) agar tidak selalu aktif
+            const isActive = pathname === item.href || (item.href !== '/app' && pathname.startsWith(item.href));
 
             return (
               <Link 
@@ -71,7 +86,12 @@ export default function Sidebar({ isOpen, setIsOpen }) {
         </nav>
 
         <div className={styles.bottom}>
-          <button className={styles.logout} title={!isOpen ? 'Log Out' : ''}>
+          {/* 4. PASANG EVENT ONCLICK DI SINI */}
+          <button 
+            className={styles.logout} 
+            title={!isOpen ? 'Log Out' : ''}
+            onClick={handleLogout}
+          >
             <img src="/Log out.png" alt="Logout" className={styles.logoutIcon} />
             {isOpen && <span className={styles.logoutText}>Log Out</span>}
           </button>

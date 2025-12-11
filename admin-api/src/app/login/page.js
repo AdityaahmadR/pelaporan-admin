@@ -33,9 +33,14 @@ export default function LoginPage() {
         return;
       }
 
-      // Store token if needed
-      localStorage.setItem('token', data.token);
+      // === UPDATE PENTING DI SINI ===
+      // Simpan Token ke Cookie (Agar Middleware bisa baca)
+      // Expired dalam 1 hari (86400 detik)
+      document.cookie = `token=${data.token}; path=/; max-age=86400; SameSite=Lax`;
+
+      // Redirect ke Dashboard
       router.push('/app');
+      
     } catch (err) {
       setError('Terjadi kesalahan: ' + err.message);
       setLoading(false);
@@ -44,17 +49,12 @@ export default function LoginPage() {
 
   return (
     <div className={styles.container}>
-        {/* Logo Section */}
         <div className={styles.logoSection}>
           <img src="/logo.png" alt="API Logo" className={styles.logoImage} />
-
-          {/* Logo already contains the product name, text removed to avoid duplication */}
         </div>
 
-        {/* Error Message */}
         {error && <div className={styles.errorMessage}>{error}</div>}
 
-        {/* Form Section */}
         <form className={styles.form} onSubmit={handleSubmit}>
           <div className={styles.inputGroup}>
             <label htmlFor="email" className={styles.label}>
@@ -94,8 +94,6 @@ export default function LoginPage() {
             {loading ? 'Loading...' : 'Login'}
           </button>
         </form>
-
-        {/* Footer removed for admin (no signup) */}
     </div>
   );
 }
