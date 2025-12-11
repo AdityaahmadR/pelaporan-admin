@@ -1,9 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    appDir: true,
-  },
-  // TAMBAHKAN BLOK INI
+  // Bagian experimental appDir dihapus karena sudah default di versi terbaru
+  
+  // Konfigurasi Webpack (Penting untuk kompatibilitas mysql2)
   webpack: (config) => {
     config.experiments = {
       ...config.experiments,
