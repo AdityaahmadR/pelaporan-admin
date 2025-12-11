@@ -1,14 +1,17 @@
 // src/app/api/semua-laporan/[id]/route.js
 import connectDB from "@/lib/db";
+import { NextResponse } from "next/server";
 
-// PERBAIKAN #1: Mencegah Vercel melakukan build statis.
+// Mencegah caching statis agar data selalu fresh
 export const dynamic = 'force-dynamic';
 
 // --- FUNGSI GET (Ambil Detail Laporan) ---
 export async function GET(request, { params }) {
   let connection;
   try {
-    const { id } = params;
+    // FIX NEXT.JS 16: Params harus di-await
+    const { id } = await params;
+
     connection = await connectDB();
 
     const query = `
@@ -23,11 +26,10 @@ export async function GET(request, { params }) {
     const [rows] = await connection.query(query, [id]);
 
     if (rows.length === 0) {
-      // PERBAIKAN #2: Gunakan new Response() seperti file lain yang berhasil.
-      return new Response(JSON.stringify({ message: "Laporan tidak ditemukan" }), { 
-        status: 404, 
-        headers: { 'Content-Type': 'application/json' } 
-      });
+      return NextResponse.json(
+        { message: "Laporan tidak ditemukan" }, 
+        { status: 404 }
+      );
     }
 
     const dataRaw = rows[0];
@@ -35,6 +37,7 @@ export async function GET(request, { params }) {
     let finalDeskripsi = dataRaw.deskripsi || "";
     let imageUrl = null;
 
+    // Logika Pemisahan Gambar & Subject dari Deskripsi
     if (finalDeskripsi) {
       const imageRegex = /(https?:\/\/[^\s]+?\.(?:jpg|jpeg|png|gif|webp))/i;
       const imageMatch = finalDeskripsi.match(imageRegex);
@@ -42,6 +45,7 @@ export async function GET(request, { params }) {
         imageUrl = imageMatch[0];
         finalDeskripsi = finalDeskripsi.replace(imageUrl, "").replace(/Gambar:\s*/i, "");
       }
+      
       let lines = finalDeskripsi.split('\n');
       const subjectIndex = lines.findIndex(line => line.toLowerCase().includes("subjek:"));
       if (subjectIndex !== -1) {
@@ -63,19 +67,14 @@ export async function GET(request, { params }) {
       }
     };
 
-    // PERBAIKAN #2: Gunakan new Response()
-    return new Response(JSON.stringify({ data: formattedData }), { 
-      status: 200, 
-      headers: { 'Content-Type': 'application/json' } 
-    });
+    return NextResponse.json({ data: formattedData }, { status: 200 });
 
   } catch (error) {
     console.error("API Error:", error);
-    // PERBAIKAN #2: Gunakan new Response()
-    return new Response(JSON.stringify({ message: "Internal Server Error", error: error.message }), { 
-      status: 500, 
-      headers: { 'Content-Type': 'application/json' } 
-    });
+    return NextResponse.json(
+      { message: "Internal Server Error", error: error.message }, 
+      { status: 500 }
+    );
   } finally {
     if (connection) await connection.end();
   }
@@ -85,32 +84,25 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   let connection;
   try {
-    const { id } = params;
-    const { status } = await request.json();
+    // FIX NEXT.JS 16: Params harus di-await
+    const { id } = await params;
+    
+    // Parse JSON body
+    const body = await request.json();
+    const { status } = body;
 
     if (!status) {
-      // PERBAIKAN #2: Gunakan new Response()
-      return new Response(JSON.stringify({ message: "Status harus diisi" }), { 
-        status: 400, 
-        headers: { 'Content-Type': 'application/json' } 
-      });
+      return NextResponse.json({ message: "Status harus diisi" }, { status: 400 });
     }
 
     connection = await connectDB();
     await connection.query("UPDATE laporan SET status = ? WHERE laporanID = ?", [status, id]);
 
-    // PERBAIKAN #2: Gunakan new Response()
-    return new Response(JSON.stringify({ message: "Status berhasil diupdate" }), { 
-      status: 200, 
-      headers: { 'Content-Type': 'application/json' } 
-    });
+    return NextResponse.json({ message: "Status berhasil diupdate" }, { status: 200 });
 
   } catch (error) {
-    // PERBAIKAN #2: Gunakan new Response()
-    return new Response(JSON.stringify({ error: error.message }), { 
-      status: 500, 
-      headers: { 'Content-Type': 'application/json' } 
-    });
+    console.error("API PUT Error:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   } finally {
     if (connection) await connection.end();
   }
