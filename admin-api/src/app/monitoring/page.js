@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Sidebar from '@/components/Sidebar';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import styles from './Monitoring.module.css';
+import styles from './monitoring.module.css';
 
 export default function MonitoringPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
