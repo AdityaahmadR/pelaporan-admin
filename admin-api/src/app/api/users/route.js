@@ -1,7 +1,6 @@
-// src/app/api/users/route.js
 import mysql from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
-import crypto from 'crypto'; // 1. IMPORT CRYPTO
+import crypto from 'crypto'; // Import crypto untuk generate UID
 
 const pool = mysql.createPool({
   host: process.env.MYSQLHOST,
@@ -110,6 +109,55 @@ export async function POST(request) {
     console.error('API POST Error /api/users:', error);
     return new Response(JSON.stringify({ 
       message: "Terjadi kesalahan server",
+      details: error.message 
+    }), { 
+      status: 500, 
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+}
+
+// --- FUNGSI DELETE (Hapus User) ---
+export async function DELETE(request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return new Response(JSON.stringify({ message: "ID User diperlukan" }), { 
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Eksekusi query delete
+    const [result] = await pool.query("DELETE FROM users WHERE userID = ?", [id]);
+
+    if (result.affectedRows === 0) {
+      return new Response(JSON.stringify({ message: "User tidak ditemukan" }), { 
+        status: 404,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    return new Response(JSON.stringify({ message: "User berhasil dihapus" }), { 
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+  } catch (error) {
+    console.error('API DELETE Error /api/users:', error);
+    
+    // Cek constraint (misal user punya laporan, biasanya tidak bisa dihapus langsung)
+    if (error.code === 'ER_ROW_IS_REFERENCED_2') {
+      return new Response(JSON.stringify({ message: "Gagal: User ini memiliki data laporan terkait." }), { 
+        status: 409,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    return new Response(JSON.stringify({ 
+      message: "Terjadi kesalahan server saat menghapus",
       details: error.message 
     }), { 
       status: 500, 
