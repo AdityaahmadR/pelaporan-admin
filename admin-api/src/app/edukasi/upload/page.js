@@ -17,8 +17,13 @@ function EditVideoContent() {
   // Form State
   const [judul, setJudul] = useState("");
   const [deskripsi, setDeskripsi] = useState("");
-  const [sampul, setSampul] = useState(null);
+  
+  // State untuk Preview & File Asli
+  const [sampul, setSampul] = useState(null);      // URL untuk preview di layar
+  const [sampulFile, setSampulFile] = useState(null); // File asli untuk diupload ke ImgBB
+  
   const [progress, setProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false); // Loading state tombol
 
   // Simulasi Progress Bar
   useEffect(() => {
@@ -46,16 +51,60 @@ function EditVideoContent() {
     if (e.target.value.length <= 2000) setDeskripsi(e.target.value);
   };
 
+  // Handle Pilih Gambar Sampul
   const handleSampulChange = (e) => {
     const file = e.target.files[0];
-    if (file) setSampul(URL.createObjectURL(file));
+    if (file) {
+      setSampul(URL.createObjectURL(file)); // Untuk Preview lokal
+      setSampulFile(file); // Simpan file asli untuk upload nanti
+    }
   };
 
-  // Upload ke Database
+  // --- FUNGSI UPLOAD KE IMGBB ---
+  const uploadToImgBB = async (file) => {
+    const formData = new FormData();
+    formData.append("image", file);
+
+    // API Key Anda yang sudah dimasukkan
+    const API_KEY = "0416af70555c12b73e1f822d3603c165"; 
+    
+    try {
+      const res = await fetch(`https://api.imgbb.com/1/upload?key=${API_KEY}`, {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.success) {
+        console.log("Upload Sukses:", data.data.url);
+        return data.data.url; // Kembalikan link gambar yang valid
+      } else {
+        throw new Error("Gagal upload ke ImgBB");
+      }
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  };
+
+  // --- HANDLE UNGGAH FINAL ---
   const handleUnggah = async () => {
     if (!judul) {
       alert("Judul tidak boleh kosong!");
       return;
+    }
+
+    setIsUploading(true); // Set tombol jadi loading
+    
+    // 1. Upload Thumbnail ke ImgBB dulu (jika ada file dipilih)
+    let thumbnailUrl = "https://i.ibb.co/1fYKT5sb/b92bb4c90cef.jpg"; // Default jika user tidak pilih gambar
+    
+    if (sampulFile) {
+      const uploadedLink = await uploadToImgBB(sampulFile);
+      if (uploadedLink) {
+        thumbnailUrl = uploadedLink; // Pakai link baru dari ImgBB
+      } else {
+        alert("Gagal mengupload gambar ke ImgBB, menggunakan gambar default.");
+      }
     }
 
     // Paksa progress jadi 100%
@@ -65,9 +114,7 @@ function EditVideoContent() {
       judul: judul,
       isi: deskripsi || "/placeholder-video", 
       kategori: "video",
-      // TAMBAHAN: Kirim Thumbnail ke API
-      // Kita gunakan link static dulu karena belum ada cloud storage
-      thumbnail: "https://i.ibb.co/1fYKT5sb/b92bb4c90cef.jpg"
+      thumbnail: thumbnailUrl // Link gambar (bisa default atau dari ImgBB)
     };
 
     try {
@@ -83,10 +130,12 @@ function EditVideoContent() {
           router.push('/edukasi'); // Balik ke halaman list
         }, 500);
       } else {
-        alert("Gagal mengunggah");
+        alert("Gagal menyimpan data ke database");
       }
     } catch (err) {
       alert("Error: " + err.message);
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -104,7 +153,6 @@ function EditVideoContent() {
           <h3 className={styles.fileName}>{fileName}</h3>
           <p className={styles.fileDetails}>Durasi: --:-- &nbsp;&nbsp; Ukuran: {fileSizeTotal}MB</p>
           
-          {/* PROGRESS BAR */}
           <div className={styles.progressContainer}>
             <div className={styles.progressBar} style={{ width: `${progress}%` }}></div>
             <div className={styles.progressText}>
@@ -182,8 +230,13 @@ function EditVideoContent() {
         <button className={styles.btnBatal} onClick={() => router.back()}>
           Batal
         </button>
-        <button className={styles.btnUnggah} onClick={handleUnggah}>
-          Unggah
+        <button 
+          className={styles.btnUnggah} 
+          onClick={handleUnggah} 
+          disabled={isUploading}
+          style={{ opacity: isUploading ? 0.7 : 1, cursor: isUploading ? 'not-allowed' : 'pointer' }}
+        >
+          {isUploading ? 'Mengunggah...' : 'Unggah'}
         </button>
       </div>
 
