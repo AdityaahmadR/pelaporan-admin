@@ -16,7 +16,7 @@ export default function EdukasiPage() {
   const fileInputRef = useRef(null);
   const router = useRouter(); 
 
-  // Fetch Data Video
+  // Fetch Data Video dari API
   useEffect(() => {
     fetchVideos();
   }, []);
@@ -38,6 +38,7 @@ export default function EdukasiPage() {
     const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
     const fileName = encodeURIComponent(file.name);
     
+    // Pindah ke halaman upload untuk isi detail
     router.push(`/edukasi/upload?name=${fileName}&size=${sizeMB}`);
   };
 
@@ -58,6 +59,7 @@ export default function EdukasiPage() {
         if (res.ok) {
           alert("Link berita berhasil disimpan!");
           setNewsLink(""); 
+          fetchVideos(); // Refresh data setelah simpan berita
         }
       } catch (err) { alert("Gagal simpan berita"); }
     }
@@ -117,7 +119,24 @@ export default function EdukasiPage() {
             {videos.map((video) => (
               <div key={video.edukasiID} className={styles.videoCard}>
                 <div className={styles.thumbnailPlaceholder}>
-                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                  
+                  {/* --- LOGIKA TAMPILAN THUMBNAIL --- */}
+                  {video.thumbnail ? (
+                    // Jika ada thumbnail di database, tampilkan gambar
+                    <img 
+                      src={video.thumbnail} 
+                      alt={video.judul} 
+                      className={styles.thumbnailImage} 
+                      // Jika gambar gagal load (broken link), sembunyikan gambar ini dan biarkan background terlihat
+                      onError={(e) => { e.target.style.display = 'none'; }}
+                    />
+                  ) : (
+                    // Jika tidak ada thumbnail, tampilkan Icon Default Abu-abu
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2">
+                      <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                    </svg>
+                  )}
+
                 </div>
                 <div className={styles.videoInfo}>
                   <p className={styles.videoTitle}>{video.judul}</p>

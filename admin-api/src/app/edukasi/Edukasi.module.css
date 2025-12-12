@@ -180,3 +180,10 @@
     font-size: 16px;
   }
 }
+
+.thumbnailImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
