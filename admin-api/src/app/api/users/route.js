@@ -1,5 +1,6 @@
 // src/app/api/users/route.js
 import mysql from 'mysql2/promise';
+import bcrypt from 'bcryptjs'; // 1. IMPORT BCRYPTJS
 
 const pool = mysql.createPool({
   host: process.env.MYSQLHOST,
@@ -11,13 +12,14 @@ const pool = mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0,
   connectTimeout: 30000,
-  ssl: { rejectUnauthorized: false }
+  ssl: { rejectUnauthorized: false } // Konfigurasi SSL untuk Railway/PlanetScale
 });
 
+// Konfigurasi agar Vercel selalu merender ulang API ini (Dynamic)
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-// --- FUNGSI GET (Yang sudah ada) ---
+// --- FUNGSI GET (Ambil Data User) ---
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -58,13 +60,13 @@ export async function GET(request) {
   }
 }
 
-// --- FUNGSI POST (BARU: Tambah User) ---
+// --- FUNGSI POST (Tambah User Baru) ---
 export async function POST(request) {
   try {
     const body = await request.json();
     const { nama, email, password, role } = body;
 
-    // Validasi input
+    // 1. Validasi Input
     if (!nama || !email || !password) {
       return new Response(JSON.stringify({ message: "Data tidak lengkap" }), { 
         status: 400,
@@ -72,7 +74,7 @@ export async function POST(request) {
       });
     }
 
-    // Cek email duplikat
+    // 2. Cek apakah email sudah terdaftar
     const [existing] = await pool.query("SELECT userID FROM users WHERE email = ?", [email]);
     if (existing.length > 0) {
       return new Response(JSON.stringify({ message: "Email sudah terdaftar" }), { 
@@ -81,15 +83,16 @@ export async function POST(request) {
       });
     }
 
-    // Default role 'masyarakat' jika tidak ditentukan
+    // 3. Tentukan Role (Default: masyarakat)
     const userRole = role || 'masyarakat';
 
-    // Insert user baru
-    // Catatan: Password disimpan plain text sesuai permintaan fitur dasar.
-    // Untuk production, sangat disarankan menggunakan hashing (bcrypt).
+    // 4. LAKUKAN HASHING PASSWORD (ENKRIPSI)
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // 5. Simpan ke Database (Password yang disimpan adalah versi hash)
     const [result] = await pool.query(
       "INSERT INTO users (nama, email, password, role) VALUES (?, ?, ?, ?)",
-      [nama, email, password, userRole]
+      [nama, email, hashedPassword, userRole]
     );
 
     return new Response(JSON.stringify({ 
