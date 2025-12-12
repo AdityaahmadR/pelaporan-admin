@@ -60,7 +60,7 @@ export default function MonitoringPage() {
 
         {/* CONTAINER UTAMA (Nanti diisi komponen sensor) */}
         <div className={styles.sensorCard}>
-           <p>Area Grafik Sensor & CCTV akan muncul di sini</p>
+           <p>Area Sensor akan muncul di sini</p>
         </div>
 
       </main>

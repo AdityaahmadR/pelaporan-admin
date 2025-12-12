@@ -2,13 +2,13 @@
 .page {
   display: block;
   min-height: 100vh;
-  background: #fff; /* Background putih bersih */
+  background: #fff;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
-  overflow-x: hidden; /* Mencegah scroll horizontal */
+  overflow-x: hidden;
   position: relative;
 }
 
-/* === TOP BAR (Sama Persis) === */
+/* === TOP BAR === */
 .topBar {
   position: fixed;
   top: 0;
@@ -22,8 +22,6 @@
   padding: 0 32px;
   z-index: 30;
   transition: left 0.25s ease;
-  /* Opsional: Border bawah tipis jika ingin pemisah */
-  /* border-bottom: 1px solid #e2e8f0; */ 
 }
 
 .sidebarCollapsed .topBar {
@@ -49,7 +47,7 @@
   background: #fff;
   border-radius: 9999px;
   padding: 10px 18px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Shadow halus konsisten */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   border: 1px solid #e2e8f0;
   transition: all 0.25s ease;
 }
@@ -119,16 +117,17 @@
   margin-left: 72px;
 }
 
-/* === HEADER HALAMAN === */
+/* === HEADER HALAMAN (PERBAIKAN POSISI) === */
 .header {
   position: relative;
-  padding-bottom: 16px;
+  /* Memberi ruang di bawah agar teks tidak menempel ke konten, tapi tetap proporsional */
+  padding-bottom: 16px; 
   margin-bottom: 24px;
   text-align: left;
   padding-left: 12px;
 }
 
-/* Judul Halaman dengan garis merah di bawahnya */
+/* Judul Halaman */
 .header h2 {
   margin: 0;
   font-size: 26px;
@@ -137,21 +136,25 @@
   display: inline-block;
   position: relative;
   cursor: default;
+  /* Z-Index lebih tinggi agar garis merahnya ada di atas garis abu */
+  z-index: 2; 
 }
 
-/* Garis Merah */
+/* Garis Merah (Indikator Aktif) */
 .header h2::after {
   content: '';
   position: absolute;
   left: 0;
   right: 0;
-  bottom: -20px; /* Jarak garis merah dari teks */
+  /* Bottom diset -17px agar posisinya pas menumpuk di atas garis abu-abu */
+  bottom: -17px; 
   height: 4px;
   background: #d71c1c;
   border-radius: 2px;
+  z-index: 2;
 }
 
-/* Garis Abu-abu Panjang di bawah Header */
+/* Garis Abu-abu Panjang (Background Line) */
 .header::after {
   content: '';
   position: absolute;
@@ -161,9 +164,11 @@
   width: 100%;
   height: 1px;
   background: #e5e7eb;
+  /* Z-Index lebih rendah agar berada di belakang garis merah */
+  z-index: 1; 
 }
 
-/* === CARD CONTENT (TEMPAT SENSOR NANTI) === */
+/* === CARD CONTENT === */
 .sensorCard {
   background: #fff;
   border-radius: 12px;
@@ -171,7 +176,7 @@
   box-shadow: 0 4px 20px rgba(0,0,0,0.05);
   border: 1px solid #e0e0e0;
   padding: 40px;
-  min-height: 400px; /* Tinggi sementara biar terlihat */
+  min-height: 400px;
   display: flex;
   align-items: center;
   justify-content: center;
