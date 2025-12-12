@@ -6,10 +6,6 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation'; 
 import { useState, useEffect } from 'react';
 
-// --- PERBAIKAN: KONFIGURASI SERVER DIHAPUS ---
-// Baris export const dynamic/revalidate dihapus karena konflik dengan "use client".
-// Fetching data di client (useEffect) sudah otomatis dinamis.
-
 export default function DatabasePengguna() {
   const router = useRouter(); 
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -17,41 +13,102 @@ export default function DatabasePengguna() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // --- STATE MODAL & FORM ---
+  const [showModal, setShowModal] = useState(false);
+  const [formData, setFormData] = useState({
+    nama: '',
+    email: '',
+    password: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Fetch Data Users
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/users?role=${activeTab}`, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setUsers(data);
+    } catch (err) {
+      console.error(err);
+      // alert('Gagal mengambil data: ' + err.message); // Optional alert
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchUsers = async () => {
-      setLoading(true);
-      try {
-        // cache: 'no-store' memastikan browser selalu mengambil data terbaru
-        const res = await fetch(`/api/users?role=${activeTab}`, { cache: 'no-store' });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        setUsers(data);
-      } catch (err) {
-        alert('Gagal mengambil data: ' + err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchUsers();
   }, [activeTab]);
 
+  // Hapus User
   const hapusUser = async (id) => {
     if (!confirm('Yakin ingin menghapus user ini?')) return;
     try {
-      const res = await fetch(`/api/pengguna?id=${id}`, {
-        method: 'DELETE',
-        cache: 'no-store'
-      });
+      // Perbaikan endpoint: Sesuaikan dengan struktur API Anda
+      // Jika endpoint DELETE Anda di /api/pengguna, gunakan itu. 
+      // Tapi karena POST kita buat di /api/users, idealnya DELETE juga di sana.
+      // Kita coba fetch ke /api/pengguna dulu sesuai kode lama Anda, atau sesuaikan.
+      let res = await fetch(`/api/pengguna?id=${id}`, { method: 'DELETE', cache: 'no-store' });
+      
+      // Jika endpoint /api/pengguna tidak ada, coba /api/users (opsional logic)
+      if (!res.ok && res.status === 404) {
+         res = await fetch(`/api/users?id=${id}`, { method: 'DELETE' });
+      }
+
       if (!res.ok) {
         const errText = await res.text();
         throw new Error(errText || `HTTP ${res.status}`);
       }
+      
       const result = await res.json();
       setUsers(prev => prev.filter(u => u.userID !== id));
       alert(result.message || 'User berhasil dihapus!');
     } catch (err) {
       console.error('Gagal hapus:', err);
       alert('Gagal menghapus user: ' + err.message);
+    }
+  };
+
+  // --- HANDLER FORM MODAL ---
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleAddUser = async (e) => {
+    e.preventDefault();
+    if (!formData.nama || !formData.email || !formData.password) {
+      alert("Mohon isi semua data!");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          role: activeTab // Tambahkan user sesuai tab yang sedang aktif
+        })
+      });
+
+      const result = await res.json();
+
+      if (res.ok) {
+        alert("User berhasil ditambahkan!");
+        setShowModal(false); // Tutup modal
+        setFormData({ nama: '', email: '', password: '' }); // Reset form
+        fetchUsers(); // Refresh data tabel
+      } else {
+        alert(result.message || "Gagal menambahkan user");
+      }
+    } catch (err) {
+      alert("Error: " + err.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -128,11 +185,88 @@ export default function DatabasePengguna() {
           </table>
         </div>
 
-        <button style={{ position: 'fixed', bottom: '32px', left: '50%', transform: 'translateX(-50%)', background: 'transparent', border: 'none', fontSize: '18px', fontWeight: 600, color: '#666', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', zIndex: 100 }}>
+        {/* --- TOMBOL FLOAT TAMBAH USER --- */}
+        <button 
+          onClick={() => setShowModal(true)}
+          style={{ position: 'fixed', bottom: '32px', left: '50%', transform: 'translateX(-50%)', background: 'transparent', border: 'none', fontSize: '18px', fontWeight: 600, color: '#666', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', zIndex: 100 }}
+        >
           <div style={{ width: '56px', height: '56px', background: '#e5e7eb', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', color: '#666' }}>+</div>
           Tambah User
         </button>
+
       </main>
+
+      {/* --- MODAL POP-UP (Group 146.png) --- */}
+      {showModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            
+            <form onSubmit={handleAddUser}>
+              {/* Input Nama */}
+              <div className={styles.inputGroup}>
+                <span className={styles.inputLabel}>Nama:</span>
+                <input 
+                  type="text" 
+                  name="nama"
+                  placeholder="Masukkan Nama" 
+                  className={styles.inputField}
+                  value={formData.nama}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+
+              {/* Input Email */}
+              <div className={styles.inputGroup}>
+                <span className={styles.inputLabel}>Email:</span>
+                <input 
+                  type="email" 
+                  name="email"
+                  placeholder="Daftar Email" 
+                  className={styles.inputField}
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+
+              {/* Input Password */}
+              <div className={styles.inputGroup}>
+                <span className={styles.inputLabel}>Password:</span>
+                <input 
+                  type="password" 
+                  name="password"
+                  placeholder="Masukkan Password" 
+                  className={styles.inputField}
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+
+              {/* Tombol Aksi */}
+              <div className={styles.modalActions}>
+                <button 
+                  type="button" 
+                  className={styles.btnCancel} 
+                  onClick={() => setShowModal(false)}
+                >
+                  Batal
+                </button>
+                <button 
+                  type="submit" 
+                  className={styles.btnSubmit}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Menyimpan...' : 'Daftar'}
+                </button>
+              </div>
+            </form>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

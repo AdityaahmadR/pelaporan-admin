@@ -11,13 +11,13 @@ const pool = mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0,
   connectTimeout: 30000,
-  ssl: { rejectUnauthorized: false } // penting buat Railway
+  ssl: { rejectUnauthorized: false }
 });
 
-// INI YANG BIKIN VERCEL NGGAK PERNAH PRERENDER API INI
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+// --- FUNGSI GET (Yang sudah ada) ---
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -53,6 +53,60 @@ export async function GET(request) {
       details: error.message 
     }), {
       status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+}
+
+// --- FUNGSI POST (BARU: Tambah User) ---
+export async function POST(request) {
+  try {
+    const body = await request.json();
+    const { nama, email, password, role } = body;
+
+    // Validasi input
+    if (!nama || !email || !password) {
+      return new Response(JSON.stringify({ message: "Data tidak lengkap" }), { 
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Cek email duplikat
+    const [existing] = await pool.query("SELECT userID FROM users WHERE email = ?", [email]);
+    if (existing.length > 0) {
+      return new Response(JSON.stringify({ message: "Email sudah terdaftar" }), { 
+        status: 409,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Default role 'masyarakat' jika tidak ditentukan
+    const userRole = role || 'masyarakat';
+
+    // Insert user baru
+    // Catatan: Password disimpan plain text sesuai permintaan fitur dasar.
+    // Untuk production, sangat disarankan menggunakan hashing (bcrypt).
+    const [result] = await pool.query(
+      "INSERT INTO users (nama, email, password, role) VALUES (?, ?, ?, ?)",
+      [nama, email, password, userRole]
+    );
+
+    return new Response(JSON.stringify({ 
+      message: "User berhasil ditambahkan",
+      userID: result.insertId 
+    }), { 
+      status: 201,
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+  } catch (error) {
+    console.error('API POST Error /api/users:', error);
+    return new Response(JSON.stringify({ 
+      message: "Terjadi kesalahan server",
+      details: error.message 
+    }), { 
+      status: 500, 
       headers: { 'Content-Type': 'application/json' }
     });
   }
