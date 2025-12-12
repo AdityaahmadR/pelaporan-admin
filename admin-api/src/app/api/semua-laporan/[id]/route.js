@@ -40,8 +40,9 @@ export async function GET(request, { params }) {
         finalDeskripsi = finalDeskripsi.replace(imageUrl, "").replace(/Gambar:\s*/i, "");
       }
       let lines = finalDeskripsi.split('\n');
+      const subjectIndex = lines.findIndex(line => line.toLowerCase().includes("subjek:"));
       if (subjectIndex !== -1) {
-        subjectDisplay = lines[subjectIndex].replace(i, "").trim();
+        subjectDisplay = lines[subjectIndex].replace(/subjek:/i, "").trim();
         lines.splice(subjectIndex, 1);
       }
       finalDeskripsi = lines.join('\n').trim();
