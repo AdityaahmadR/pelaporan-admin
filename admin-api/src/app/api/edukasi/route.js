@@ -1,7 +1,7 @@
-// src/app/api/edukasi/route.js
 import connectDB from "@/lib/db";
+import { NextResponse } from "next/server";
 
-// PERBAIKAN #1: Mencegah Vercel melakukan build statis pada route ini.
+// Mencegah Vercel melakukan build statis pada route ini.
 export const dynamic = 'force-dynamic';
 
 // --- FUNGSI GET (Ambil daftar Video) ---
@@ -10,10 +10,10 @@ export async function GET() {
   try {
     connection = await connectDB();
     
+    // Pastikan kolom thumbnail ikut diambil
     const query = "SELECT * FROM edukasi WHERE kategori = 'video' ORDER BY tanggalPublikasi DESC";
     const [rows] = await connection.query(query);
 
-    // PERBAIKAN #2: Gunakan new Response() seperti file lain yang sudah berhasil.
     return new Response(JSON.stringify(rows), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
@@ -21,7 +21,6 @@ export async function GET() {
 
   } catch (error) {
     console.error("❌ Error GET /api/edukasi:", error);
-    // PERBAIKAN #2: Gunakan new Response() juga untuk error.
     return new Response(JSON.stringify({ error: error.message }), { 
       status: 500,
       headers: { 'Content-Type': 'application/json' }
@@ -31,14 +30,14 @@ export async function GET() {
   }
 }
 
-// --- FUNGSI POST (Simpan Data) ---
+// --- FUNGSI POST (Simpan Data & Thumbnail) ---
 export async function POST(request) {
   let connection;
   try {
-    const { judul, isi, kategori } = await request.json();
+    // 1. Terima data thumbnail dari body request
+    const { judul, isi, kategori, thumbnail } = await request.json();
 
     if (!isi || !kategori) {
-      // PERBAIKAN #2: Gunakan new Response()
       return new Response(JSON.stringify({ message: "Data tidak lengkap" }), { 
         status: 400,
         headers: { 'Content-Type': 'application/json' }
@@ -47,10 +46,12 @@ export async function POST(request) {
 
     connection = await connectDB();
 
-    const query = "INSERT INTO edukasi (judul, isi, kategori) VALUES (?, ?, ?)";
-    await connection.query(query, [judul, isi, kategori]);
+    // 2. Masukkan ke Query Insert
+    // Jika thumbnail tidak ada, isi dengan NULL
+    const query = "INSERT INTO edukasi (judul, isi, kategori, thumbnail) VALUES (?, ?, ?, ?)";
+    
+    await connection.query(query, [judul, isi, kategori, thumbnail || null]);
 
-    // PERBAIKAN #2: Gunakan new Response()
     return new Response(JSON.stringify({ message: "Berhasil disimpan" }), { 
       status: 200,
       headers: { 'Content-Type': 'application/json' }
@@ -58,7 +59,6 @@ export async function POST(request) {
 
   } catch (error) {
     console.error("❌ Error POST /api/edukasi:", error);
-    // PERBAIKAN #2: Gunakan new Response()
     return new Response(JSON.stringify({ error: error.message }), { 
       status: 500,
       headers: { 'Content-Type': 'application/json' }

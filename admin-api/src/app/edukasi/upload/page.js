@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
 import styles from './Upload.module.css';
 
-// 1. KOMPONEN KONTEN (Memisahkan logika yang pakai useSearchParams)
+// 1. KOMPONEN KONTEN
 function EditVideoContent() {
   const router = useRouter();
   const searchParams = useSearchParams(); 
@@ -64,7 +64,10 @@ function EditVideoContent() {
     const videoData = {
       judul: judul,
       isi: deskripsi || "/placeholder-video", 
-      kategori: "video"
+      kategori: "video",
+      // TAMBAHAN: Kirim Thumbnail ke API
+      // Kita gunakan link static dulu karena belum ada cloud storage
+      thumbnail: "https://i.ibb.co/1fYKT5sb/b92bb4c90cef.jpg"
     };
 
     try {
@@ -77,7 +80,7 @@ function EditVideoContent() {
       if (res.ok) {
         setTimeout(() => {
           alert("Video Berhasil Diunggah!");
-          router.push('/app/edukasi'); // Kembali ke halaman list
+          router.push('/edukasi'); // Balik ke halaman list
         }, 500);
       } else {
         alert("Gagal mengunggah");
@@ -188,7 +191,7 @@ function EditVideoContent() {
   );
 }
 
-// 2. HALAMAN UTAMA (Parent Component dengan Suspense)
+// 2. HALAMAN UTAMA
 export default function EditVideoPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
@@ -197,7 +200,6 @@ export default function EditVideoPage() {
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} activePage="/edukasi" />
 
       <main className={`${styles.content} ${!sidebarOpen ? styles.collapsed : ''}`}>
-        {/* Suspense Boundary Wajib di Next.js 16 untuk Client Component yang pakai useSearchParams */}
         <Suspense fallback={<p style={{padding: 40, textAlign:'center'}}>Memuat data upload...</p>}>
           <EditVideoContent />
         </Suspense>
