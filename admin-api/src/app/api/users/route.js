@@ -1,6 +1,7 @@
 // src/app/api/users/route.js
 import mysql from 'mysql2/promise';
-import bcrypt from 'bcryptjs'; // 1. IMPORT BCRYPTJS
+import bcrypt from 'bcryptjs';
+import crypto from 'crypto'; // 1. IMPORT CRYPTO
 
 const pool = mysql.createPool({
   host: process.env.MYSQLHOST,
@@ -12,10 +13,9 @@ const pool = mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0,
   connectTimeout: 30000,
-  ssl: { rejectUnauthorized: false } // Konfigurasi SSL untuk Railway/PlanetScale
+  ssl: { rejectUnauthorized: false }
 });
 
-// Konfigurasi agar Vercel selalu merender ulang API ini (Dynamic)
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
@@ -83,16 +83,19 @@ export async function POST(request) {
       });
     }
 
-    // 3. Tentukan Role (Default: masyarakat)
+    // 3. GENERATE UID (Agar tidak NULL)
+    const uid = crypto.randomUUID();
+
+    // 4. Tentukan Role
     const userRole = role || 'masyarakat';
 
-    // 4. LAKUKAN HASHING PASSWORD (ENKRIPSI)
+    // 5. Hash Password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 5. Simpan ke Database (Password yang disimpan adalah versi hash)
+    // 6. Simpan ke Database (Sertakan UID)
     const [result] = await pool.query(
-      "INSERT INTO users (nama, email, password, role) VALUES (?, ?, ?, ?)",
-      [nama, email, hashedPassword, userRole]
+      "INSERT INTO users (uid, nama, email, password, role) VALUES (?, ?, ?, ?, ?)",
+      [uid, nama, email, hashedPassword, userRole]
     );
 
     return new Response(JSON.stringify({ 
