@@ -120,8 +120,8 @@
 /* === HEADER HALAMAN (PERBAIKAN POSISI) === */
 .header {
   position: relative;
-  /* Memberi ruang di bawah agar teks tidak menempel ke konten, tapi tetap proporsional */
-  padding-bottom: 16px; 
+  /* Jarak dalam (bawah) diperbesar agar garis abu-abu turun jauh ke bawah */
+  padding-bottom: 24px; 
   margin-bottom: 24px;
   text-align: left;
   padding-left: 12px;
@@ -136,18 +136,17 @@
   display: inline-block;
   position: relative;
   cursor: default;
-  /* Z-Index lebih tinggi agar garis merahnya ada di atas garis abu */
   z-index: 2; 
 }
 
-/* Garis Merah (Indikator Aktif) */
+/* Garis Merah (Indikator) */
 .header h2::after {
   content: '';
   position: absolute;
   left: 0;
   right: 0;
-  /* Bottom diset -17px agar posisinya pas menumpuk di atas garis abu-abu */
-  bottom: -17px; 
+  /* Bottom diset -8px agar nempel dekat dengan teks, JAUH dari garis abu */
+  bottom: -8px; 
   height: 4px;
   background: #d71c1c;
   border-radius: 2px;
@@ -160,11 +159,10 @@
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 0;
+  bottom: 0; /* Tetap di paling dasar container */
   width: 100%;
   height: 1px;
   background: #e5e7eb;
-  /* Z-Index lebih rendah agar berada di belakang garis merah */
   z-index: 1; 
 }
 
