@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Sidebar from '@/components/Sidebar';
 import styles from './Edukasi.module.css';
-import { useRouter } from 'next/navigation'; // 1. Import Router
+import { useRouter } from 'next/navigation'; 
 
 export default function EdukasiPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -14,7 +14,7 @@ export default function EdukasiPage() {
   const [loading, setLoading] = useState(true);
   
   const fileInputRef = useRef(null);
-  const router = useRouter(); // 2. Definisi Router
+  const router = useRouter(); 
 
   // Fetch Data Video
   useEffect(() => {
@@ -30,18 +30,14 @@ export default function EdukasiPage() {
     finally { setLoading(false); }
   };
 
-  // --- LOGIKA BARU: REDIRECT KE HALAMAN EDIT ---
+  // Logic Upload (Redirect ke halaman edit)
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Hitung ukuran file (MB)
     const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
-    
-    // Ambil nama file & encode agar aman di URL
     const fileName = encodeURIComponent(file.name);
     
-    // Pindah ke halaman upload baru dengan membawa data
     router.push(`/edukasi/upload?name=${fileName}&size=${sizeMB}`);
   };
 
@@ -49,7 +45,7 @@ export default function EdukasiPage() {
     fileInputRef.current.click();
   };
 
-  // Simpan Berita (Tetap di halaman ini)
+  // Logic Simpan Berita
   const handleNewsSubmit = async (e) => {
     if (e.key === 'Enter') {
       if (!newsLink) return;

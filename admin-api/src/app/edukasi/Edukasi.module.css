@@ -1,20 +1,23 @@
 /* === LAYOUT UTAMA === */
 .page {
   display: block;
-  min-height: 100vh;
+  height: 100vh; /* Pastikan container utama setinggi layar */
   background: #fff;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+  overflow: hidden; /* Sembunyikan scrollbar di body utama agar rapi */
   position: relative;
-  overflow-x: hidden;
 }
 
-/* === CONTENT WRAPPER === */
+/* === CONTENT WRAPPER (YANG BISA DI-SCROLL) === */
 .content {
   margin-left: 280px;
   padding: 40px 60px;
   transition: margin-left 0.25s ease;
-  min-height: 100vh;
-  /* Kita gunakan flex column agar mudah mengatur alignment per section */
+  
+  /* PERBAIKAN SCROLL: */
+  height: 100vh; /* Tinggi konten mengikuti tinggi layar */
+  overflow-y: auto; /* Aktifkan scroll vertikal jika konten panjang */
+  
   display: flex;
   flex-direction: column;
 }
@@ -37,8 +40,9 @@
   align-items: center;
   text-align: center;
   
-  /* PERUBAHAN: Membuat elemen ini berada di tengah */
+  /* Margin auto kiri-kanan untuk center */
   margin: 0 auto 40px auto; 
+  flex-shrink: 0; /* Agar tidak mengecil saat di-scroll */
 }
 
 .uploadIcon {
@@ -74,11 +78,10 @@
   width: 100%;
   max-width: 800px;
   
-  /* PERUBAHAN: Membuat elemen ini berada di tengah */
+  /* Center alignment */
   margin: 0 auto 40px auto;
-  
-  /* Opsional: Agar judul 'Masukkan Berita' juga center */
   text-align: center; 
+  flex-shrink: 0;
 }
 
 .sectionTitle {
@@ -86,11 +89,8 @@
   font-weight: 500;
   color: #000;
   margin-bottom: 15px;
-  text-align: left; /* Judul tetap rata kiri agar rapi dengan input, atau ubah center jika mau */
+  text-align: left; 
 }
-
-/* Jika ingin judul berita rata tengah juga, ubah text-align di atas jadi center */
-/* Namun biasanya input lebih bagus jika judulnya sejajar dengan inputnya */
 
 .newsInput {
   width: 100%;
@@ -112,11 +112,11 @@
   width: 100%;
   max-width: 800px;
   
-  /* TIDAK ADA margin: 0 auto, jadi dia akan tetap align default (Kiri) */
-  margin-bottom: 40px;
+  /* Tetap rata kiri (default margin-left 0 relatif terhadap parent) */
+  margin-bottom: 60px; /* Tambahan margin bawah agar item terakhir tidak kepotong */
 }
 
-/* Agar judul "Video Anda" tetap rapi */
+/* Agar judul "Video Anda" rata kiri */
 .videoSection .sectionTitle {
   text-align: left; 
 }
