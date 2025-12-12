@@ -22,6 +22,9 @@ export default function DatabasePengguna() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // --- STATE SEARCH (PENCARIAN) ---
+  const [searchQuery, setSearchQuery] = useState("");
+
   // Fetch Data Users
   const fetchUsers = async () => {
     setLoading(true);
@@ -32,7 +35,6 @@ export default function DatabasePengguna() {
       setUsers(data);
     } catch (err) {
       console.error(err);
-      // alert('Gagal mengambil data: ' + err.message); // Optional alert
     } finally {
       setLoading(false);
     }
@@ -40,21 +42,18 @@ export default function DatabasePengguna() {
 
   useEffect(() => {
     fetchUsers();
+    setSearchQuery(""); // Reset search saat ganti tab
   }, [activeTab]);
 
   // Hapus User
   const hapusUser = async (id) => {
     if (!confirm('Yakin ingin menghapus user ini?')) return;
     try {
-      // Perbaikan endpoint: Sesuaikan dengan struktur API Anda
-      // Jika endpoint DELETE Anda di /api/pengguna, gunakan itu. 
-      // Tapi karena POST kita buat di /api/users, idealnya DELETE juga di sana.
-      // Kita coba fetch ke /api/pengguna dulu sesuai kode lama Anda, atau sesuaikan.
-      let res = await fetch(`/api/pengguna?id=${id}`, { method: 'DELETE', cache: 'no-store' });
+      let res = await fetch(`/api/users?id=${id}`, { method: 'DELETE' });
       
-      // Jika endpoint /api/pengguna tidak ada, coba /api/users (opsional logic)
+      // Fallback jika endpoint ada di /api/pengguna
       if (!res.ok && res.status === 404) {
-         res = await fetch(`/api/users?id=${id}`, { method: 'DELETE' });
+         res = await fetch(`/api/pengguna?id=${id}`, { method: 'DELETE' });
       }
 
       if (!res.ok) {
@@ -91,7 +90,7 @@ export default function DatabasePengguna() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
-          role: activeTab // Tambahkan user sesuai tab yang sedang aktif
+          role: activeTab 
         })
       });
 
@@ -99,9 +98,9 @@ export default function DatabasePengguna() {
 
       if (res.ok) {
         alert("User berhasil ditambahkan!");
-        setShowModal(false); // Tutup modal
-        setFormData({ nama: '', email: '', password: '' }); // Reset form
-        fetchUsers(); // Refresh data tabel
+        setShowModal(false); 
+        setFormData({ nama: '', email: '', password: '' }); 
+        fetchUsers(); 
       } else {
         alert(result.message || "Gagal menambahkan user");
       }
@@ -112,6 +111,15 @@ export default function DatabasePengguna() {
     }
   };
 
+  // --- LOGIKA FILTER SEARCH ---
+  const filteredUsers = users.filter((user) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      user.nama.toLowerCase().includes(query) || 
+      user.email.toLowerCase().includes(query)
+    );
+  });
+
   return (
     <div className={`${styles.page} ${!sidebarOpen ? styles.sidebarCollapsed : ''}`}>
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} activePage="/pengguna" />
@@ -120,7 +128,14 @@ export default function DatabasePengguna() {
         <div className={styles.searchWrapper}>
           <div className={styles.searchBar}>
             <Image src="/Search.png" alt="Search" width={20} height={20} className={styles.searchIcon} />
-            <input type="text" placeholder="Search" className={styles.searchInput} />
+            {/* INPUT SEARCH AKTIF */}
+            <input 
+              type="text" 
+              placeholder="Search Nama atau Email..." 
+              className={styles.searchInput} 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
         </div>
         
@@ -138,7 +153,8 @@ export default function DatabasePengguna() {
       </div>
 
       <main className={`${styles.content} ${!sidebarOpen ? styles.collapsed : ''}`}>
-        <header className={styles.header} style={{ paddingBottom: '32px' }}>
+        
+        <header className={styles.header}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '40px', position: 'relative', paddingLeft: '12px' }}>
             <h2 onClick={() => setActiveTab('masyarakat')} style={{ margin: 0, fontSize: '26px', fontWeight: activeTab === 'masyarakat' ? 800 : 700, color: '#212529', cursor: 'pointer', position: 'relative', transition: 'all 0.3s ease' }}>
               Database Masyarakat
@@ -165,10 +181,16 @@ export default function DatabasePengguna() {
             <tbody>
               {loading ? (
                 <tr><td colSpan={4} style={{ textAlign: 'center', padding: '60px', color: '#999' }}>Memuat data...</td></tr>
-              ) : users.length === 0 ? (
-                <tr><td colSpan={4} style={{ textAlign: 'center', padding: '60px', color: '#999' }}>Tidak ada data {activeTab}</td></tr>
+              ) : filteredUsers.length === 0 ? (
+                // Tampilkan pesan berbeda jika hasil search kosong vs data kosong
+                <tr>
+                  <td colSpan={4} style={{ textAlign: 'center', padding: '60px', color: '#999' }}>
+                    {users.length === 0 ? `Tidak ada data ${activeTab}` : `Pencarian "${searchQuery}" tidak ditemukan`}
+                  </td>
+                </tr>
               ) : (
-                users.map(user => (
+                // MAPPING DARI FILTERED USERS
+                filteredUsers.map(user => (
                   <tr key={user.userID} style={{ borderBottom: '1px solid #e5e7eb' }}>
                     <td style={{ padding: '16px', fontWeight: 600 }}>{user.nama}</td>
                     <td style={{ padding: '16px', color: '#666' }}>{user.email}</td>
@@ -185,7 +207,7 @@ export default function DatabasePengguna() {
           </table>
         </div>
 
-        {/* --- TOMBOL FLOAT TAMBAH USER --- */}
+        {/* TOMBOL FLOAT TAMBAH USER */}
         <button 
           onClick={() => setShowModal(true)}
           style={{ position: 'fixed', bottom: '32px', left: '50%', transform: 'translateX(-50%)', background: 'transparent', border: 'none', fontSize: '18px', fontWeight: 600, color: '#666', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', zIndex: 100 }}
@@ -196,13 +218,12 @@ export default function DatabasePengguna() {
 
       </main>
 
-      {/* --- MODAL POP-UP (Group 146.png) --- */}
+      {/* MODAL POP-UP */}
       {showModal && (
         <div className={styles.modalOverlay}>
           <div className={styles.modalContent}>
             
             <form onSubmit={handleAddUser}>
-              {/* Input Nama */}
               <div className={styles.inputGroup}>
                 <span className={styles.inputLabel}>Nama:</span>
                 <input 
@@ -216,7 +237,6 @@ export default function DatabasePengguna() {
                 />
               </div>
 
-              {/* Input Email */}
               <div className={styles.inputGroup}>
                 <span className={styles.inputLabel}>Email:</span>
                 <input 
@@ -230,7 +250,6 @@ export default function DatabasePengguna() {
                 />
               </div>
 
-              {/* Input Password */}
               <div className={styles.inputGroup}>
                 <span className={styles.inputLabel}>Password:</span>
                 <input 
@@ -244,7 +263,6 @@ export default function DatabasePengguna() {
                 />
               </div>
 
-              {/* Tombol Aksi */}
               <div className={styles.modalActions}>
                 <button 
                   type="button" 
