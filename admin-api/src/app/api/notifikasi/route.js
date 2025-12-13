@@ -1,6 +1,4 @@
 // src/app/api/notifikasi/route.js
-
-// PERBAIKAN UTAMA: Impor 'admin' dari file helper yang sudah kita buat, bukan dari library-nya langsung.
 import { admin } from '@/lib/firebase-admin';
 
 // Beritahu Vercel untuk tidak melakukan build statis pada route ini.
@@ -8,7 +6,6 @@ export const dynamic = 'force-dynamic';
 
 /**
  * Fungsi ini akan dieksekusi ketika ada request POST ke /api/notifikasi
- * (atau nama baru yang Anda gunakan).
  */
 export async function POST(request) {
   try {
@@ -16,21 +13,37 @@ export async function POST(request) {
     const { deskripsi, lokasi, prioritas } = laporanBaru;
 
     if (!deskripsi || !lokasi || !prioritas) {
-      // Menggunakan new Response() agar konsisten dengan file lain yang sudah berhasil.
       return new Response(
         JSON.stringify({ success: false, message: 'Data laporan tidak lengkap.' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
-    // Periksa apakah prioritasnya adalah 'darurat'
-    if (prioritas.toLowerCase() === 'darurat') {
-      const topic = 'laporan_darurat';
+    let notificationType = null;
+    let title = "";
+
+    // --- LOGIKA BARU: TENTUKAN TIPE NOTIFIKASI ---
+    const prioritasLower = prioritas.toLowerCase();
+    
+    if (prioritasLower === 'darurat') {
+      notificationType = 'darurat'; // Akan membuka layar merah
+      title = 'Laporan Darurat!';
+    } else if (prioritasLower === 'sedang') {
+      notificationType = 'manual'; // Akan membuka layar kuning
+      title = 'Laporan Baru Diterima!';
+    }
+    
+    // Jika ada tipe notifikasi yang perlu dikirim
+    if (notificationType) {
+      const topic = 'laporan_darurat'; // Semua petugas subscribe ke topik ini
+      
       const message = {
         data: {
-          title: 'Laporan Darurat!',
+          // Kirim data yang diperlukan oleh aplikasi
+          title: title,
           body: deskripsi,
           googleMapsLink: lokasi,
+          notificationType: notificationType, // DATA PENTING UNTUK ANDROID
         },
         topic: topic,
         android: {
@@ -38,12 +51,14 @@ export async function POST(request) {
         },
       };
 
-      // Baris ini sekarang akan berfungsi karena 'admin' sudah diimpor dengan benar.
+      // Kirim pesan notifikasi
       const response = await admin.messaging().send(message);
-      console.log('Pesan darurat berhasil dikirim:', response);
+      console.log(`Pesan tipe '${notificationType}' berhasil dikirim:`, response);
+    } else {
+      console.log(`Prioritas '${prioritas}' tidak memerlukan notifikasi.`);
     }
 
-    // Kirim respons sukses.
+    // Kirim respons sukses
     return new Response(
       JSON.stringify({
         success: true,
@@ -54,7 +69,6 @@ export async function POST(request) {
 
   } catch (error) {
     console.error('Error saat mengirim notifikasi:', error);
-    // Kirim respons error.
     return new Response(
       JSON.stringify({
         success: false,
