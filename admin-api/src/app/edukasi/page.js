@@ -27,7 +27,6 @@ export default function EdukasiPage() {
       const res = await fetch('/api/edukasi');
       const data = await res.json();
       
-      // Debugging: Cek data di console browser (F12) untuk memastikan thumbnail ada
       console.log("Data Video:", data);
 
       if (Array.isArray(data)) setVideos(data);
@@ -145,11 +144,11 @@ export default function EdukasiPage() {
                       src={video.thumbnail} 
                       alt={video.judul} 
                       className={styles.thumbnailImage} 
-                      // --- PERBAIKAN UTAMA DISINI ---
-                      // Jika gambar error (link rusak), ganti source ke gambar default
+                      // --- PERBAIKAN DISINI ---
+                      // Menggunakan placehold.co yang TIDAK diblokir di Indonesia
                       onError={(e) => { 
-                        e.target.onerror = null; // Mencegah loop infinite
-                        e.target.src = "https://i.ibb.co/1fYKT5sb/b92bb4c90cef.jpg"; 
+                        e.target.onerror = null; 
+                        e.target.src = "https://placehold.co/600x400/png?text=Thumbnail+Tidak+Tersedia"; 
                       }} 
                     />
                   ) : (
