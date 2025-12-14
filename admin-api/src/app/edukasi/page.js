@@ -26,6 +26,10 @@ export default function EdukasiPage() {
     try {
       const res = await fetch('/api/edukasi');
       const data = await res.json();
+      
+      // Debugging: Cek data di console browser (F12) untuk memastikan thumbnail ada
+      console.log("Data Video:", data);
+
       if (Array.isArray(data)) setVideos(data);
     } catch (error) { console.error(error); } 
     finally { setLoading(false); }
@@ -137,9 +141,24 @@ export default function EdukasiPage() {
 
                 <div className={styles.thumbnailPlaceholder}>
                   {video.thumbnail ? (
-                    <img src={video.thumbnail} alt={video.judul} className={styles.thumbnailImage} onError={(e) => { e.target.style.display = 'none'; }} />
+                    <img 
+                      src={video.thumbnail} 
+                      alt={video.judul} 
+                      className={styles.thumbnailImage} 
+                      // --- PERBAIKAN UTAMA DISINI ---
+                      // Jika gambar error (link rusak), ganti source ke gambar default
+                      onError={(e) => { 
+                        e.target.onerror = null; // Mencegah loop infinite
+                        e.target.src = "https://i.ibb.co/1fYKT5sb/b92bb4c90cef.jpg"; 
+                      }} 
+                    />
                   ) : (
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                    // Jika data thumbnail NULL dari awal
+                    <div style={{width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center', background:'#eee'}}>
+                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2">
+                        <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                      </svg>
+                    </div>
                   )}
                 </div>
                 <div className={styles.videoInfo}>
