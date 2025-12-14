@@ -11,8 +11,11 @@ export default function EdukasiPage() {
   const [newsLink, setNewsLink] = useState("");
   const [loading, setLoading] = useState(true);
   
-  // State untuk Menu Titik Tiga (Menyimpan ID video yang menunya sedang terbuka)
+  // State untuk Menu Titik Tiga
   const [openMenuId, setOpenMenuId] = useState(null);
+  
+  // State Khusus untuk melacak gambar mana saja yang ERROR
+  const [imageErrors, setImageErrors] = useState({});
 
   const fileInputRef = useRef(null);
   const router = useRouter(); 
@@ -27,6 +30,7 @@ export default function EdukasiPage() {
       const res = await fetch('/api/edukasi');
       const data = await res.json();
       
+      // Debugging data di console
       console.log("Data Video:", data);
 
       if (Array.isArray(data)) setVideos(data);
@@ -42,15 +46,14 @@ export default function EdukasiPage() {
       const res = await fetch(`/api/edukasi/${id}`, { method: 'DELETE' });
       if (res.ok) {
         alert("Video berhasil dihapus");
-        fetchVideos(); // Refresh data setelah hapus
+        fetchVideos(); 
       }
     } catch (err) { alert("Gagal menghapus"); }
     setOpenMenuId(null);
   };
 
-  // --- LOGIKA EDIT (Navigasi ke halaman Upload dengan Data) ---
+  // --- LOGIKA EDIT ---
   const handleEdit = (video) => {
-    // Kirim data video lewat URL parameter
     const params = new URLSearchParams({
       mode: 'edit',
       id: video.edukasiID,
@@ -61,7 +64,7 @@ export default function EdukasiPage() {
     router.push(`/edukasi/upload?${params.toString()}`);
   };
 
-  // Toggle Menu (Buka/Tutup)
+  // Toggle Menu
   const toggleMenu = (id) => {
     setOpenMenuId(openMenuId === id ? null : id);
   };
@@ -72,7 +75,6 @@ export default function EdukasiPage() {
     if (!file) return;
     const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
     const fileName = encodeURIComponent(file.name);
-    // Navigasi upload biasa
     router.push(`/edukasi/upload?name=${fileName}&size=${sizeMB}`);
   };
 
@@ -91,6 +93,11 @@ export default function EdukasiPage() {
         if (res.ok) { alert("Link berita berhasil disimpan!"); setNewsLink(""); fetchVideos(); }
       } catch (err) { alert("Gagal simpan berita"); }
     }
+  };
+
+  // Fungsi Handler: Jika gambar error, catat ID-nya
+  const handleImageError = (id) => {
+    setImageErrors((prev) => ({ ...prev, [id]: true }));
   };
 
   return (
@@ -130,7 +137,7 @@ export default function EdukasiPage() {
                   ⋮
                 </button>
 
-                {/* MENU DROPDOWN (Hanya muncul jika ID cocok) */}
+                {/* MENU DROPDOWN */}
                 {openMenuId === video.edukasiID && (
                   <div className={styles.menuDropdown} onMouseLeave={() => setOpenMenuId(null)}>
                     <button className={styles.menuItem} onClick={() => handleEdit(video)}>Edit</button>
@@ -139,26 +146,29 @@ export default function EdukasiPage() {
                 )}
 
                 <div className={styles.thumbnailPlaceholder}>
-                  {video.thumbnail ? (
+                  
+                  {/* LOGIKA TAMPILAN GAMBAR AMAN */}
+                  {/* 1. Cek apakah ada thumbnail DAN apakah thumbnail itu belum ditandai error */}
+                  {video.thumbnail && !imageErrors[video.edukasiID] ? (
                     <img 
                       src={video.thumbnail} 
                       alt={video.judul} 
                       className={styles.thumbnailImage} 
-                      // --- PERBAIKAN DISINI ---
-                      // Menggunakan placehold.co yang TIDAK diblokir di Indonesia
-                      onError={(e) => { 
-                        e.target.onerror = null; 
-                        e.target.src = "https://placehold.co/600x400/png?text=Thumbnail+Tidak+Tersedia"; 
-                      }} 
+                      // Jika error (diblokir/rusak), panggil fungsi handleImageError
+                      onError={() => handleImageError(video.edukasiID)} 
                     />
                   ) : (
-                    // Jika data thumbnail NULL dari awal
-                    <div style={{width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center', background:'#eee'}}>
-                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2">
-                        <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                    // 2. Fallback: Tampilkan Kotak Abu-abu + Icon (Tidak butuh internet)
+                    <div style={{width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center', background:'#f0f0f0', color:'#888', flexDirection:'column'}}>
+                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                        <polyline points="21 15 16 10 5 21"></polyline>
                       </svg>
+                      <span style={{fontSize:'12px', marginTop:'5px', fontWeight:500}}>No Image</span>
                     </div>
                   )}
+
                 </div>
                 <div className={styles.videoInfo}>
                   <p className={styles.videoTitle}>{video.judul}</p>
