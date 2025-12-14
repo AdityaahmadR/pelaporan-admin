@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
-import styles from './upload.module.css';
+import styles from './Upload.module.css';
 
 export default function UploadPage() {
   const router = useRouter();
