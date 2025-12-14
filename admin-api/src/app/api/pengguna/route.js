@@ -1,7 +1,7 @@
 // src/app/api/pengguna/route.js
+
 import mysql from 'mysql2/promise';
-import { NextResponse } from 'next/server';
-import { initializeApp, getApps, cert } from 'firebase-admin/app';
+import { NextResponse } from 'next/server';import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 
 // Inisialisasi Firebase Admin (hanya sekali)
@@ -30,6 +30,48 @@ const pool = mysql.createPool({
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+// --- FUNGSI GET (BARU & DISEMPURNAKAN) ---
+export async function GET(request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const role = searchParams.get('role');
+
+    // Query dasar untuk mengambil user dan menghitung laporannya
+    let query = `
+      SELECT
+        u.*,
+        COUNT(l.laporanID) AS jumlahLaporan
+      FROM
+        users u
+      LEFT JOIN
+        laporan l ON u.userID = l.userID
+    `;
+
+    const values = [];
+
+    // Jika ada parameter 'role', tambahkan kondisi WHERE
+    if (role) {
+      query += ' WHERE u.role = ?';
+      values.push(role);
+    }
+
+    // Kelompokkan hasil berdasarkan userID untuk memastikan COUNT berjalan benar
+    query += ' GROUP BY u.userID ORDER BY u.nama ASC';
+
+    const [rows] = await pool.query(query, values);
+
+    return NextResponse.json(rows, { status: 200 });
+
+  } catch (error) {
+    console.error('Error GET /api/pengguna:', error);
+    return NextResponse.json({
+      error: 'Gagal mengambil data pengguna',
+      details: error.message
+    }, { status: 500 });
+  }
+}
+
+// --- FUNGSI DELETE (Tetap sama, sudah benar) ---
 export async function DELETE(request) {
   try {
     const { searchParams } = new URL(request.url);
