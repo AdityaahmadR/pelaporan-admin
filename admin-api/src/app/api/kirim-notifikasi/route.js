@@ -1,5 +1,4 @@
-// File: src/app/api/kirim-notifikasi/route.js (PERBAIKAN FINAL)
-
+// File: src/app/api/kirim-notifikasi/route.js (PERBAIKAN FINAL - UNTUK MENGIRIM)
 import { admin } from '@/lib/firebase-admin';
 import connectDB from "@/lib/db";
 
@@ -16,17 +15,16 @@ export async function POST(request) {
   try {
     connection = await connectDB();
     
-    // --- PERBAIKAN 1: Menyesuaikan dengan struktur tabel 'notifikasi' ---
     const query = "INSERT INTO notifikasi (penerimaID, isiPesan) VALUES (?, ?)";
-    const isiPesan = `${title}: ${body}`;
+    const isiPesan = `${title}: ${body}`; // Gabungkan judul dan isi
+    
     await connection.execute(query, [userID, isiPesan]);
 
-    // --- PERBAIKAN 2: Memastikan semua nilai data FCM adalah string ---
     const fcmData = {
       title: String(title),
       body: String(body),
       type: String(type || 'default'),
-      contentID: String(contentID || '') // Mengubah null/undefined menjadi string kosong
+      contentID: String(contentID || '')
     };
 
     const topic = `user_${userID}`;
@@ -41,12 +39,7 @@ export async function POST(request) {
 
   } catch (error) {
     console.error("Error:", error);
-    // Memberikan pesan error yang lebih spesifik
-    const errorMessage = error.code === 'messaging/invalid-argument' 
-      ? "FCM Error: " + error.message 
-      : "Database or server error: " + error.message;
-
-    return new Response(JSON.stringify({ error: errorMessage }), { status: 500 });
+    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
   } finally {
     if (connection) await connection.end();
   }
