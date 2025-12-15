@@ -167,29 +167,62 @@
 
 .statusActions {
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-end;
 }
 
-.statusButton {
-  padding: 8px 16px;
+.statusIndicator {
+  display: flex;
+  align-items: center;
+}
+
+.statusText {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 16px;
+  text-align: center;
+  min-width: 120px;
+}
+
+.statusText.baru {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.statusText.SedangDiproses {
+  background: #fef3c7;
+  color: #d97706;
+  border: 1px solid #fde68a;
+}
+
+.statusText.Selesai {
+  background: #d1fae5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+
+.actionButton {
+  padding: 10px 20px;
   border-radius: 20px;
-  border: 1px solid #e2e8f0;
-  background: white;
-  color: #718096;
+  border: none;
+  color: white;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.statusButton.active {
-  background: #1a202c;
-  color: white;
-  border-color: #1a202c;
+.actionButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
-.statusButton:hover:not(.active) {
-  background: #f7fafc;
+.actionButton:active {
+  transform: translateY(0);
 }
 
 /* === USER PROFILE === */
@@ -292,8 +325,9 @@
   .topBar { padding: 10px 16px; flex-direction: column; height: auto; gap: 10px; }
   .detailHeader { flex-direction: column; gap: 15px; }
   .metaInfo { align-items: flex-start; text-align: left; width: 100%; }
-  .statusActions { width: 100%; justify-content: space-between; }
-  .statusButton { flex: 1; text-align: center; }
+  .statusActions { width: 100%; flex-direction: row; justify-content: space-between; align-items: center; }
+  .statusIndicator { order: 1; }
+  .actionButton { order: 2; }
   
   .page { height: auto; overflow: visible; }
   .content { height: auto; overflow: visible; }

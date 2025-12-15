@@ -37,12 +37,27 @@ export default function DetailPage() {
       });
   }, [id]);
 
-  // --- FUNGSI UTAMA YANG DIPERBAIKI ---
-  async function updateStatus(newStatus) {
+  // --- FUNGSI UNTUK MENDAPATKAN STATUS SELANJUTNYA ---
+  function getNextStatusInfo(currentStatus) {
+    if (currentStatus === 'baru') {
+      return { nextStatus: 'Sedang Diproses', buttonText: 'Terima Laporan', buttonColor: '#10b981' }; // hijau
+    } else if (currentStatus === 'Sedang Diproses') {
+      return { nextStatus: 'Selesai', buttonText: 'Tandai Selesai', buttonColor: '#f59e0b' }; // orange
+    } else {
+      return null; // sudah selesai, tidak ada tombol
+    }
+  }
+
+  // --- FUNGSI UPDATE STATUS YANG DIPERBAIKI ---
+  async function updateStatusToNext() {
     if (!laporan || !id) return;
 
-    // Simpan status asli untuk fallback jika gagal
+    const nextStatusInfo = getNextStatusInfo(laporan.status);
+    if (!nextStatusInfo) return; // sudah selesai
+
+    const newStatus = nextStatusInfo.nextStatus;
     const originalStatus = laporan.status;
+
     // Update UI secara optimis
     setLaporan(prev => ({ ...prev, status: newStatus }));
 
@@ -54,10 +69,9 @@ export default function DetailPage() {
         body: JSON.stringify({ status: newStatus }),
       });
 
-      // --- PERBAIKAN DIMULAI DI SINI ---
       // 2. Siapkan payload notifikasi
       const notifPayload = {
-        userID: laporan.userID, // Pastikan 'userID' ada di data laporan Anda
+        userID: laporan.userID,
         type: '',
         title: '',
         body: ''
@@ -82,7 +96,6 @@ export default function DetailPage() {
           body: JSON.stringify(notifPayload)
         });
       }
-      // --- PERBAIKAN SELESAI ---
 
     } catch (error) {
       console.error("Gagal update atau kirim notif:", error);
@@ -163,9 +176,25 @@ export default function DetailPage() {
             <div className={styles.metaInfo}>
               <span>{formatDateDetail(laporan.createdAt)}</span>
               <div className={styles.statusActions}>
-                <button className={`${styles.statusButton} ${laporan.status === 'baru' ? styles.active : ''}`} onClick={() => updateStatus('baru')}>Laporan Masuk</button>
-                <button className={`${styles.statusButton} ${laporan.status === 'Sedang Diproses' ? styles.active : ''}`} onClick={() => updateStatus('Sedang Diproses')}>Sedang Berlangsung</button>
-                <button className={`${styles.statusButton} ${laporan.status === 'Selesai' ? styles.active : ''}`} onClick={() => updateStatus('Selesai')}>Selesai</button>
+                {/* Status Indicator */}
+                <div className={styles.statusIndicator}>
+                  <span className={`${styles.statusText} ${styles[laporan.status]}`}>
+                    {laporan.status === 'baru' ? 'Laporan Masuk' : 
+                     laporan.status === 'Sedang Diproses' ? 'Sedang Diproses' : 
+                     'Selesai'}
+                  </span>
+                </div>
+                
+                {/* Action Button - hanya tampil jika belum selesai */}
+                {getNextStatusInfo(laporan.status) && (
+                  <button 
+                    className={styles.actionButton}
+                    onClick={updateStatusToNext}
+                    style={{ backgroundColor: getNextStatusInfo(laporan.status).buttonColor }}
+                  >
+                    {getNextStatusInfo(laporan.status).buttonText}
+                  </button>
+                )}
               </div>
             </div>
           </div>
