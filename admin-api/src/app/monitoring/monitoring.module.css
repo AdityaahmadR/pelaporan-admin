@@ -1,4 +1,4 @@
-/* === LAYOUT UTAMA === */
+/* === LAYOUT UTAMA (BAWAAN) === */
 .page {
   display: block;
   min-height: 100vh;
@@ -75,10 +75,6 @@
   font-weight: 500;
 }
 
-.searchInput::placeholder {
-  color: #a0aec0;
-}
-
 /* === UPLOAD BUTTON === */
 .uploadButton {
   display: flex;
@@ -117,17 +113,15 @@
   margin-left: 72px;
 }
 
-/* === HEADER HALAMAN (PERBAIKAN POSISI) === */
+/* === HEADER HALAMAN === */
 .header {
   position: relative;
-  /* Jarak dalam (bawah) diperbesar agar garis abu-abu turun jauh ke bawah */
   padding-bottom: 24px; 
-  margin-bottom: 24px;
+  margin-bottom: 30px;
   text-align: left;
   padding-left: 12px;
 }
 
-/* Judul Halaman */
 .header h2 {
   margin: 0;
   font-size: 26px;
@@ -135,17 +129,14 @@
   color: #212529;
   display: inline-block;
   position: relative;
-  cursor: default;
   z-index: 2; 
 }
 
-/* Garis Merah (Indikator) */
 .header h2::after {
   content: '';
   position: absolute;
   left: 0;
   right: 0;
-  /* Bottom diset -8px agar nempel dekat dengan teks, JAUH dari garis abu */
   bottom: -8px; 
   height: 4px;
   background: #d71c1c;
@@ -153,61 +144,172 @@
   z-index: 2;
 }
 
-/* Garis Abu-abu Panjang (Background Line) */
 .header::after {
   content: '';
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 0; /* Tetap di paling dasar container */
+  bottom: 0; 
   width: 100%;
   height: 1px;
   background: #e5e7eb;
   z-index: 1; 
 }
 
-/* === CARD CONTENT === */
-.sensorCard {
+/* ========================================= */
+/* === DESAIN DASHBOARD BARU (SESUAI GAMBAR) === */
+/* ========================================= */
+
+.dashboardGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+/* 1. KARTU STATUS UTAMA (BESAR) */
+.mainStatusCard {
+  display: flex;
   background: #fff;
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  min-height: 220px; /* Tinggi kartu besar */
   border: 1px solid #e0e0e0;
-  padding: 40px;
-  min-height: 400px;
+}
+
+/* Sisi Kiri (Merah) */
+.statusLabelBox {
+  background-color: #ed1c24; /* Merah terang */
+  width: 40%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #888;
+  padding: 20px;
+  text-align: center;
 }
 
-/* RESPONSIVE */
+.statusLabelText {
+  color: #fff;
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+/* Sisi Kanan (Putih) */
+.statusValueBox {
+  background-color: #fff;
+  width: 60%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.statusValueText {
+  font-size: 72px;
+  font-weight: 700;
+  color: #000;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+/* Jika Status Bahaya, teks jadi merah */
+.statusValueText.danger {
+  color: #ed1c24;
+}
+
+/* 2. GRID SENSOR (KECIL) */
+.sensorGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2 Kolom */
+  gap: 24px;
+}
+
+/* Kartu Sensor Individual */
+.sensorItem {
+  display: flex;
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  border: 2px solid #ed1c24; /* Border merah di sekeliling */
+  min-height: 110px;
+}
+
+/* Nama Sensor (Kiri Merah) */
+.sensorNameBox {
+  background-color: #ed1c24;
+  width: 140px; 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.sensorNameText {
+  color: #fff;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+/* Detail Sensor (Kanan Putih) */
+.sensorDetailBox {
+  flex: 1;
+  padding: 12px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+}
+
+/* Indikator "Aktif" Hijau */
+.activeIndicator {
+  position: absolute;
+  top: 12px;
+  left: 15px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #000;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  background-color: #00ff00; /* Hijau menyala */
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 5px rgba(0, 255, 0, 0.6);
+}
+
+.sensorStatusText {
+  margin-top: 18px; /* Jarak agar tidak menabrak tulisan Aktif */
+  font-size: 16px;
+  font-weight: 500;
+  color: #000;
+}
+
+.statusHighlight {
+  font-weight: 700;
+  font-size: 18px;
+  margin-left: 4px;
+}
+
+/* Responsive: Di HP jadi 1 kolom */
 @media (max-width: 900px) {
-  .topBar {
-    padding: 16px;
-    flex-direction: column;
-    gap: 12px;
-    height: auto;
+  .sensorGrid {
+    grid-template-columns: 1fr;
   }
-  
-  .searchWrapper, .searchBar {
-    max-width: 100%;
-  }
-  
-  .uploadButton {
-    width: 100%;
-    justify-content: center;
-  }
-}
-
-@media (max-width: 520px) {
-  .content, .content.collapsed {
-    margin-left: 0 !important;
-    margin-top: 72px;
-    padding: 16px;
-  }
-  
-  .topBar {
-    left: 0 !important;
-  }
+  .statusLabelText { font-size: 24px; }
+  .statusValueText { font-size: 48px; }
+  .topBar { left: 0 !important; padding: 0 16px; }
+  .content { margin-left: 0 !important; padding: 20px; }
+  .sidebarCollapsed .topBar { left: 0; }
 }
