@@ -4,15 +4,6 @@ const nextConfig = {
   experimental: {
     appDir: true,
   },
-
-  // Konfigurasi Webpack (untuk kompatibilitas mysql2)
-  webpack: (config) => {
-    config.experiments = {
-      ...config.experiments,
-      topLevelAwait: true,
-    };
-    return config;
-  },
 };
 
 export default nextConfig;
