@@ -1,11 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Aktifkan App Directory (wajib untuk Next.js dengan folder app/)
+  // Next.js 16 - App Directory sudah stable, tapi tetap perlu untuk lokal
   experimental: {
     appDir: true,
   },
 
-  // Konfigurasi Webpack (Penting untuk kompatibilitas mysql2)
+  // Konfigurasi Webpack (untuk kompatibilitas mysql2)
   webpack: (config) => {
     config.experiments = {
       ...config.experiments,
