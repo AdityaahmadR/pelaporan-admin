@@ -169,6 +169,50 @@ export default function DetailPage() {
               </div>
             </div>
           </div>
+
+          {/* Bagian Isi Laporan */}
+          <div className={styles.reportBody}>
+            {laporan.isi_laporan ? (
+              <p>{laporan.isi_laporan}</p>
+            ) : (
+              <p style={{ color: '#888', fontStyle: 'italic' }}>Isi laporan tidak tersedia.</p>
+            )}
+          </div>
+
+          {/* Bagian Gambar jika ada */}
+          {laporan.gambar && (
+            <div className={styles.imageContainer}>
+              <Image
+                src={laporan.gambar}
+                alt="Gambar laporan"
+                width={450}
+                height={300}
+                className={styles.reportImage}
+                priority
+              />
+            </div>
+          )}
+
+          {/* Bagian Informasi User */}
+          <div className={styles.userSection}>
+            <div className={styles.avatar}>
+              <span>{laporan.user?.nama?.charAt(0)?.toUpperCase() || '?'}</span>
+            </div>
+            <div className={styles.userInfo}>
+              <h4>{laporan.user?.nama || "Anonim"}</h4>
+              <p>{laporan.user?.email || "-"}</p>
+            </div>
+          </div>
+
+          {/* Bagian Lokasi */}
+          {laporan.lokasi && (
+            <div style={{ marginTop: '20px' }}>
+              <button onClick={handleLocationClick} className={styles.locationButton}>
+                Lihat Lokasi di Maps
+              </button>
+            </div>
+          )}
+
           {/* ... sisa kode body laporan ... */}
         </div>
       </main>
