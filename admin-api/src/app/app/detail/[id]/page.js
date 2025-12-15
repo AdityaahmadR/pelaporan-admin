@@ -170,6 +170,17 @@ export default function DetailPage() {
             </div>
           </div>
 
+          {/* Bagian Informasi User */}
+          <div className={styles.userSection}>
+            <div className={styles.avatar}>
+              <span>{laporan.user?.nama?.charAt(0)?.toUpperCase() || '?'}</span>
+            </div>
+            <div className={styles.userInfo}>
+              <h4>{laporan.user?.nama || "Anonim"}</h4>
+              <p>{laporan.user?.email || "-"}</p>
+            </div>
+          </div>
+
           {/* Bagian Isi Laporan */}
           <div className={styles.reportBody}>
             {laporan.isi_laporan ? (
@@ -193,28 +204,26 @@ export default function DetailPage() {
             </div>
           )}
 
-          {/* Bagian Informasi User */}
-          <div className={styles.userSection}>
-            <div className={styles.avatar}>
-              <span>{laporan.user?.nama?.charAt(0)?.toUpperCase() || '?'}</span>
-            </div>
-            <div className={styles.userInfo}>
-              <h4>{laporan.user?.nama || "Anonim"}</h4>
-              <p>{laporan.user?.email || "-"}</p>
-            </div>
-          </div>
-
-          {/* Bagian Lokasi */}
-          {laporan.lokasi && (
-            <div style={{ marginTop: '20px' }}>
-              <button onClick={handleLocationClick} className={styles.locationButton}>
-                Lihat Lokasi di Maps
-              </button>
-            </div>
-          )}
 
           {/* ... sisa kode body laporan ... */}
         </div>
+
+        {/* Tombol Lokasi Fixed di Pojok Kanan Bawah */}
+        {laporan.lokasi && (
+          <div className={styles.locationFixed}>
+            <button onClick={handleLocationClick} className={styles.locationButtonFixed}>
+              <Image
+                src="/location.png"
+                alt="Lokasi"
+                width={20}
+                height={20}
+                className={styles.locationIcon}
+              />
+              <span>Lokasi</span>
+            </button>
+          </div>
+        )}
+
       </main>
     </div>
   );

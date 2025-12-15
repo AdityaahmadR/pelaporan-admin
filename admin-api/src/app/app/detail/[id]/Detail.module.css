@@ -298,3 +298,40 @@
   .page { height: auto; overflow: visible; }
   .content { height: auto; overflow: visible; }
 }
+
+/* === TOMBOL LOKASI FIXED (POJOK KANAN BAWAH) === */
+.locationFixed {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.locationButtonFixed {
+  background: #fff;
+  border: 2px solid #e2e8f0;
+  border-radius: 50px;
+  padding: 12px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #4a5568;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: all 0.2s ease;
+}
+
+.locationButtonFixed:hover {
+  background: #f8f9fa;
+  border-color: #cbd5e0;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.locationIcon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
