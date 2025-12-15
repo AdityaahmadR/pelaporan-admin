@@ -5,40 +5,40 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
 import styles from './Upload.module.css';
 
-// --- BAGIAN ISI KONTEN (UI ASLI ANDA + LOGIKA BARU) ---
+// --- BAGIAN ISI KONTEN ---
 function EditVideoContent() {
   const router = useRouter();
   const searchParams = useSearchParams(); 
 
-  // --- CEK APAKAH SEDANG MODE EDIT ---
+  // --- 1. SETUP VARIABEL DARI URL ---
   const isEditMode = searchParams.get('mode') === 'edit';
   const editId = searchParams.get('id');
   const editTitle = searchParams.get('title') || "";
   const editDesc = searchParams.get('desc') || "";
   const editThumb = searchParams.get('thumb') || "";
 
-  // Data File Baru (Hanya untuk Mode Upload Baru)
+  // Data File Baru (Dari Halaman Depan)
   const fileName = searchParams.get('name') || "Video Baru";
   const fileSizeTotal = parseFloat(searchParams.get('size')) || 0;
 
-  // Form State
+  // --- 2. STATE ---
   const [judul, setJudul] = useState(isEditMode ? editTitle : "");
   const [deskripsi, setDeskripsi] = useState(isEditMode ? editDesc : "");
   
-  // Thumbnail
-  const [sampul, setSampul] = useState(isEditMode ? editThumb : null); // Preview
-  const [sampulFile, setSampulFile] = useState(null); // File baru
+  // Thumbnail (Preview & File)
+  const [sampul, setSampul] = useState(isEditMode ? editThumb : null); 
+  const [sampulFile, setSampulFile] = useState(null); 
   
-  // STATE BARU: Untuk menyimpan Video Base64 yang diambil dari halaman depan
+  // Video Base64 (Disimpan sementara)
   const [videoBase64, setVideoBase64] = useState("");
 
   const [progress, setProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false); 
+  const [uploadStatus, setUploadStatus] = useState(""); // Info status upload
 
-  // 1. LOGIKA BARU: AMBIL VIDEO DARI LOCALSTORAGE
+  // --- 3. AMBIL VIDEO DARI MEMORY BROWSER ---
   useEffect(() => {
     if (!isEditMode) {
-        // Ambil data video yang dikirim dari halaman depan
         const tempVideo = localStorage.getItem('tempVideoUpload');
         if (tempVideo) {
             setVideoBase64(tempVideo);
@@ -46,10 +46,9 @@ function EditVideoContent() {
     }
   }, [isEditMode]);
 
-  // 2. LOGIKA LAMA: SIMULASI PROGRESS BAR (UI KESUKAAN ANDA)
+  // --- 4. ANIMASI PROGRESS BAR ---
   useEffect(() => {
     if (isEditMode) return; 
-
     const interval = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 95) {
@@ -64,64 +63,110 @@ function EditVideoContent() {
 
   const uploadedSize = ((progress / 100) * fileSizeTotal).toFixed(1);
 
-  // Handlers UI
+  // --- 5. HANDLERS INPUT ---
   const handleJudulChange = (e) => { if (e.target.value.length <= 100) setJudul(e.target.value); };
   const handleDeskripsiChange = (e) => { if (e.target.value.length <= 2000) setDeskripsi(e.target.value); };
+
   const handleSampulChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Buat preview lokal agar user langsung lihat
       setSampul(URL.createObjectURL(file));
       setSampulFile(file);
     }
   };
 
+  // --- 6. FUNGSI UPLOAD KE IMGBB (DENGAN API KEY ANDA) ---
   const uploadToImgBB = async (file) => {
     const formData = new FormData();
     formData.append("image", file);
+    // API Key Anda
     const API_KEY = "0416af70555c12b73e1f822d3603c165"; 
+    
     try {
-      const res = await fetch(`https://api.imgbb.com/1/upload?key=${API_KEY}`, { method: "POST", body: formData });
+      setUploadStatus("Mengupload gambar ke ImgBB...");
+      const res = await fetch(`https://api.imgbb.com/1/upload?key=${API_KEY}`, { 
+          method: "POST", 
+          body: formData 
+      });
       const data = await res.json();
-      return data.success ? data.data.url : null;
-    } catch (error) { return null; }
+      
+      if (data.success) {
+          console.log("ImgBB Success:", data.data.url);
+          return data.data.url; // Kembalikan Link URL
+      } else {
+          throw new Error("ImgBB API Error");
+      }
+    } catch (error) {
+      console.error("Gagal ke ImgBB:", error);
+      return null; // Gagal upload
+    }
   };
 
-  // --- HANDLE SUBMIT (LOGIKA DIGABUNG) ---
+  // --- 7. FUNGSI CONVERT FILE KE BASE64 (CADANGAN) ---
+  const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  // --- 8. TOMBOL SIMPAN DITEKAN ---
   const handleSubmit = async () => {
     if (!judul) { alert("Judul wajib diisi!"); return; }
     
-    // Validasi tambahan: Pastikan video ada jika upload baru
     if (!isEditMode && !videoBase64) {
-        alert("Gagal memuat file video dari memory. Silakan kembali ke halaman sebelumnya dan pilih file lagi.");
+        alert("Gagal memuat file video. Silakan pilih file lagi.");
         return;
     }
 
     setIsUploading(true);
+    setUploadStatus("Memproses Thumbnail...");
     
-    // 1. Cek Thumbnail (Logic Asli Anda)
+    // --- LOGIKA THUMBNAIL HYBRID ---
     let finalThumbnail = sampul; 
-    
+
+    // Jika user memilih file thumbnail baru
     if (sampulFile) {
-      const uploadedLink = await uploadToImgBB(sampulFile);
-      if (uploadedLink) finalThumbnail = uploadedLink;
-    } else if (!isEditMode && !sampul) {
-      finalThumbnail = "https://i.ibb.co/1fYKT5sb/b92bb4c90cef.jpg";
+        // COBA 1: Upload ke ImgBB
+        const imgbbLink = await uploadToImgBB(sampulFile);
+        
+        if (imgbbLink) {
+            // Jika sukses, pakai Link ImgBB
+            finalThumbnail = imgbbLink;
+            setUploadStatus("Gambar tersimpan di ImgBB.");
+        } else {
+            // Jika GAGAL (Diblokir/Error), pakai Base64 (Simpan ke Database)
+            setUploadStatus("ImgBB Gagal/Diblokir. Menyimpan ke Database lokal...");
+            try {
+                const base64Img = await fileToBase64(sampulFile);
+                finalThumbnail = base64Img;
+            } catch (err) {
+                console.error("Gagal konversi base64");
+            }
+        }
+    } 
+    // Jika upload baru tapi tidak pilih gambar -> Pakai Default
+    else if (!isEditMode && !sampul) {
+      finalThumbnail = "https://placehold.co/600x400/png?text=No+Thumbnail"; 
     }
 
-    // 2. Siapkan Data Payload (DITAMBAH FIELD 'LINK')
+    // --- SIAPKAN DATA ---
     const payload = {
       judul: judul,
       isi: deskripsi,
       kategori: "video",
       thumbnail: finalThumbnail,
-      link: isEditMode ? undefined : videoBase64 // Kirim Base64 hanya jika upload baru
+      link: isEditMode ? undefined : videoBase64
     };
 
-    // 3. Tentukan URL & Method
     const url = isEditMode ? `/api/edukasi/${editId}` : '/api/edukasi';
     const method = isEditMode ? 'PUT' : 'POST';
 
     if (!isEditMode) setProgress(100);
+    setUploadStatus("Menyimpan Data Video...");
 
     try {
       const res = await fetch(url, {
@@ -131,7 +176,6 @@ function EditVideoContent() {
       });
 
       if (res.ok) {
-        // Bersihkan storage setelah sukses
         localStorage.removeItem('tempVideoUpload');
         localStorage.removeItem('tempVideoName');
         localStorage.removeItem('tempVideoSize');
@@ -141,16 +185,18 @@ function EditVideoContent() {
           router.push('/edukasi'); 
         }, 500);
       } else {
-        alert("Gagal menyimpan data. Pastikan ukuran file video < 4.5MB.");
+        alert("Gagal menyimpan data.");
       }
     } catch (err) { alert("Error: " + err.message); } 
-    finally { setIsUploading(false); }
+    finally { 
+        setIsUploading(false); 
+        setUploadStatus("");
+    }
   };
 
   return (
     <div className={styles.card}>
       
-      {/* TAMPILAN HEADER (UI ASLI ANDA) */}
       {!isEditMode && (
         <div className={styles.videoHeader}>
           <div className={styles.videoIcon}>
@@ -158,8 +204,7 @@ function EditVideoContent() {
           </div>
           <div className={styles.videoMeta}>
             <h3 className={styles.fileName}>{fileName}</h3>
-            <p className={styles.fileDetails}>Ukuran: {fileSizeTotal}MB (Siap Upload)</p>
-            
+            <p className={styles.fileDetails}>Ukuran: {fileSizeTotal}MB</p>
             <div className={styles.progressContainer}>
               <div className={styles.progressBar} style={{ width: `${progress}%` }}></div>
               <div className={styles.progressText}>
@@ -167,15 +212,10 @@ function EditVideoContent() {
                 <span>{Math.floor(progress)}%</span>
               </div>
             </div>
-            
-            <div className={styles.lightningIcon}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
-            </div>
           </div>
         </div>
       )}
 
-      {/* JUDUL HALAMAN SESUAI MODE */}
       <h2 className={styles.sectionTitle}>
         {isEditMode ? "Edit Informasi Video" : "Informasi Dasar"}
       </h2>
@@ -211,7 +251,10 @@ function EditVideoContent() {
       </div>
 
       <div className={styles.actionButtons}>
-        <button className={styles.btnBatal} onClick={() => router.back()}>Batal</button>
+        {/* Indikator Status Upload */}
+        {isUploading && <span style={{fontSize:'12px', color:'#d71c1c', marginRight:'10px', fontWeight:'bold'}}>{uploadStatus}</span>}
+        
+        <button className={styles.btnBatal} onClick={() => router.back()} disabled={isUploading}>Batal</button>
         <button className={styles.btnUnggah} onClick={handleSubmit} disabled={isUploading} style={{ opacity: isUploading ? 0.7 : 1 }}>
           {isUploading ? 'Menyimpan...' : (isEditMode ? 'Simpan Perubahan' : 'Unggah')}
         </button>
@@ -221,19 +264,16 @@ function EditVideoContent() {
   );
 }
 
-// --- BAGIAN WRAPPER (WAJIB ADA UNTUK MENGATASI ERROR VERCEL) ---
+// --- BAGIAN WRAPPER (WAJIB ADA) ---
 export default function EditVideoPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   return (
     <div className={styles.page}>
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} activePage="/edukasi" />
       <main className={`${styles.content} ${!sidebarOpen ? styles.collapsed : ''}`}>
-        
-        {/* Suspense Pembungkus (Agar tidak error build 'missing-suspense') */}
         <Suspense fallback={<p style={{padding: 40, textAlign:'center'}}>Memuat Form...</p>}>
           <EditVideoContent />
         </Suspense>
-
       </main>
     </div>
   );
