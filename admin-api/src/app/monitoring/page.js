@@ -21,8 +21,68 @@ export default function MonitoringPage() {
     esp32cam: 0
   });
 
-  // State Status Global (NORMAL / BAHAYA)
+  // State Status Aktif Sensor
+  const [sensorActive, setSensorActive] = useState({
+    api: false,
+    asap: false,
+    kelembaban: false,
+    suhu: false,
+    esp32cam: false
+  });
+
+  // State Status Global (NORMAL / BAHAYA / DARURAT)
   const [globalStatus, setGlobalStatus] = useState("NORMAL");
+  
+  // State untuk tracking apakah sudah mengirim laporan darurat
+  const [daruratSent, setDaruratSent] = useState(false);
+
+  // Fungsi untuk mengirim laporan darurat
+  const kirimLaporanDarurat = async () => {
+    if (daruratSent) return; // Sudah pernah kirim, skip
+
+    try {
+      const deskripsi = `DARURAT! Semua sensor mendeteksi bahaya:
+- Sensor Api: Terdeteksi
+- Sensor Asap: Bahaya  
+- Sensor Kelembapan: Bahaya
+- Sensor Suhu: Bahaya
+- ESP32 CAM: Api Terdeteksi
+
+Segera lakukan tindakan darurat!`;
+
+      // Kirim laporan darurat ke database
+      const response = await fetch('/api/semua-laporan/darurat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userID: 'admin', // Admin sebagai pengirim
+          deskripsi: deskripsi,
+          lokasi: null // Tidak ada lokasi spesifik
+        })
+      });
+
+      if (response.ok) {
+        console.log('Laporan darurat berhasil dikirim');
+        setDaruratSent(true);
+        
+        // Kirim notifikasi ke petugas
+        await fetch('/api/kirim-notifikasi', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userID: 'admin', // Kirim ke admin/petugas
+            type: 'laporan_darurat',
+            title: 'DARURAT! Kebakaran Terdeteksi',
+            body: 'Semua sensor mendeteksi bahaya. Segera lakukan tindakan darurat!'
+          })
+        });
+        
+        alert('DARURAT! Laporan darurat telah dikirim ke petugas.');
+      }
+    } catch (error) {
+      console.error('Gagal kirim laporan darurat:', error);
+    }
+  };
 
   useEffect(() => {
     // Path Root '/' untuk membaca semua data ESP32
@@ -41,15 +101,53 @@ export default function MonitoringPage() {
             esp32cam: data.cam_fire || 0 // Asumsi variable kamera
         };
 
+        // Update status aktif sensor berdasarkan data yang diterima
+        const newActiveStatus = {
+          api: data.api !== undefined && data.api !== null,
+          asap: data.asap !== undefined && data.asap !== null,
+          kelembaban: data.kelembaban !== undefined && data.kelembaban !== null,
+          suhu: data.suhu !== undefined && data.suhu !== null,
+          esp32cam: data.cam_fire !== undefined && data.cam_fire !== null
+        };
+
+        setSensorData(newData);
+        setSensorActive(newActiveStatus);
+
         setSensorData(newData);
 
         // --- LOGIKA STATUS UTAMA ---
-        // Jika ada Api ATAU Asap Bahaya ATAU Suhu > 50 -> BAHAYA
-        if (newData.api == 1 || newData.asap == 1 || newData.suhu > 50) {
-            setGlobalStatus("BAHAYA");
-        } else {
-            setGlobalStatus("NORMAL");
+        // DARURAT: Jika SEMUA sensor mendeteksi bahaya/api
+        // BAHAYA: Jika ada sensor yang mendeteksi bahaya tapi tidak semua
+        // NORMAL: Jika tidak ada sensor yang mendeteksi bahaya
+        
+        const allDanger = (
+          newData.api == 1 && 
+          newData.asap == 1 && 
+          newData.kelembaban == 1 && 
+          newData.suhu > 50 && 
+          newData.esp32cam == 1
+        );
+        
+        const anyDanger = (
+          newData.api == 1 || 
+          newData.asap == 1 || 
+          newData.kelembaban == 1 || 
+          newData.suhu > 50 || 
+          newData.esp32cam == 1
+        );
+        
+        let newStatus = "NORMAL";
+        if (allDanger) {
+          newStatus = "DARURAT";
+          // Trigger laporan darurat jika belum pernah dikirim
+          if (globalStatus !== "DARURAT") {
+            kirimLaporanDarurat();
+          }
+        } else if (anyDanger) {
+          newStatus = "BAHAYA";
         }
+        
+        setGlobalStatus(newStatus);
       }
     });
 
@@ -61,6 +159,7 @@ export default function MonitoringPage() {
     if (type === 'api') return val == 1 ? "Terdeteksi" : "Tidak Terdeteksi";
     if (type === 'bahaya') return val == 1 ? "Bahaya" : "Normal";
     if (type === 'suhu') return val > 50 ? "Bahaya" : "Normal"; 
+    if (type === 'kelembaban') return val == 1 ? "Bahaya" : "Normal"; // Kelembaban bahaya jika == 1
     return "Normal";
   };
 
@@ -103,7 +202,7 @@ export default function MonitoringPage() {
                     </span>
                 </div>
                 <div className={styles.statusValueBox}>
-                    <span className={`${styles.statusValueText} ${globalStatus === 'BAHAYA' ? styles.danger : ''}`}>
+                    <span className={`${styles.statusValueText} ${globalStatus === 'BAHAYA' ? styles.danger : globalStatus === 'DARURAT' ? styles.emergency : ''}`}>
                         {globalStatus}
                     </span>
                 </div>
@@ -119,7 +218,7 @@ export default function MonitoringPage() {
                     </div>
                     <div className={styles.sensorDetailBox}>
                         <div className={styles.activeIndicator}>
-                            Aktif <span className={styles.dot}></span>
+                            {sensorActive.api ? 'Aktif' : 'Tidak Aktif'} <span className={`${styles.dot} ${sensorActive.api ? styles.activeDot : styles.inactiveDot}`}></span>
                         </div>
                         <div className={styles.sensorStatusText}>
                             Status Api: <span className={styles.statusHighlight}>{getStatusText(sensorData.api, 'api')}</span>
@@ -134,7 +233,7 @@ export default function MonitoringPage() {
                     </div>
                     <div className={styles.sensorDetailBox}>
                         <div className={styles.activeIndicator}>
-                            Aktif <span className={styles.dot}></span>
+                            {sensorActive.asap ? 'Aktif' : 'Tidak Aktif'} <span className={`${styles.dot} ${sensorActive.asap ? styles.activeDot : styles.inactiveDot}`}></span>
                         </div>
                         <div className={styles.sensorStatusText}>
                             Status Asap: <span className={styles.statusHighlight}>{getStatusText(sensorData.asap, 'bahaya')}</span>
@@ -149,10 +248,10 @@ export default function MonitoringPage() {
                     </div>
                     <div className={styles.sensorDetailBox}>
                          <div className={styles.activeIndicator}>
-                            Aktif <span className={styles.dot}></span>
+                            {sensorActive.kelembaban ? 'Aktif' : 'Tidak Aktif'} <span className={`${styles.dot} ${sensorActive.kelembaban ? styles.activeDot : styles.inactiveDot}`}></span>
                         </div>
                         <div className={styles.sensorStatusText}>
-                            Status Kelembapan: <span className={styles.statusHighlight}>{getStatusText(sensorData.kelembaban, 'bahaya')}</span>
+                            Status Kelembapan: <span className={styles.statusHighlight}>{getStatusText(sensorData.kelembaban, 'kelembaban')}</span>
                         </div>
                     </div>
                 </div>
@@ -164,7 +263,7 @@ export default function MonitoringPage() {
                     </div>
                     <div className={styles.sensorDetailBox}>
                          <div className={styles.activeIndicator}>
-                            Aktif <span className={styles.dot}></span>
+                            {sensorActive.suhu ? 'Aktif' : 'Tidak Aktif'} <span className={`${styles.dot} ${sensorActive.suhu ? styles.activeDot : styles.inactiveDot}`}></span>
                         </div>
                         <div className={styles.sensorStatusText}>
                             Status Suhu: <span className={styles.statusHighlight}>{getStatusText(sensorData.suhu, 'suhu')}</span>
@@ -179,7 +278,7 @@ export default function MonitoringPage() {
                     </div>
                     <div className={styles.sensorDetailBox}>
                          <div className={styles.activeIndicator}>
-                            Aktif <span className={styles.dot}></span>
+                            {sensorActive.esp32cam ? 'Aktif' : 'Tidak Aktif'} <span className={`${styles.dot} ${sensorActive.esp32cam ? styles.activeDot : styles.inactiveDot}`}></span>
                         </div>
                         <div className={styles.sensorStatusText}>
                             Status Api: <span className={styles.statusHighlight}>{getStatusText(sensorData.esp32cam, 'api')}</span>

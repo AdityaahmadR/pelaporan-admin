@@ -1,7 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // TAMBAHKAN BARIS INI (Wajib di Next.js 16 jika pakai Webpack custom)
-  turbopack: {},
+  // Aktifkan App Directory (wajib untuk Next.js dengan folder app/)
+  experimental: {
+    appDir: true,
+  },
 
   // Konfigurasi Webpack (Penting untuk kompatibilitas mysql2)
   webpack: (config) => {

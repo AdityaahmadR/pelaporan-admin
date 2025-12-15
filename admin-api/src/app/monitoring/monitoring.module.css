@@ -218,6 +218,17 @@
   color: #ed1c24;
 }
 
+/* Jika Status DARURAT, teks jadi merah lebih gelap dengan animasi */
+.statusValueText.emergency {
+  color: #ff0000;
+  animation: emergencyBlink 1s infinite;
+}
+
+@keyframes emergencyBlink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.7; }
+}
+
 /* 2. GRID SENSOR (KECIL) */
 .sensorGrid {
   display: grid;
@@ -287,6 +298,16 @@
   border-radius: 50%;
   display: inline-block;
   box-shadow: 0 0 5px rgba(0, 255, 0, 0.6);
+}
+
+.activeDot {
+  background-color: #00ff00; /* Hijau untuk aktif */
+  box-shadow: 0 0 5px rgba(0, 255, 0, 0.6);
+}
+
+.inactiveDot {
+  background-color: #ff0000; /* Merah untuk tidak aktif */
+  box-shadow: 0 0 5px rgba(255, 0, 0, 0.6);
 }
 
 .sensorStatusText {
