@@ -1,26 +1,30 @@
-// File: src/app/api/notifikasi/[userID]/route.js (DEBUGGING VERSION)
+// File: src/app/api/notifikasi/[userID]/route.js (VERSI DEBUGGING FINAL)
+
 import connectDB from "@/lib/db";
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request, { params }) {
-  const { userID: userIDString } = params; // Ambil userID sebagai string
-  console.log(`[LOG] Menerima permintaan untuk userID: '${userIDString}'`);
+  // --- LANGKAH DEBUGGING UTAMA ---
+  console.log("[LOG] Request diterima. Seluruh objek params:", JSON.stringify(params, null, 2));
+
+  // --- PERBAIKAN: Akses langsung, hindari destructuring ---
+  const userIDString = params.userID;
+  console.log(`[LOG] Mencoba membaca userID dari params: '${userIDString}'`);
 
   let connection;
 
-  if (!userIDString) {
-    console.log("[ERROR] UserID tidak ada dalam permintaan.");
-    return new Response(JSON.stringify({ message: "UserID tidak valid." }), { status: 400 });
+  if (!userIDString || userIDString === 'undefined') {
+    console.log("[ERROR] Gagal mendapatkan userID dari params. Pastikan nama folder adalah [userID].");
+    return new Response(JSON.stringify({ message: "UserID tidak terdeteksi di URL." }), { status: 400 });
   }
 
-  // --- LANGKAH DEBUGGING 1: Pastikan userID adalah angka ---
   const userID = parseInt(userIDString, 10);
   if (isNaN(userID)) {
-      console.log(`[ERROR] Gagal mengubah userID menjadi angka: '${userIDString}'`);
+      console.log(`[ERROR] UserID '${userIDString}' bukan angka yang valid.`);
       return new Response(JSON.stringify({ message: `UserID '${userIDString}' tidak valid.` }), { status: 400 });
   }
-  console.log(`[LOG] Berhasil mengubah userID menjadi angka: ${userID}`);
+  console.log(`[LOG] Berhasil mem-parsing userID sebagai angka: ${userID}`);
 
   try {
     connection = await connectDB();
@@ -30,15 +34,18 @@ export async function GET(request, { params }) {
     console.log(`[LOG] Menjalankan query: ${query} dengan userID: ${userID}`);
 
     const [rows] = await connection.query(query, [userID]);
-    console.log(`[LOG] Query mengembalikan ${rows.length} baris data.`);
+    console.log(`[LOG] Query selesai. Ditemukan ${rows.length} baris data.`);
 
-    // Jika masih 0, masalahnya kemungkinan besar ada pada koneksi DB di Vercel
-    if (rows.length === 0) {
-        console.log("[PERINGATAN] Query mengembalikan 0 baris. Periksa variabel koneksi database di Vercel dan pastikan data untuk ID ini ada di database produksi.");
-    }
+    // Mengubah nama kolom agar sesuai dengan yang diharapkan aplikasi Android
+    const formattedRows = rows.map(row => ({
+      judul: 'Notifikasi', // Judul default
+      isi: row.isiPesan,
+      tanggal: row.waktuKirim,
+      tipe: row.tipe || 'default', 
+      contentID: row.contentID || '' 
+    }));
     
-    // Kirim data mentah untuk memastikan query-nya benar
-    return new Response(JSON.stringify(rows), { 
+    return new Response(JSON.stringify(formattedRows), { 
       status: 200, 
       headers: { 
         'Content-Type': 'application/json',
@@ -52,6 +59,7 @@ export async function GET(request, { params }) {
       error: "Pengecualian di sisi server",
       message: error.message 
     }), { status: 500 });
+  
   } finally {
     if (connection) {
       await connection.end();
