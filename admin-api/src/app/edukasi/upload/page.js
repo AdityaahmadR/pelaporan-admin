@@ -10,33 +10,31 @@ function EditVideoContent() {
   const router = useRouter();
   const searchParams = useSearchParams(); 
 
-  // --- 1. SETUP VARIABEL DARI URL ---
+  // --- CEK MODE ---
   const isEditMode = searchParams.get('mode') === 'edit';
   const editId = searchParams.get('id');
   const editTitle = searchParams.get('title') || "";
   const editDesc = searchParams.get('desc') || "";
   const editThumb = searchParams.get('thumb') || "";
 
-  // Data File Baru (Dari Halaman Depan)
+  // Data File Baru
   const fileName = searchParams.get('name') || "Video Baru";
   const fileSizeTotal = parseFloat(searchParams.get('size')) || 0;
 
-  // --- 2. STATE ---
+  // Form State
   const [judul, setJudul] = useState(isEditMode ? editTitle : "");
   const [deskripsi, setDeskripsi] = useState(isEditMode ? editDesc : "");
   
-  // Thumbnail (Preview & File)
+  // Thumbnail State (Akan berisi Base64 String)
   const [sampul, setSampul] = useState(isEditMode ? editThumb : null); 
-  const [sampulFile, setSampulFile] = useState(null); 
   
-  // Video Base64 (Disimpan sementara)
+  // Video Base64 State
   const [videoBase64, setVideoBase64] = useState("");
 
   const [progress, setProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false); 
-  const [uploadStatus, setUploadStatus] = useState(""); // Info status upload
 
-  // --- 3. AMBIL VIDEO DARI MEMORY BROWSER ---
+  // 1. AMBIL VIDEO DARI LOCALSTORAGE
   useEffect(() => {
     if (!isEditMode) {
         const tempVideo = localStorage.getItem('tempVideoUpload');
@@ -46,7 +44,7 @@ function EditVideoContent() {
     }
   }, [isEditMode]);
 
-  // --- 4. ANIMASI PROGRESS BAR ---
+  // 2. SIMULASI PROGRESS BAR
   useEffect(() => {
     if (isEditMode) return; 
     const interval = setInterval(() => {
@@ -63,102 +61,50 @@ function EditVideoContent() {
 
   const uploadedSize = ((progress / 100) * fileSizeTotal).toFixed(1);
 
-  // --- 5. HANDLERS INPUT ---
+  // Handlers UI
   const handleJudulChange = (e) => { if (e.target.value.length <= 100) setJudul(e.target.value); };
   const handleDeskripsiChange = (e) => { if (e.target.value.length <= 2000) setDeskripsi(e.target.value); };
 
+  // --- LOGIKA BARU: GAMBAR KE BASE64 (MURNI) ---
   const handleSampulChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Buat preview lokal agar user langsung lihat
-      setSampul(URL.createObjectURL(file));
-      setSampulFile(file);
-    }
-  };
-
-  // --- 6. FUNGSI UPLOAD KE IMGBB (DENGAN API KEY ANDA) ---
-  const uploadToImgBB = async (file) => {
-    const formData = new FormData();
-    formData.append("image", file);
-    // API Key Anda
-    const API_KEY = "0416af70555c12b73e1f822d3603c165"; 
-    
-    try {
-      setUploadStatus("Mengupload gambar ke ImgBB...");
-      const res = await fetch(`https://api.imgbb.com/1/upload?key=${API_KEY}`, { 
-          method: "POST", 
-          body: formData 
-      });
-      const data = await res.json();
-      
-      if (data.success) {
-          console.log("ImgBB Success:", data.data.url);
-          return data.data.url; // Kembalikan Link URL
-      } else {
-          throw new Error("ImgBB API Error");
+      // Validasi: Maksimal 1 MB agar database tidak berat
+      if (file.size > 1 * 1024 * 1024) {
+        alert("Ukuran gambar sampul maksimal 1 MB");
+        return;
       }
-    } catch (error) {
-      console.error("Gagal ke ImgBB:", error);
-      return null; // Gagal upload
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        // Simpan hasil konversi (Base64 text) ke state
+        // Ini akan langsung dikirim ke database nanti
+        setSampul(event.target.result);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
-  // --- 7. FUNGSI CONVERT FILE KE BASE64 (CADANGAN) ---
-  const fileToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (error) => reject(error);
-    });
-  };
-
-  // --- 8. TOMBOL SIMPAN DITEKAN ---
+  // --- HANDLE SUBMIT ---
   const handleSubmit = async () => {
     if (!judul) { alert("Judul wajib diisi!"); return; }
     
+    // Validasi video untuk upload baru
     if (!isEditMode && !videoBase64) {
-        alert("Gagal memuat file video. Silakan pilih file lagi.");
+        alert("Gagal memuat file video. Silakan kembali dan pilih file lagi.");
         return;
     }
 
     setIsUploading(true);
-    setUploadStatus("Memproses Thumbnail...");
     
-    // --- LOGIKA THUMBNAIL HYBRID ---
-    let finalThumbnail = sampul; 
-
-    // Jika user memilih file thumbnail baru
-    if (sampulFile) {
-        // COBA 1: Upload ke ImgBB
-        const imgbbLink = await uploadToImgBB(sampulFile);
-        
-        if (imgbbLink) {
-            // Jika sukses, pakai Link ImgBB
-            finalThumbnail = imgbbLink;
-            setUploadStatus("Gambar tersimpan di ImgBB.");
-        } else {
-            // Jika GAGAL (Diblokir/Error), pakai Base64 (Simpan ke Database)
-            setUploadStatus("ImgBB Gagal/Diblokir. Menyimpan ke Database lokal...");
-            try {
-                const base64Img = await fileToBase64(sampulFile);
-                finalThumbnail = base64Img;
-            } catch (err) {
-                console.error("Gagal konversi base64");
-            }
-        }
-    } 
-    // Jika upload baru tapi tidak pilih gambar -> Pakai Default
-    else if (!isEditMode && !sampul) {
-      finalThumbnail = "https://placehold.co/600x400/png?text=No+Thumbnail"; 
-    }
-
-    // --- SIAPKAN DATA ---
+    // Siapkan Data Payload
+    // KITA TIDAK LAGI MENGGUNAKAN IMGBB
+    // Kita kirim data 'sampul' apa adanya (Base64 atau Link lama)
     const payload = {
       judul: judul,
       isi: deskripsi,
       kategori: "video",
-      thumbnail: finalThumbnail,
+      thumbnail: sampul, // Base64 Text
       link: isEditMode ? undefined : videoBase64
     };
 
@@ -166,7 +112,6 @@ function EditVideoContent() {
     const method = isEditMode ? 'PUT' : 'POST';
 
     if (!isEditMode) setProgress(100);
-    setUploadStatus("Menyimpan Data Video...");
 
     try {
       const res = await fetch(url, {
@@ -176,6 +121,7 @@ function EditVideoContent() {
       });
 
       if (res.ok) {
+        // Bersihkan memory
         localStorage.removeItem('tempVideoUpload');
         localStorage.removeItem('tempVideoName');
         localStorage.removeItem('tempVideoSize');
@@ -188,10 +134,7 @@ function EditVideoContent() {
         alert("Gagal menyimpan data.");
       }
     } catch (err) { alert("Error: " + err.message); } 
-    finally { 
-        setIsUploading(false); 
-        setUploadStatus("");
-    }
+    finally { setIsUploading(false); }
   };
 
   return (
@@ -204,7 +147,7 @@ function EditVideoContent() {
           </div>
           <div className={styles.videoMeta}>
             <h3 className={styles.fileName}>{fileName}</h3>
-            <p className={styles.fileDetails}>Ukuran: {fileSizeTotal}MB</p>
+            <p className={styles.fileDetails}>Ukuran: {fileSizeTotal}MB (Siap Upload)</p>
             <div className={styles.progressContainer}>
               <div className={styles.progressBar} style={{ width: `${progress}%` }}></div>
               <div className={styles.progressText}>
@@ -237,7 +180,7 @@ function EditVideoContent() {
       </div>
 
       <div className={styles.inputGroup}>
-        <label className={styles.label}>Sampul</label>
+        <label className={styles.label}>Sampul (Max 1MB)</label>
         <label className={styles.coverUploadBox}>
           <input type="file" style={{display:'none'}} accept="image/*" onChange={handleSampulChange} />
           {sampul ? (
@@ -251,10 +194,7 @@ function EditVideoContent() {
       </div>
 
       <div className={styles.actionButtons}>
-        {/* Indikator Status Upload */}
-        {isUploading && <span style={{fontSize:'12px', color:'#d71c1c', marginRight:'10px', fontWeight:'bold'}}>{uploadStatus}</span>}
-        
-        <button className={styles.btnBatal} onClick={() => router.back()} disabled={isUploading}>Batal</button>
+        <button className={styles.btnBatal} onClick={() => router.back()}>Batal</button>
         <button className={styles.btnUnggah} onClick={handleSubmit} disabled={isUploading} style={{ opacity: isUploading ? 0.7 : 1 }}>
           {isUploading ? 'Menyimpan...' : (isEditMode ? 'Simpan Perubahan' : 'Unggah')}
         </button>
@@ -264,7 +204,7 @@ function EditVideoContent() {
   );
 }
 
-// --- BAGIAN WRAPPER (WAJIB ADA) ---
+// --- BAGIAN WRAPPER ---
 export default function EditVideoPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   return (
