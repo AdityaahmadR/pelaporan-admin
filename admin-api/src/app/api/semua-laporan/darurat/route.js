@@ -47,50 +47,58 @@ export async function POST(req) {
 
       console.log('Laporan darurat berhasil disimpan ke database.');
 
-    // --- LANGKAH 2: KIRIM NOTIFIKASI FIREBASE ---
-    // Cek apakah Firebase Admin SDK sudah diinisialisasi
-    if (!admin || !admin.messaging) {
-      console.warn('Firebase Admin SDK tidak diinisialisasi - notifikasi FCM dilewati');
+      // --- LANGKAH 2: KIRIM NOTIFIKASI FIREBASE ---
+      // Cek apakah Firebase Admin SDK sudah diinisialisasi
+      if (!admin || !admin.messaging) {
+        console.warn('Firebase Admin SDK tidak diinisialisasi - notifikasi FCM dilewati');
+        return new Response(
+          JSON.stringify({
+            success: true,
+            message: 'Laporan darurat berhasil disimpan ke database!',
+            warning: 'Notifikasi FCM tidak dikirim (Firebase credentials belum dikonfigurasi)'
+          }),
+          { status: 201, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const topic = 'laporan_darurat';
+      const message = {
+        data: {
+          title: 'Laporan Darurat!',
+          body: deskripsiLaporan,
+          googleMapsLink: lokasiLaporan,
+        },
+        topic: topic,
+        android: {
+          priority: 'high',
+        },
+      };
+
+      // Mengirim pesan menggunakan instance 'admin' yang sudah diimpor dengan benar
+      const response = await admin.messaging().send(message);
+      console.log('Pesan darurat berhasil dikirim ke Firebase:', response);
+
+      // --- LANGKAH 3: KIRIM RESPONS SUKSES ---
       return new Response(
-        JSON.stringify({
-          success: true,
-          message: 'Laporan darurat berhasil disimpan ke database!',
-          warning: 'Notifikasi FCM tidak dikirim (Firebase credentials belum dikonfigurasi)'
-        }),
+        JSON.stringify({ success: true, message: 'Laporan darurat berhasil disimpan dan notifikasi terkirim!' }),
         { status: 201, headers: { 'Content-Type': 'application/json' } }
       );
+
+    } catch (dbError) {
+      console.error('❌ Database error:', dbError);
+      return new Response(
+        JSON.stringify({ success: false, message: 'Gagal menyimpan laporan ke database.', error: dbError.message }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
+      );
+    } finally {
+      if (connection) await connection.end();
     }
 
-    const topic = 'laporan_darurat';
-    const message = {
-      data: {
-        title: 'Laporan Darurat!',
-        body: deskripsiLaporan,
-        googleMapsLink: lokasiLaporan,
-      },
-      topic: topic,
-      android: {
-        priority: 'high',
-      },
-    };
-
-    // Mengirim pesan menggunakan instance 'admin' yang sudah diimpor dengan benar
-    const response = await admin.messaging().send(message);
-    console.log('Pesan darurat berhasil dikirim ke Firebase:', response);
-
-    // --- LANGKAH 3: KIRIM RESPONS SUKSES ---
-    return new Response(
-      JSON.stringify({ success: true, message: 'Laporan darurat berhasil disimpan dan notifikasi terkirim!' }),
-      { status: 201, headers: { 'Content-Type': 'application/json' } }
-    );
-
   } catch (error) {
-    console.error('❌ Terjadi error saat proses laporan darurat:', error);
+    console.error('❌ General error:', error);
     return new Response(
       JSON.stringify({ success: false, message: 'Gagal memproses laporan.', error: error.message }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
-  } finally {
-    if (connection) await connection.end();
   }
 }
