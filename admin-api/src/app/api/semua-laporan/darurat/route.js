@@ -33,6 +33,19 @@ export async function POST(req) {
     console.log('Laporan darurat berhasil disimpan ke database.');
 
     // --- LANGKAH 2: KIRIM NOTIFIKASI FIREBASE ---
+    // Cek apakah Firebase Admin SDK sudah diinisialisasi
+    if (!admin || !admin.messaging) {
+      console.warn('Firebase Admin SDK tidak diinisialisasi - notifikasi FCM dilewati');
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: 'Laporan darurat berhasil disimpan ke database!',
+          warning: 'Notifikasi FCM tidak dikirim (Firebase credentials belum dikonfigurasi)'
+        }),
+        { status: 201, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
     const topic = 'laporan_darurat';
     const message = {
       data: {

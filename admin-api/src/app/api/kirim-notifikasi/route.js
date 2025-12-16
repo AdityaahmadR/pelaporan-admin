@@ -14,11 +14,20 @@ export async function POST(request) {
   let connection;
   try {
     connection = await connectDB();
-    
+
     const query = "INSERT INTO notifikasi (penerimaID, isiPesan) VALUES (?, ?)";
     const isiPesan = `${title}: ${body}`; // Gabungkan judul dan isi
-    
+
     await connection.execute(query, [userID, isiPesan]);
+
+    // Cek apakah Firebase Admin SDK sudah diinisialisasi
+    if (!admin || !admin.messaging) {
+      console.warn('Firebase Admin SDK tidak diinisialisasi - notifikasi FCM dilewati');
+      return new Response(JSON.stringify({
+        success: true,
+        warning: 'Notifikasi disimpan ke database tapi FCM tidak dikirim (Firebase credentials belum dikonfigurasi)'
+      }), { status: 200 });
+    }
 
     const fcmData = {
       title: String(title),
@@ -32,9 +41,9 @@ export async function POST(request) {
       data: fcmData,
       topic: topic,
     };
-    
+
     await admin.messaging().send(message);
-    
+
     return new Response(JSON.stringify({ success: true }), { status: 200 });
 
   } catch (error) {
