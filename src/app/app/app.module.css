@@ -1,0 +1,228 @@
+/* ===========================
+   PAGE MAIN WRAPPER
+=========================== */
+.page {
+  display: block;
+  min-height: 100vh;
+  background: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+  transition: all 0.25s ease;
+}
+
+.searchWrapper {
+  max-width: 600px;
+  width: 100%;
+}
+/* ===========================
+   TOP BAR
+=========================== */
+.topBar {
+  position: fixed;
+  top: 0;
+  left: 280px;
+  right: 0;
+  height: 72px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  z-index: 30;
+  transition: left 0.25s ease;
+}
+
+/* Saat sidebar collapse */
+.sidebarCollapsed .topBar {
+  left: 72px;
+}
+
+/* ===========================
+   SEARCH SECTION
+=========================== */
+.searchWrapper {
+  width: 60%;
+  max-width: 600px;
+  display: flex;
+  justify-content: center;
+}
+
+.searchBar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: #fff;
+  border-radius: 9999px;
+  padding: 12px 18px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+  transition: all 0.25s ease;
+}
+
+.searchBar:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15), 0 6px 16px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.searchIcon {
+  margin-right: 14px;
+  opacity: 0.65;
+  width: 19px;
+  height: 19px;
+}
+
+.searchInput {
+  background: none;
+  border: none;
+  outline: none;
+  flex: 1;
+  font-size: 15.5px;
+  color: #1a202c;
+  font-weight: 500;
+}
+
+.searchInput::placeholder {
+  color: #a0aec0;
+}
+
+/* ===========================
+   UPLOAD BUTTON
+=========================== */
+.uploadButton {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  color: #2d3748;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.uploadButton:hover {
+  background: #f7fafc;
+  border-color: #cbd5e0;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+/* ===========================
+   CONTENT WRAPPER
+=========================== */
+.content {
+  margin-left: 280px;
+  margin-top: 72px;
+  padding: 32px;
+  height: auto;
+  min-height: calc(100vh - 72px);
+  overflow-x: hidden;
+  transition: margin-left 0.25s ease;
+}
+
+.content.collapsed {
+  margin-left: 72px;
+}
+
+/* ===========================
+   HEADER TITLE
+=========================== */
+.header {
+  position: relative;
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+  text-align: left;
+  padding-left: 12px;
+}
+
+.header h2 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  color: #212529;
+  display: inline-block;
+  position: relative;
+}
+
+.header h2::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -8px;
+  height: 4px;
+  background: #d71c1c;
+  border-radius: 2px;
+}
+
+.header::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 1px;
+  background: #e5e7eb;
+}
+
+/* ===========================
+   EMPTY STATE
+=========================== */
+.emptyState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  color: #777;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+/* ===========================
+   RESPONSIVE
+=========================== */
+@media (max-width: 900px) {
+  .topBar {
+    padding: 0 16px;
+    flex-direction: column;
+    gap: 12px;
+    height: auto;
+    padding: 16px;
+  }
+
+  .searchWrapper {
+    width: 100%;
+  }
+
+  .uploadButton {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 520px) {
+  .content,
+  .content.collapsed {
+    margin-left: 0 !important;
+    padding: 16px;
+  }
+
+  .topBar {
+    left: 0 !important;
+    padding: 12px;
+  }
+
+  .header h2 {
+    font-size: 22px;
+  }
+}

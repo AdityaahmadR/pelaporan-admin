@@ -1,0 +1,3 @@
+module.exports=[29735,a=>{"use strict";var b=a.i(7997);function c({children:a}){return(0,b.jsx)("html",{lang:"id",children:(0,b.jsx)("body",{style:{height:"100vh",overflow:"hidden"},suppressHydrationWarning:!0,children:a})})}a.s(["default",()=>c,"metadata",0,{title:"Admin API - Aplikasi Pelaporan Insiden",description:"Sistem admin untuk aplikasi pelaporan insiden"}])}];
+
+//# sourceMappingURL=src_app_layout_50409fe5.js.map

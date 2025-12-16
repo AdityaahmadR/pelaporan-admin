@@ -1,0 +1,221 @@
+/* Layout Halaman */
+.page {
+  display: block;
+  min-height: 100vh;
+  background: #f8f9fa;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.content {
+  margin-left: 280px;
+  padding: 40px;
+  transition: margin-left 0.25s ease;
+}
+
+.content.collapsed {
+  margin-left: 72px;
+}
+
+/* Card Utama */
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 40px;
+  border: 1px solid #333;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* === HEADER VIDEO & PROGRESS === */
+.videoHeader {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.videoIcon {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #000;
+  border-radius: 8px;
+}
+
+.videoMeta {
+  flex: 1;
+}
+
+.fileName {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 5px 0;
+  color: #000;
+}
+
+.fileDetails {
+  font-size: 14px;
+  color: #666;
+  margin: 0 0 10px 0;
+}
+
+/* Progress Bar Container */
+.progressContainer {
+  position: relative;
+  width: 100%;
+  height: 24px;
+  background: #fff;
+  border: 1px solid #000;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 5px;
+}
+
+/* Bar Hijau yang bergerak */
+.progressBar {
+  height: 100%;
+  background: linear-gradient(90deg, #ccffcc 0%, #66ff66 100%); /* Hijau Fade */
+  transition: width 0.3s ease;
+}
+
+/* Teks di dalam bar */
+.progressText {
+  position: absolute;
+  top: 0;
+  left: 10px;
+  right: 10px;
+  bottom: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #000;
+  line-height: 24px;
+}
+
+.lightningIcon {
+  margin-top: 4px;
+  color: #000;
+}
+
+/* === FORM INPUT === */
+.sectionTitle {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  margin-top: 30px;
+  color: #000;
+}
+
+.inputGroup {
+  margin-bottom: 20px;
+}
+
+.label {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  color: #999; /* Abu-abu */
+  margin-bottom: 8px;
+}
+
+/* Wrapper untuk menampung input & counter */
+.inputWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.textInput, .textArea {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #000;
+  border-radius: 6px;
+  font-size: 16px;
+  outline: none;
+  background: #fff;
+  color: #333;
+}
+
+.textInput {
+  padding-right: 60px; /* Ruang untuk counter */
+}
+
+.textArea {
+  min-height: 150px;
+  padding-bottom: 30px; /* Ruang untuk counter di bawah */
+  resize: vertical;
+}
+
+.counter {
+  position: absolute;
+  right: 12px;
+  color: #999;
+  font-size: 14px;
+}
+
+.counterInput {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.counterArea {
+  bottom: 10px;
+  right: 12px;
+}
+
+/* === SAMPUL UPLOAD === */
+.coverUploadBox {
+  width: 320px; 
+  height: 180px;
+  border: 1px solid #000;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  position: relative;
+  background: #f9f9f9;
+}
+
+.coverPreview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.uploadPlaceholder {
+  text-align: center;
+  color: #999;
+}
+
+/* === ACTION BUTTONS === */
+.actionButtons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 40px;
+}
+
+.btnBatal {
+  padding: 10px 30px;
+  background: #ff0000; /* Merah */
+  color: white;
+  border: none;
+  border-radius: 20px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btnUnggah {
+  padding: 10px 30px;
+  background: #3BFF00; /* Hijau Terang */
+  color: black;
+  border: none;
+  border-radius: 20px;
+  font-weight: 600;
+  cursor: pointer;
+}

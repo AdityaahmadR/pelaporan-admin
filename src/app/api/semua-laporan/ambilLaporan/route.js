@@ -1,0 +1,36 @@
+// src/app/api/laporan/ambilLaporan/route.js
+import mysql from 'mysql2/promise';
+import { NextResponse } from 'next/server';
+
+// PERBAIKAN: Beritahu Vercel untuk tidak membangun route ini secara statis
+export const dynamic = 'force-dynamic';
+
+const pool = mysql.createPool({
+  host: process.env.MYSQLHOST,
+  user: process.env.MYSQLUSER,
+  password: process.env.MYSQLPASSWORD,
+  database: process.env.MYSQLDATABASE,
+  port: Number(process.env.MYSQLPORT) || 30080,
+  ssl: { rejectUnauthorized: false },
+  connectionLimit: 10,
+});
+
+export async function GET() {
+  try {
+    const [rows] = await pool.execute(`
+      SELECT 
+        l.laporanID,
+        l.deskripsi,
+        l.tanggal,
+        l.lokasi,
+        COALESCE(u.nama, 'Masyarakat') AS nama_pelapor
+      FROM laporan l
+      LEFT JOIN users u ON l.userID = u.userID
+      ORDER BY l.tanggal DESC
+    `);
+    return NextResponse.json(rows);
+  } catch (error) {
+    console.error('Error ambil laporan:', error);
+    return NextResponse.json([], { status: 200 }); // Kembalikan array kosong biar tidak crash
+  }
+}

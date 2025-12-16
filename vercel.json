@@ -1,8 +1,8 @@
 {
   "framework": "nextjs",
-  "buildCommand": "cd admin-api && npm run build",
+  "buildCommand": "npm run build",
   "installCommand": "npm install",
-  "outputDirectory": "admin-api/.next",
+  "outputDirectory": ".next",
   "headers": [
     {
       "source": "/api/(.*)",

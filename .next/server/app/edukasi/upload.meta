@@ -1,0 +1,16 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/edukasi/layout,_N_T_/edukasi/upload/layout,_N_T_/edukasi/upload/page,_N_T_/edukasi/upload"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/edukasi/upload/__PAGE__",
+    "/edukasi/upload",
+    "/edukasi",
+    "/_index",
+    "/_head"
+  ]
+}

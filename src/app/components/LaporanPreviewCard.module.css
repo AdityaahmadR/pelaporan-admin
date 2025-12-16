@@ -1,0 +1,87 @@
+/* Container Utama Card */
+.card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: white;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  border: 1px solid #e0e0e0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+}
+
+/* Efek Hover (sedikit melayang saat ditunjuk mouse) */
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: #d1d1d1;
+}
+
+/* Bagian Kiri: Judul & Deskripsi */
+.textSection {
+  flex: 1; /* Mengisi ruang kosong yang tersisa */
+  margin-right: 15px; /* Jarak antara teks dan badge status */
+  overflow: hidden; /* Penting agar text-overflow ellipsis bekerja */
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a202c; /* Hitam gelap */
+  margin: 0 0 6px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* Titik-titik jika judul kepanjangan */
+}
+
+.desc {
+  font-size: 14px;
+  color: #718096; /* Abu-abu teks */
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Bagian Kanan: Wrapper Status */
+.statusWrapper {
+  flex-shrink: 0; /* Mencegah badge mengecil/gepeng */
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* Style Badge Status (Bentuk Kapsul) */
+/* Warna background dihandle via JavaScript inline-style */
+.statusBadge {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 50px; /* Membuat sudut bulat sempurna */
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  min-width: 120px; /* Lebar minimum agar terlihat rapi seragam */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  letter-spacing: 0.5px;
+}
+
+/* Responsif untuk Layar HP Kecil */
+@media (max-width: 600px) {
+  .card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .textSection {
+    margin-right: 0;
+    width: 100%;
+  }
+
+  .statusWrapper {
+    align-self: flex-start; /* Pindah ke kiri bawah pada layar HP */
+  }
+}

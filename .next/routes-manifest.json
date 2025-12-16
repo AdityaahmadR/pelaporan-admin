@@ -1,0 +1,209 @@
+{
+  "version": 3,
+  "pages404": true,
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [
+    {
+      "source": "/:path+/",
+      "destination": "/:path+",
+      "internal": true,
+      "priority": true,
+      "statusCode": 308,
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+    }
+  ],
+  "headers": [],
+  "rewrites": {
+    "beforeFiles": [],
+    "afterFiles": [],
+    "fallback": []
+  },
+  "dynamicRoutes": [
+    {
+      "page": "/api/edukasi/[id]",
+      "regex": "^/api/edukasi/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/edukasi/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/api/notifikasi/[userID]",
+      "regex": "^/api/notifikasi/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPuserID": "nxtPuserID"
+      },
+      "namedRegex": "^/api/notifikasi/(?<nxtPuserID>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/api/semua-laporan/[id]",
+      "regex": "^/api/semua\\-laporan/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/semua\\-laporan/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/app/detail/[id]",
+      "regex": "^/app/detail/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/app/detail/(?<nxtPid>[^/]+?)(?:/)?$"
+    }
+  ],
+  "staticRoutes": [
+    {
+      "page": "/",
+      "regex": "^/(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/(?:/)?$"
+    },
+    {
+      "page": "/_global-error",
+      "regex": "^/_global\\-error(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_global\\-error(?:/)?$"
+    },
+    {
+      "page": "/_not-found",
+      "regex": "^/_not\\-found(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/api/edukasi",
+      "regex": "^/api/edukasi(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/edukasi(?:/)?$"
+    },
+    {
+      "page": "/api/kirim-notifikasi",
+      "regex": "^/api/kirim\\-notifikasi(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/kirim\\-notifikasi(?:/)?$"
+    },
+    {
+      "page": "/api/login",
+      "regex": "^/api/login(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/login(?:/)?$"
+    },
+    {
+      "page": "/api/login1",
+      "regex": "^/api/login1(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/login1(?:/)?$"
+    },
+    {
+      "page": "/api/notifikasi",
+      "regex": "^/api/notifikasi(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/notifikasi(?:/)?$"
+    },
+    {
+      "page": "/api/pengguna",
+      "regex": "^/api/pengguna(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/pengguna(?:/)?$"
+    },
+    {
+      "page": "/api/register",
+      "regex": "^/api/register(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/register(?:/)?$"
+    },
+    {
+      "page": "/api/riwayat",
+      "regex": "^/api/riwayat(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/riwayat(?:/)?$"
+    },
+    {
+      "page": "/api/semua-laporan",
+      "regex": "^/api/semua\\-laporan(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/semua\\-laporan(?:/)?$"
+    },
+    {
+      "page": "/api/semua-laporan/ambilLaporan",
+      "regex": "^/api/semua\\-laporan/ambilLaporan(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/semua\\-laporan/ambilLaporan(?:/)?$"
+    },
+    {
+      "page": "/api/semua-laporan/darurat",
+      "regex": "^/api/semua\\-laporan/darurat(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/semua\\-laporan/darurat(?:/)?$"
+    },
+    {
+      "page": "/api/users",
+      "regex": "^/api/users(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/users(?:/)?$"
+    },
+    {
+      "page": "/app",
+      "regex": "^/app(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/app(?:/)?$"
+    },
+    {
+      "page": "/darurat",
+      "regex": "^/darurat(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/darurat(?:/)?$"
+    },
+    {
+      "page": "/edukasi",
+      "regex": "^/edukasi(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/edukasi(?:/)?$"
+    },
+    {
+      "page": "/edukasi/upload",
+      "regex": "^/edukasi/upload(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/edukasi/upload(?:/)?$"
+    },
+    {
+      "page": "/login",
+      "regex": "^/login(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/login(?:/)?$"
+    },
+    {
+      "page": "/monitoring",
+      "regex": "^/monitoring(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/monitoring(?:/)?$"
+    },
+    {
+      "page": "/pengguna",
+      "regex": "^/pengguna(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/pengguna(?:/)?$"
+    }
+  ],
+  "dataRoutes": [],
+  "rsc": {
+    "header": "rsc",
+    "varyHeader": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+    "prefetchHeader": "next-router-prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSuffix": ".prefetch.rsc",
+    "prefetchSegmentHeader": "next-router-segment-prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments",
+    "clientParamParsing": false,
+    "dynamicRSCPrerender": false
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  }
+}

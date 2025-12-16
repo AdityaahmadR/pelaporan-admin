@@ -1,0 +1,371 @@
+/* === LAYOUT UTAMA (FIXED VIEWPORT) === */
+.page {
+  display: block;
+  height: 100vh;
+  background: #f8f9fa;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  overflow: hidden;
+  position: relative;
+}
+
+/* === TOP BAR === */
+.topBar {
+  position: fixed;
+  top: 0;
+  left: 280px;
+  right: 0;
+  height: 72px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  z-index: 30;
+  transition: left 0.25s ease;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.sidebarCollapsed .topBar {
+  left: 72px;
+}
+
+/* === SEARCH BAR === */
+.searchWrapper {
+  display: flex;
+  align-items: center;
+  max-width: 800px;
+  flex: 1;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.searchBar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 800px;
+  background: #fff;
+  border-radius: 9999px;
+  padding: 10px 18px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.25s ease;
+}
+
+.searchIcon {
+  margin-right: 12px;
+  opacity: 0.5;
+  width: 18px;
+  height: 18px;
+}
+
+.searchInput {
+  background: none;
+  border: none;
+  outline: none;
+  flex: 1;
+  font-size: 15px;
+  color: #1a202c;
+}
+
+/* === UPLOAD BUTTON === */
+.uploadButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  color: #2d3748;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.uploadButton:hover {
+  background: #f7fafc;
+  transform: translateY(-1px);
+}
+
+/* === CONTENT WRAPPER === */
+.content {
+  margin-left: 280px;
+  margin-top: 72px;
+  height: calc(100vh - 72px); 
+  overflow-y: auto; 
+  padding: 32px;
+  transition: margin-left 0.25s ease;
+}
+
+.content.collapsed {
+  margin-left: 72px;
+}
+
+/* === CARD DETAIL === */
+.card {
+  background: white;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+  max-width: 1000px;
+  margin: 0 auto;
+  margin-bottom: 40px; 
+}
+
+/* === HEADER DETAIL === */
+.detailHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 20px;
+}
+
+.titleGroup {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.backButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  color: #1a202c;
+  display: flex;
+  align-items: center;
+}
+
+.backButton:hover {
+  background-color: #f0f0f0;
+}
+
+.detailTitle {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0;
+}
+
+.metaInfo {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.dateText {
+  font-size: 13px;
+  color: #718096;
+  font-weight: 500;
+}
+
+.statusActions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.statusIndicator {
+  display: flex;
+  align-items: center;
+}
+
+.statusText {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 16px;
+  text-align: center;
+  min-width: 120px;
+}
+
+.statusText.baru {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.statusText.SedangDiproses {
+  background: #fef3c7;
+  color: #d97706;
+  border: 1px solid #fde68a;
+}
+
+.statusText.Selesai {
+  background: #d1fae5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+
+.actionButton {
+  padding: 10px 20px;
+  border-radius: 20px;
+  border: none;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.actionButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.actionButton:active {
+  transform: translateY(0);
+}
+
+/* === USER PROFILE === */
+.userSection {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4a5568;
+}
+
+.userInfo h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #2d3748;
+}
+
+.userInfo p {
+  margin: 2px 0 0;
+  font-size: 14px;
+  color: #718096;
+}
+
+/* === ISI & GAMBAR === */
+.reportBody {
+  font-size: 16px;
+  line-height: 1.7;
+  color: #4a5568;
+  white-space: pre-line;
+  margin-bottom: 20px;
+}
+
+.imageContainer {
+  width: 100%;
+  max-width: 450px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  margin-top: 15px;
+}
+
+.reportImage {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* === TOMBOL LOKASI (BARU) === */
+.locationWrapper {
+  display: flex;
+  justify-content: flex-end; /* Posisi Kanan */
+  margin-top: 40px;
+  align-items: center;
+}
+
+.locationButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 5px;
+  transition: opacity 0.2s, transform 0.2s;
+  text-decoration: none;
+}
+
+.locationButton:hover {
+  opacity: 0.8;
+  transform: translateY(-2px);
+}
+
+.locationText {
+  font-size: 28px;
+  font-weight: 800; /* Extra Bold */
+  color: #000;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  letter-spacing: -0.5px;
+}
+
+.locationIcon {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .topBar { padding: 10px 16px; flex-direction: column; height: auto; gap: 10px; }
+  .detailHeader { flex-direction: column; gap: 15px; }
+  .metaInfo { align-items: flex-start; text-align: left; width: 100%; }
+  .statusActions { width: 100%; flex-direction: row; justify-content: space-between; align-items: center; }
+  .statusIndicator { order: 1; }
+  .actionButton { order: 2; }
+  
+  .page { height: auto; overflow: visible; }
+  .content { height: auto; overflow: visible; }
+}
+
+/* === TOMBOL LOKASI FIXED (POJOK KANAN BAWAH) === */
+.locationFixed {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.locationButtonFixed {
+  background: #fff;
+  border: 2px solid #e2e8f0;
+  border-radius: 50px;
+  padding: 12px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #4a5568;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: all 0.2s ease;
+}
+
+.locationButtonFixed:hover {
+  background: #f8f9fa;
+  border-color: #cbd5e0;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.locationIcon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
