@@ -1,1 +1,4 @@
-{"rootDirectory": "admin-api"}
+{
+  "rootDirectory": "admin-api",
+  "framework": "nextjs"
+}
