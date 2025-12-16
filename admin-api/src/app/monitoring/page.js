@@ -12,13 +12,13 @@ export default function MonitoringPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const router = useRouter();
 
-  // State Data Sensor
+  // State Data Sensor (Default sesuai struktur DB Anda)
   const [sensorData, setSensorData] = useState({
-    api: "SAFE",
-    asap: "NORMAL",
+    api: "SAFE",      // Default "SAFE"
+    asap: "NORMAL",   // Default "NORMAL"
     kelembaban: 0,
     suhu: 0,
-    esp32cam: "nofire" // Default sesuai data di folder 'hasil'
+    esp32cam: "SAFE"  // Placeholder (belum ada di gambar DB)
   });
 
   // State Status Aktif Sensor
@@ -30,83 +30,98 @@ export default function MonitoringPage() {
     esp32cam: false
   });
 
-  // State Status Global
+  // State Status Global (NORMAL / BAHAYA / DARURAT)
   const [globalStatus, setGlobalStatus] = useState("NORMAL");
+  
+  // State Spam Protection (Agar notifikasi tidak dikirim berulang-ulang)
   const [lastNotificationTime, setLastNotificationTime] = useState(0);
 
   // --- FUNGSI KIRIM NOTIFIKASI ---
   const sendNotification = async (type, title, message) => {
     try {
-      await fetch('/api/kirim-notifikasi', {
+      const response = await fetch('/api/kirim-notifikasi', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userID: 'admin', type, title, body: message })
+        body: JSON.stringify({
+          userID: 'admin', 
+          type: type,
+          title: title,
+          body: message
+        })
       });
-    } catch (error) { console.error('Gagal kirim notifikasi:', error); }
+      if (response.ok) console.log(`Notifikasi ${type} berhasil dikirim`);
+    } catch (error) {
+      console.error('Gagal kirim notifikasi:', error);
+    }
   };
   
   // --- FUNGSI BUAT LAPORAN OTOMATIS ---
   const createAutoReport = async (description) => {
       try {
-         await fetch('/api/semua-laporan/darurat', {
+         const response = await fetch('/api/semua-laporan/darurat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userID: 'sistem_iot', deskripsi: description, lokasi: 'Gedung Utama' })
+            body: JSON.stringify({
+              userID: 'sistem_iot', 
+              deskripsi: description,
+              lokasi: 'Gedung Utama (Deteksi Sensor)' 
+            })
           });
-      } catch (error) { console.error("Gagal buat laporan", error); }
+          if(response.ok) console.log("Laporan otomatis dibuat di database");
+      } catch (error) {
+          console.error("Gagal buat laporan otomatis", error);
+      }
   }
 
   useEffect(() => {
-    // 1. PERBAIKAN UTAMA: BACA DARI ROOT ('/')
-    // Agar kita bisa mengambil folder 'fire_detection_system' DAN folder 'hasil'
-    const rootRef = ref(dbIoT, '/'); 
+    // 1. UPDATE PATH DATABASE:
+    // Mengarah ke folder "fire_detection_system" sesuai gambar Firebase Anda
+    const systemRef = ref(dbIoT, 'fire_detection_system'); 
     
-    const unsubscribe = onValue(rootRef, (snapshot) => {
+    const unsubscribe = onValue(systemRef, (snapshot) => {
       const data = snapshot.val();
       
-      if (data) {
-        // Ambil data dari folder masing-masing
-        // Menggunakan "Optional Chaining" (?.) dan "Default Value" (|| {}) agar tidak error jika kosong
-        const fds = data.fire_detection_system || {}; 
-        const s = fds.sensors || {};         
-        const sys = fds.system || {};        
-        const hasilCam = data.hasil || {};   // <-- INI DATA KAMERA (Di luar folder system)
+      // Pastikan data dan folder 'sensors' ada sebelum dibaca
+      if (data && data.sensors) {
+        const s = data.sensors; // Jalan pintas ke object 'sensors'
+        const sys = data.system; // Jalan pintas ke object 'system'
 
-        // --- 2. MAPPING DATA ---
+        // --- 2. PEMETAAN DATA (MAPPING) SESUAI STRUKTUR FIREBASE ANDA ---
         const newData = {
+            // Sensor Api (Flame) -> status ("SAFE" / "DANGER")
             api: s.flame?.status || "SAFE",
+            
+            // Sensor Asap (MQ135) -> level ("NORMAL" / "WARNING")
             asap: s.mq135?.level || "NORMAL",
+            
+            // Sensor Kelembaban (Humidity) -> value (Angka)
             kelembaban: s.humidity?.value || 0,
+            
+            // Sensor Suhu (Temperature) -> value (Angka)
             suhu: s.temperature?.value || 0,
             
-            // Ambil dari folder 'hasil' -> 'label' (isinya "nofire" atau "fire")
-            esp32cam: hasilCam.label || "nofire" 
+            // ESP32 Cam (Belum ada di gambar, kita set default SAFE)
+            esp32cam: "SAFE" 
         };
 
-        // --- 3. CEK STATUS AKTIF ---
+        // --- 3. CEK STATUS AKTIF (Berdasarkan keberadaan data) ---
+        // Jika data sensor tidak 'undefined', berarti sensor AKTIF/Terhubung
         const newActiveStatus = {
           api: s.flame !== undefined,
           asap: s.mq135 !== undefined,
           kelembaban: s.humidity !== undefined,
           suhu: s.temperature !== undefined,
-          
-          // Kamera aktif jika folder 'hasil' ada isinya
-          esp32cam: hasilCam.label !== undefined 
+          esp32cam: false // Set false dulu karena belum ada folder kameranya
         };
 
         setSensorData(newData);
         setSensorActive(newActiveStatus);
 
         // --- 4. LOGIKA STATUS GLOBAL ---
-        let currentStatus = sys.danger_status || "NORMAL";
+        // Kita ambil langsung dari sistem Anda: system -> danger_status
+        let currentStatus = sys?.danger_status || "NORMAL";
         
-        // Logika Tambahan: Jika Kamera mendeteksi "fire", paksa status jadi BAHAYA
-        // (Berjaga-jaga jika sistem hardware belum update status global)
-        if (newData.esp32cam === "fire") {
-            currentStatus = "DANGER";
-        }
-
-        // Translate Status ke Bahasa Indonesia
+        // Terjemahkan bahasa DB ke Bahasa Indonesia untuk Tampilan UI
         if (currentStatus === "SAFE") currentStatus = "NORMAL";
         if (currentStatus === "DANGER") currentStatus = "BAHAYA";
 
@@ -114,40 +129,54 @@ export default function MonitoringPage() {
 
         // --- 5. LOGIKA NOTIFIKASI ---
         const now = Date.now();
-        const COOLDOWN = 5 * 60 * 1000;
+        const COOLDOWN = 5 * 60 * 1000; // Jeda 5 Menit antar notifikasi
 
-        // Jika Status BAHAYA dan cooldown selesai
+        // Jika Status BAHAYA dan masa jeda (cooldown) sudah lewat
         if ((currentStatus === "BAHAYA" || currentStatus === "DARURAT") && (now - lastNotificationTime > COOLDOWN)) {
-             const message = `Sistem mendeteksi bahaya! Status Lokasi: ${currentStatus}. Suhu: ${newData.suhu}°C. Kamera: ${newData.esp32cam === "fire" ? "Terdeteksi Api" : "Aman"}`;
+             const message = `Sistem mendeteksi bahaya! Status Lokasi: ${currentStatus}. Suhu: ${newData.suhu}°C`;
              
+             // A. Kirim Notifikasi ke Admin
              sendNotification('bahaya_sensor', '🔥 PERINGATAN BAHAYA!', message);
+             
+             // B. Buat Laporan Otomatis
              createAutoReport(message);
+
+             // Update waktu terakhir notifikasi
              setLastNotificationTime(now);
         }
       }
     });
 
-    return () => off(rootRef);
+    return () => off(systemRef);
   }, [lastNotificationTime]); 
 
-  // --- HELPER TEKS STATUS ---
+  // --- HELPER UNTUK TEKS STATUS (Disesuaikan dengan String dari Firebase) ---
   const getStatusText = (val, type) => {
-    if (type === 'api') return val === "SAFE" ? "Tidak Terdeteksi" : "Terdeteksi";
-    if (type === 'asap') return val === "NORMAL" ? "Normal" : "Bahaya";
-    if (type === 'suhu') return val > 50 ? "Bahaya" : "Normal"; 
-    if (type === 'kelembaban') return val < 30 ? "Bahaya (Kering)" : "Normal";
-    
-    // Logic Khusus Kamera
-    if (type === 'kamera') {
-        if (val === "nofire") return "Aman";
-        if (val === "fire") return "Terdeteksi Api";
-        return "Menunggu...";
+    // Logika untuk API (Flame)
+    if (type === 'api') {
+        // Di DB tertulis "SAFE", jika bukan SAFE berarti Terdeteksi
+        return val === "SAFE" ? "Tidak Terdeteksi" : "Terdeteksi";
+    }
+    // Logika untuk Asap (MQ135)
+    if (type === 'asap') {
+        // Di DB tertulis "NORMAL", jika bukan NORMAL berarti Bahaya
+        return val === "NORMAL" ? "Normal" : "Bahaya";
+    }
+    // Logika untuk Suhu
+    if (type === 'suhu') {
+        return val > 50 ? "Bahaya" : "Normal"; 
+    }
+    // Logika untuk Kelembaban
+    if (type === 'kelembaban') {
+        // Contoh: Terlalu kering (<30) bisa memicu api
+        return val < 30 ? "Bahaya (Kering)" : "Normal";
     }
     return "Normal";
   };
 
   return (
     <div className={`${styles.page} ${!sidebarOpen ? styles.sidebarCollapsed : ''}`} suppressHydrationWarning>
+      
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} activePage="/monitoring" />
 
       {/* TOP BAR */}
@@ -169,13 +198,14 @@ export default function MonitoringPage() {
       </div>
 
       <main className={`${styles.content} ${!sidebarOpen ? styles.collapsed : ''}`}>
+        
         <header className={styles.header}>
           <h2>Monitoring Sensor</h2>
         </header>
 
         <div className={styles.dashboardGrid}>
             
-            {/* KARTU STATUS UTAMA */}
+            {/* 1. KARTU STATUS UTAMA */}
             <div className={styles.mainStatusCard}>
                 <div className={styles.statusLabelBox}>
                     <span className={styles.statusLabelText}>
@@ -189,7 +219,7 @@ export default function MonitoringPage() {
                 </div>
             </div>
 
-            {/* GRID SENSOR */}
+            {/* 2. GRID SENSOR */}
             <div className={styles.sensorGrid}>
 
                 {/* SENSOR API (FLAME) */}
@@ -262,7 +292,7 @@ export default function MonitoringPage() {
                     </div>
                 </div>
 
-                 {/* ESP32 CAM (SUDAH DIPERBAIKI) */}
+                 {/* ESP32 CAM (Placeholder) */}
                  <div className={styles.sensorItem}>
                     <div className={styles.sensorNameBox}>
                         <span className={styles.sensorNameText}>ESP32<br/>CAM</span>
@@ -273,17 +303,15 @@ export default function MonitoringPage() {
                             <span className={`${styles.dot} ${sensorActive.esp32cam ? styles.activeDot : styles.inactiveDot}`}></span>
                         </div>
                         <div className={styles.sensorStatusText}>
-                            {/* Menggunakan logic 'kamera' yang baru */}
-                            Status Api: <span className={styles.statusHighlight}>{getStatusText(sensorData.esp32cam, 'kamera')}</span>
+                            Status Api: <span className={styles.statusHighlight}>{getStatusText(sensorData.esp32cam, 'api')}</span>
                         </div>
                     </div>
                 </div>
 
             </div>
         </div>
+
       </main>
     </div>
   );
 }
-
-//test
