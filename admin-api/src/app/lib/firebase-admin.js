@@ -1,26 +1,29 @@
 import admin from 'firebase-admin';
 
-// Cek jika sudah diinisialisasi agar tidak error saat hot-reload
+// Cek jika sudah diinisialisasi (Singleton Pattern)
 if (!admin.apps.length) {
   try {
-    // Cek apakah environment variables Firebase tersedia
-    if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_CLIENT_EMAIL || !process.env.FIREBASE_PRIVATE_KEY) {
-      console.log('Firebase Admin SDK: Environment variables tidak lengkap, skipping initialization');
-    } else {
+    // KITA UBAH DISINI: Menggunakan 1 Variable JSON utuh
+    // Ini lebih aman daripada memecah variable (Project ID, Client Email, Private Key)
+    const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+
+    if (serviceAccountKey) {
+      // Parse string JSON menjadi Object
+      const serviceAccount = JSON.parse(serviceAccountKey);
+
       admin.initializeApp({
-        credential: admin.credential.cert({
-          projectId: process.env.FIREBASE_PROJECT_ID,
-          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-          // Ganti \\n dengan \n agar format private key benar
-          privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
-        })
+        credential: admin.credential.cert(serviceAccount),
       });
-      console.log('Firebase Admin SDK berhasil diinisialisasi');
+      
+      console.log('✅ Firebase Admin SDK berhasil diinisialisasi.');
+    } else {
+      console.warn('⚠️ FIREBASE_SERVICE_ACCOUNT_KEY tidak ditemukan di Environment Variables.');
     }
   } catch (error) {
-    console.log('Error inisialisasi Firebase Admin SDK:', error.message);
+    console.error('❌ Error fatal inisialisasi Firebase Admin:', error.message);
+    // Kita tidak throw error agar aplikasi tidak crash total, 
+    // tapi fitur notifikasi tidak akan jalan.
   }
 }
 
-// Ekspor instance admin yang sudah siap pakai
 export { admin };
