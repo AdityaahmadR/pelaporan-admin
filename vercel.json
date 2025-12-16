@@ -1,4 +1,5 @@
 {
+  "framework": "nextjs",
   "buildCommand": "cd admin-api && npm run build",
   "installCommand": "cd admin-api && npm install",
   "outputDirectory": "admin-api/.next",
