@@ -1,4 +1,24 @@
 {
+  "buildCommand": "cd admin-api && NODE_OPTIONS=\"--max_old_space_size=4096\" npm run build",
+  "devCommand": "cd admin-api && npm run dev",
+  "installCommand": "cd admin-api && npm install",
+  "framework": "nextjs",
+  "rootDirectory": "admin-api",
+  "build": {
+    "env": {
+      "NODE_OPTIONS": "--max_old_space_size=4096",
+      "NEXT_FORCE_WEBPACK": "true"
+    }
+  },
+  "functions": {
+    "src/app/api/**/*.js": {
+      "maxDuration": 30
+    }
+  },
+  "env": {
+    "NODE_OPTIONS": "--max_old_space_size=4096",
+    "NEXT_FORCE_WEBPACK": "true"
+  },
   "headers": [
     {
       "source": "/api/(.*)",
