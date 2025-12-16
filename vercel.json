@@ -1,13 +1,10 @@
 {
+  "buildCommand": "cd admin-api && npm run build",
+  "installCommand": "cd admin-api && npm install",
+  "outputDirectory": "admin-api/.next",
   "functions": {
-    "admin-api/src/app/**/*.js": {
-      "runtime": "@vercel/next",
-      "src": "admin-api/src/app/**/*.js"
-    },
     "admin-api/src/app/api/**/*.js": {
-      "runtime": "@vercel/node",
-      "maxDuration": 30,
-      "src": "admin-api/src/app/api/**/*.js"
+      "maxDuration": 30
     }
   },
   "headers": [
