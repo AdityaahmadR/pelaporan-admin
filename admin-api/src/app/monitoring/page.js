@@ -90,6 +90,8 @@ Segera lakukan tindakan darurat!`;
     
     const unsubscribe = onValue(sensorRef, (snapshot) => {
       const data = snapshot.val();
+      console.log('Data dari Firebase:', data); // Debug log
+      
       if (data) {
         // --- MAPPING DATA (Sesuaikan nama variabel dari ESP32 di sini) ---
         // Contoh: jika di firebase namanya "fire_status", ganti data.fire_status
@@ -101,19 +103,22 @@ Segera lakukan tindakan darurat!`;
             esp32cam: data.cam_fire || 0 // Asumsi variable kamera
         };
 
+        console.log('Data yang dipetakan:', newData); // Debug log
+
         // Update status aktif sensor berdasarkan data yang diterima
+        // Sensor dianggap aktif jika field ada di Firebase (termasuk nilai 0, false, dll)
         const newActiveStatus = {
-          api: data.api !== undefined && data.api !== null,
-          asap: data.asap !== undefined && data.asap !== null,
-          kelembaban: data.kelembaban !== undefined && data.kelembaban !== null,
-          suhu: data.suhu !== undefined && data.suhu !== null,
-          esp32cam: data.cam_fire !== undefined && data.cam_fire !== null
+          api: data.hasOwnProperty('api') || data.hasOwnProperty('fire'),
+          asap: data.hasOwnProperty('asap') || data.hasOwnProperty('smoke'),
+          kelembaban: data.hasOwnProperty('kelembaban') || data.hasOwnProperty('hum'),
+          suhu: data.hasOwnProperty('suhu') || data.hasOwnProperty('temp'),
+          esp32cam: data.hasOwnProperty('cam_fire') || data.hasOwnProperty('esp32cam')
         };
+
+        console.log('Status aktif sensor:', newActiveStatus); // Debug log
 
         setSensorData(newData);
         setSensorActive(newActiveStatus);
-
-        setSensorData(newData);
 
         // --- LOGIKA STATUS UTAMA ---
         // DARURAT: Jika SEMUA sensor mendeteksi bahaya/api

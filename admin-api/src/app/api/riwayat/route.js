@@ -3,7 +3,8 @@
 import connectDB from "@/lib/db";
 import { NextResponse } from "next/server";
 
-// Memastikan API selalu mengambil data terbaru dari serverexport const dynamic = 'force-dynamic';
+// Memastikan API selalu mengambil data terbaru dari server
+export const dynamic = 'force-dynamic';
 
 /**
  * Mengambil riwayat laporan untuk satu pengguna tertentu.

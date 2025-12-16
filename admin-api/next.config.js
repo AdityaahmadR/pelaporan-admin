@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Next.js 16 - App Directory sudah stable, tapi tetap perlu untuk lokal
+  // Next.js 16 - App Directory sudah stable
   experimental: {
     appDir: true,
   },
