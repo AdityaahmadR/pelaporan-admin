@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Sidebar from '@/components/Sidebar';
 import styles from './monitoring.module.css';
-import { dbIoT } from '@/lib/firebaseIoT'; // Import Config IoT Anda
+import { dbIoT } from '@/lib/firebaseIoT'; // Pastikan path ini benar
 import { ref, onValue, off } from "firebase/database";
 
 export default function MonitoringPage() {
@@ -16,7 +16,7 @@ export default function MonitoringPage() {
   const [sensorData, setSensorData] = useState({
     api: 0,
     asap: 0,
-    kelembaban: 0, 
+    kelembaban: 0,
     suhu: 0,
     esp32cam: 0
   });
@@ -33,138 +33,138 @@ export default function MonitoringPage() {
   // State Status Global (NORMAL / BAHAYA / DARURAT)
   const [globalStatus, setGlobalStatus] = useState("NORMAL");
   
-  // State untuk tracking apakah sudah mengirim laporan darurat
-  const [daruratSent, setDaruratSent] = useState(false);
+  // State agar notifikasi tidak dikirim berkali-kali (Spam)
+  const [lastNotificationTime, setLastNotificationTime] = useState(0);
 
-  // Fungsi untuk mengirim laporan darurat
-  const kirimLaporanDarurat = async () => {
-    if (daruratSent) return; // Sudah pernah kirim, skip
-
+  // --- FUNGSI KIRIM NOTIFIKASI ---
+  const sendNotification = async (type, title, message) => {
     try {
-      const deskripsi = `DARURAT! Semua sensor mendeteksi bahaya:
-- Sensor Api: Terdeteksi
-- Sensor Asap: Bahaya  
-- Sensor Kelembapan: Bahaya
-- Sensor Suhu: Bahaya
-- ESP32 CAM: Api Terdeteksi
-
-Segera lakukan tindakan darurat!`;
-
-      // Kirim laporan darurat ke database
-      const response = await fetch('/api/semua-laporan/darurat', {
+      const response = await fetch('/api/kirim-notifikasi', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userID: 'admin', // Admin sebagai pengirim
-          deskripsi: deskripsi,
-          lokasi: null // Tidak ada lokasi spesifik
+          userID: 'admin', // Kirim ke semua admin/petugas
+          type: type,
+          title: title,
+          body: message
         })
       });
 
       if (response.ok) {
-        console.log('Laporan darurat berhasil dikirim');
-        setDaruratSent(true);
-        
-        // Kirim notifikasi ke petugas
-        await fetch('/api/kirim-notifikasi', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userID: 'admin', // Kirim ke admin/petugas
-            type: 'laporan_darurat',
-            title: 'DARURAT! Kebakaran Terdeteksi',
-            body: 'Semua sensor mendeteksi bahaya. Segera lakukan tindakan darurat!'
-          })
-        });
-        
-        alert('DARURAT! Laporan darurat telah dikirim ke petugas.');
+        console.log(`Notifikasi ${type} berhasil dikirim`);
       }
     } catch (error) {
-      console.error('Gagal kirim laporan darurat:', error);
+      console.error('Gagal kirim notifikasi:', error);
     }
   };
+  
+  // --- FUNGSI BUAT LAPORAN OTOMATIS ---
+  const createAutoReport = async (description) => {
+      try {
+         const response = await fetch('/api/semua-laporan/darurat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userID: 'sistem_iot', // Penanda bahwa ini dari sistem
+              deskripsi: description,
+              lokasi: 'Gedung Utama (Deteksi Sensor)' // Bisa disesuaikan
+            })
+          });
+          if(response.ok) console.log("Laporan otomatis dibuat di database");
+      } catch (error) {
+          console.error("Gagal buat laporan otomatis", error);
+      }
+  }
 
   useEffect(() => {
-    // Path Root '/' untuk membaca semua data ESP32
+    // Path Root '/' untuk membaca semua data di Firebase
     const sensorRef = ref(dbIoT, '/'); 
     
     const unsubscribe = onValue(sensorRef, (snapshot) => {
       const data = snapshot.val();
-      console.log('Data dari Firebase:', data); // Debug log
       
       if (data) {
-        // --- MAPPING DATA (Sesuaikan nama variabel dari ESP32 di sini) ---
-        // Contoh: jika di firebase namanya "fire_status", ganti data.fire_status
+        // --- 1. MAPPING DATA (Mengambil data dari Firebase) ---
+        // Kita gunakan logika "OR" (||) untuk mengantisipasi nama variabel yang berbeda
         const newData = {
-            api: data.api || data.fire || 0,
-            asap: data.asap || data.smoke || 0,
-            kelembaban: data.kelembaban || data.hum || 0,
-            suhu: data.suhu || data.temp || 0,
-            esp32cam: data.cam_fire || 0 // Asumsi variable kamera
+            api: data.api !== undefined ? data.api : (data.fire !== undefined ? data.fire : 0),
+            asap: data.asap !== undefined ? data.asap : (data.smoke !== undefined ? data.smoke : 0),
+            kelembaban: data.kelembaban !== undefined ? data.kelembaban : (data.hum !== undefined ? data.hum : 0),
+            suhu: data.suhu !== undefined ? data.suhu : (data.temp !== undefined ? data.temp : 0),
+            esp32cam: data.cam_fire !== undefined ? data.cam_fire : (data.esp32cam !== undefined ? data.esp32cam : 0)
         };
 
-        console.log('Data yang dipetakan:', newData); // Debug log
-
-        // Update status aktif sensor berdasarkan data yang diterima
-        // Sensor dianggap aktif jika field ada di Firebase (termasuk nilai 0, false, dll)
+        // --- 2. CEK STATUS AKTIF (PERBAIKAN) ---
+        // Sensor dianggap aktif jika datanya TIDAK undefined (artinya ada data masuk)
         const newActiveStatus = {
-          api: data.hasOwnProperty('api') || data.hasOwnProperty('fire'),
-          asap: data.hasOwnProperty('asap') || data.hasOwnProperty('smoke'),
-          kelembaban: data.hasOwnProperty('kelembaban') || data.hasOwnProperty('hum'),
-          suhu: data.hasOwnProperty('suhu') || data.hasOwnProperty('temp'),
-          esp32cam: data.hasOwnProperty('cam_fire') || data.hasOwnProperty('esp32cam')
+          api: data.api !== undefined || data.fire !== undefined,
+          asap: data.asap !== undefined || data.smoke !== undefined,
+          kelembaban: data.kelembaban !== undefined || data.hum !== undefined,
+          suhu: data.suhu !== undefined || data.temp !== undefined,
+          esp32cam: data.cam_fire !== undefined || data.esp32cam !== undefined
         };
-
-        console.log('Status aktif sensor:', newActiveStatus); // Debug log
 
         setSensorData(newData);
         setSensorActive(newActiveStatus);
 
-        // --- LOGIKA STATUS UTAMA ---
-        // DARURAT: Jika SEMUA sensor mendeteksi bahaya/api
-        // BAHAYA: Jika ada sensor yang mendeteksi bahaya tapi tidak semua
-        // NORMAL: Jika tidak ada sensor yang mendeteksi bahaya
-        
-        const allDanger = (
-          newData.api == 1 && 
-          newData.asap == 1 && 
-          newData.kelembaban == 1 && 
-          newData.suhu > 50 && 
-          newData.esp32cam == 1
-        );
-        
-        const anyDanger = (
-          newData.api == 1 || 
-          newData.asap == 1 || 
-          newData.kelembaban == 1 || 
-          newData.suhu > 50 || 
-          newData.esp32cam == 1
-        );
-        
-        let newStatus = "NORMAL";
+        // --- 3. LOGIKA BAHAYA ---
+        const isApiBahaya = newData.api == 1;
+        const isAsapBahaya = newData.asap == 1;
+        const isKelembabanBahaya = newData.kelembaban == 1; 
+        const isSuhuBahaya = newData.suhu > 50; // Bahaya jika suhu > 50 derajat
+        const isCamBahaya = newData.esp32cam == 1;
+
+        // Salah satu bahaya = BAHAYA
+        const anyDanger = isApiBahaya || isAsapBahaya || isKelembabanBahaya || isSuhuBahaya || isCamBahaya;
+        // Semua bahaya = DARURAT
+        const allDanger = isApiBahaya && isAsapBahaya && isKelembabanBahaya && isSuhuBahaya && isCamBahaya;
+
+        // Update Tampilan Status Besar
         if (allDanger) {
-          newStatus = "DARURAT";
-          // Trigger laporan darurat jika belum pernah dikirim
-          if (globalStatus !== "DARURAT") {
-            kirimLaporanDarurat();
-          }
+            setGlobalStatus("DARURAT");
         } else if (anyDanger) {
-          newStatus = "BAHAYA";
+            setGlobalStatus("BAHAYA");
+        } else {
+            setGlobalStatus("NORMAL");
         }
-        
-        setGlobalStatus(newStatus);
+
+        // --- 4. LOGIKA PENGIRIMAN NOTIFIKASI OTOMATIS ---
+        const now = Date.now();
+        const COOLDOWN = 5 * 60 * 1000; // 5 Menit (Agar tidak spam notif)
+
+        // Jika ada bahaya DAN sudah lewat 5 menit dari notifikasi terakhir
+        if (anyDanger && (now - lastNotificationTime > COOLDOWN)) {
+             let messageParts = [];
+             if(isApiBahaya) messageParts.push("Api Terdeteksi");
+             if(isAsapBahaya) messageParts.push("Asap Tebal");
+             if(isSuhuBahaya) messageParts.push(`Suhu Tinggi (${newData.suhu}°C)`);
+             if(isCamBahaya) messageParts.push("Kamera Mendeteksi Api");
+             
+             const message = "PERINGATAN: " + messageParts.join(", ");
+
+             // A. Kirim Notifikasi ke HP/Web Petugas
+             sendNotification('bahaya_sensor', '🔥 PERINGATAN BAHAYA!', message);
+             
+             // B. Buat Laporan Otomatis di Database
+             createAutoReport(`Sistem mendeteksi anomali pada sensor. Detail: ${message}`);
+
+             // Update waktu terakhir kirim
+             setLastNotificationTime(now);
+             
+             console.log("Notifikasi Bahaya Dikirim!");
+        }
       }
     });
 
     return () => off(sensorRef);
-  }, []);
+  }, [lastNotificationTime]); // Dependency agar state waktu terbaca update-nya
 
-  // Helper untuk teks status (Biar kodenya rapi)
+  // Helper untuk mengubah angka menjadi teks status
   const getStatusText = (val, type) => {
     if (type === 'api') return val == 1 ? "Terdeteksi" : "Tidak Terdeteksi";
     if (type === 'bahaya') return val == 1 ? "Bahaya" : "Normal";
     if (type === 'suhu') return val > 50 ? "Bahaya" : "Normal"; 
-    if (type === 'kelembaban') return val == 1 ? "Bahaya" : "Normal"; // Kelembaban bahaya jika == 1
+    if (type === 'kelembaban') return val == 1 ? "Bahaya" : "Normal";
     return "Normal";
   };
 
@@ -178,7 +178,7 @@ Segera lakukan tindakan darurat!`;
         <div className={styles.searchWrapper}>
           <div className={styles.searchBar}>
             <Image src="/Search.png" alt="Search" width={20} height={20} className={styles.searchIcon} />
-            <input type="text" placeholder="Search Sensor..." className={styles.searchInput} />
+            <input type="text" placeholder="Cari Sensor..." className={styles.searchInput} />
           </div>
         </div>
         <button className={styles.uploadButton} onClick={() => router.push('/edukasi')}>
@@ -199,7 +199,7 @@ Segera lakukan tindakan darurat!`;
 
         <div className={styles.dashboardGrid}>
             
-            {/* 1. KARTU STATUS UTAMA (MERAH & PUTIH) */}
+            {/* 1. KARTU STATUS UTAMA */}
             <div className={styles.mainStatusCard}>
                 <div className={styles.statusLabelBox}>
                     <span className={styles.statusLabelText}>
@@ -223,7 +223,8 @@ Segera lakukan tindakan darurat!`;
                     </div>
                     <div className={styles.sensorDetailBox}>
                         <div className={styles.activeIndicator}>
-                            {sensorActive.api ? 'Aktif' : 'Tidak Aktif'} <span className={`${styles.dot} ${sensorActive.api ? styles.activeDot : styles.inactiveDot}`}></span>
+                            {sensorActive.api ? 'Aktif' : 'Tidak Aktif'} 
+                            <span className={`${styles.dot} ${sensorActive.api ? styles.activeDot : styles.inactiveDot}`}></span>
                         </div>
                         <div className={styles.sensorStatusText}>
                             Status Api: <span className={styles.statusHighlight}>{getStatusText(sensorData.api, 'api')}</span>
@@ -238,7 +239,8 @@ Segera lakukan tindakan darurat!`;
                     </div>
                     <div className={styles.sensorDetailBox}>
                         <div className={styles.activeIndicator}>
-                            {sensorActive.asap ? 'Aktif' : 'Tidak Aktif'} <span className={`${styles.dot} ${sensorActive.asap ? styles.activeDot : styles.inactiveDot}`}></span>
+                            {sensorActive.asap ? 'Aktif' : 'Tidak Aktif'} 
+                            <span className={`${styles.dot} ${sensorActive.asap ? styles.activeDot : styles.inactiveDot}`}></span>
                         </div>
                         <div className={styles.sensorStatusText}>
                             Status Asap: <span className={styles.statusHighlight}>{getStatusText(sensorData.asap, 'bahaya')}</span>
@@ -253,7 +255,8 @@ Segera lakukan tindakan darurat!`;
                     </div>
                     <div className={styles.sensorDetailBox}>
                          <div className={styles.activeIndicator}>
-                            {sensorActive.kelembaban ? 'Aktif' : 'Tidak Aktif'} <span className={`${styles.dot} ${sensorActive.kelembaban ? styles.activeDot : styles.inactiveDot}`}></span>
+                            {sensorActive.kelembaban ? 'Aktif' : 'Tidak Aktif'} 
+                            <span className={`${styles.dot} ${sensorActive.kelembaban ? styles.activeDot : styles.inactiveDot}`}></span>
                         </div>
                         <div className={styles.sensorStatusText}>
                             Status Kelembapan: <span className={styles.statusHighlight}>{getStatusText(sensorData.kelembaban, 'kelembaban')}</span>
@@ -268,7 +271,8 @@ Segera lakukan tindakan darurat!`;
                     </div>
                     <div className={styles.sensorDetailBox}>
                          <div className={styles.activeIndicator}>
-                            {sensorActive.suhu ? 'Aktif' : 'Tidak Aktif'} <span className={`${styles.dot} ${sensorActive.suhu ? styles.activeDot : styles.inactiveDot}`}></span>
+                            {sensorActive.suhu ? 'Aktif' : 'Tidak Aktif'} 
+                            <span className={`${styles.dot} ${sensorActive.suhu ? styles.activeDot : styles.inactiveDot}`}></span>
                         </div>
                         <div className={styles.sensorStatusText}>
                             Status Suhu: <span className={styles.statusHighlight}>{getStatusText(sensorData.suhu, 'suhu')}</span>
@@ -283,7 +287,8 @@ Segera lakukan tindakan darurat!`;
                     </div>
                     <div className={styles.sensorDetailBox}>
                          <div className={styles.activeIndicator}>
-                            {sensorActive.esp32cam ? 'Aktif' : 'Tidak Aktif'} <span className={`${styles.dot} ${sensorActive.esp32cam ? styles.activeDot : styles.inactiveDot}`}></span>
+                            {sensorActive.esp32cam ? 'Aktif' : 'Tidak Aktif'} 
+                            <span className={`${styles.dot} ${sensorActive.esp32cam ? styles.activeDot : styles.inactiveDot}`}></span>
                         </div>
                         <div className={styles.sensorStatusText}>
                             Status Api: <span className={styles.statusHighlight}>{getStatusText(sensorData.esp32cam, 'api')}</span>
