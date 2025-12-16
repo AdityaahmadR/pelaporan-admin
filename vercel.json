@@ -1,24 +1,19 @@
 {
-  "buildCommand": "NODE_OPTIONS=\"--max_old_space_size=4096\" npm run build",
-  "devCommand": "npm run dev",
-  "installCommand": "npm install",
-  "framework": "nextjs",
-  "build": {
-    "cwd": "admin-api",
-    "env": {
-      "NODE_OPTIONS": "--max_old_space_size=4096",
-      "NEXT_FORCE_WEBPACK": "true"
-    }
-  },
+  "buildCommand": "cd admin-api && npm run build",
+  "installCommand": "cd admin-api && npm install",
+  "framework": null,
   "functions": {
     "admin-api/src/app/api/**/*.js": {
+      "runtime": "@vercel/node",
       "maxDuration": 30
     }
   },
-  "env": {
-    "NODE_OPTIONS": "--max_old_space_size=4096",
-    "NEXT_FORCE_WEBPACK": "true"
-  },
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/admin-api/$1"
+    }
+  ],
   "headers": [
     {
       "source": "/api/(.*)",
