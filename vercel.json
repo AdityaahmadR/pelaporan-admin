@@ -1,8 +1,8 @@
 {
-  "buildCommand": "cd admin-api && npm run build",
-  "installCommand": "cd admin-api && npm install",
-  "framework": null,
   "functions": {
+    "admin-api/src/app/**/*.js": {
+      "runtime": "@vercel/next"
+    },
     "admin-api/src/app/api/**/*.js": {
       "runtime": "@vercel/node",
       "maxDuration": 30
