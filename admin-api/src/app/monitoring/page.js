@@ -5,20 +5,20 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Sidebar from '@/components/Sidebar';
 import styles from './monitoring.module.css';
-import { dbIoT } from '@/lib/firebaseIoT'; // Pastikan path ini benar
+import { dbIoT } from '@/lib/firebaseIoT'; 
 import { ref, onValue, off } from "firebase/database";
 
 export default function MonitoringPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const router = useRouter();
 
-  // State Data Sensor (Default: Aman/Normal)
+  // State Data Sensor (Default sesuai struktur DB Anda)
   const [sensorData, setSensorData] = useState({
-    api: 0,
-    asap: 0,
+    api: "SAFE",      // Default "SAFE"
+    asap: "NORMAL",   // Default "NORMAL"
     kelembaban: 0,
     suhu: 0,
-    esp32cam: 0
+    esp32cam: "SAFE"  // Placeholder (belum ada di gambar DB)
   });
 
   // State Status Aktif Sensor
@@ -33,7 +33,7 @@ export default function MonitoringPage() {
   // State Status Global (NORMAL / BAHAYA / DARURAT)
   const [globalStatus, setGlobalStatus] = useState("NORMAL");
   
-  // State agar notifikasi tidak dikirim berkali-kali (Spam)
+  // State Spam Protection (Agar notifikasi tidak dikirim berulang-ulang)
   const [lastNotificationTime, setLastNotificationTime] = useState(0);
 
   // --- FUNGSI KIRIM NOTIFIKASI ---
@@ -43,16 +43,13 @@ export default function MonitoringPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userID: 'admin', // Kirim ke semua admin/petugas
+          userID: 'admin', 
           type: type,
           title: title,
           body: message
         })
       });
-
-      if (response.ok) {
-        console.log(`Notifikasi ${type} berhasil dikirim`);
-      }
+      if (response.ok) console.log(`Notifikasi ${type} berhasil dikirim`);
     } catch (error) {
       console.error('Gagal kirim notifikasi:', error);
     }
@@ -65,9 +62,9 @@ export default function MonitoringPage() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              userID: 'sistem_iot', // Penanda bahwa ini dari sistem
+              userID: 'sistem_iot', 
               deskripsi: description,
-              lokasi: 'Gedung Utama (Deteksi Sensor)' // Bisa disesuaikan
+              lokasi: 'Gedung Utama (Deteksi Sensor)' 
             })
           });
           if(response.ok) console.log("Laporan otomatis dibuat di database");
@@ -77,99 +74,108 @@ export default function MonitoringPage() {
   }
 
   useEffect(() => {
-    // Path Root '/' untuk membaca semua data di Firebase
-    const sensorRef = ref(dbIoT, '/'); 
+    // 1. UPDATE PATH DATABASE:
+    // Mengarah ke folder "fire_detection_system" sesuai gambar Firebase Anda
+    const systemRef = ref(dbIoT, 'fire_detection_system'); 
     
-    const unsubscribe = onValue(sensorRef, (snapshot) => {
+    const unsubscribe = onValue(systemRef, (snapshot) => {
       const data = snapshot.val();
       
-      if (data) {
-        // --- 1. MAPPING DATA (Mengambil data dari Firebase) ---
-        // Kita gunakan logika "OR" (||) untuk mengantisipasi nama variabel yang berbeda
+      // Pastikan data dan folder 'sensors' ada sebelum dibaca
+      if (data && data.sensors) {
+        const s = data.sensors; // Jalan pintas ke object 'sensors'
+        const sys = data.system; // Jalan pintas ke object 'system'
+
+        // --- 2. PEMETAAN DATA (MAPPING) SESUAI STRUKTUR FIREBASE ANDA ---
         const newData = {
-            api: data.api !== undefined ? data.api : (data.fire !== undefined ? data.fire : 0),
-            asap: data.asap !== undefined ? data.asap : (data.smoke !== undefined ? data.smoke : 0),
-            kelembaban: data.kelembaban !== undefined ? data.kelembaban : (data.hum !== undefined ? data.hum : 0),
-            suhu: data.suhu !== undefined ? data.suhu : (data.temp !== undefined ? data.temp : 0),
-            esp32cam: data.cam_fire !== undefined ? data.cam_fire : (data.esp32cam !== undefined ? data.esp32cam : 0)
+            // Sensor Api (Flame) -> status ("SAFE" / "DANGER")
+            api: s.flame?.status || "SAFE",
+            
+            // Sensor Asap (MQ135) -> level ("NORMAL" / "WARNING")
+            asap: s.mq135?.level || "NORMAL",
+            
+            // Sensor Kelembaban (Humidity) -> value (Angka)
+            kelembaban: s.humidity?.value || 0,
+            
+            // Sensor Suhu (Temperature) -> value (Angka)
+            suhu: s.temperature?.value || 0,
+            
+            // ESP32 Cam (Belum ada di gambar, kita set default SAFE)
+            esp32cam: "SAFE" 
         };
 
-        // --- 2. CEK STATUS AKTIF (PERBAIKAN) ---
-        // Sensor dianggap aktif jika datanya TIDAK undefined (artinya ada data masuk)
+        // --- 3. CEK STATUS AKTIF (Berdasarkan keberadaan data) ---
+        // Jika data sensor tidak 'undefined', berarti sensor AKTIF/Terhubung
         const newActiveStatus = {
-          api: data.api !== undefined || data.fire !== undefined,
-          asap: data.asap !== undefined || data.smoke !== undefined,
-          kelembaban: data.kelembaban !== undefined || data.hum !== undefined,
-          suhu: data.suhu !== undefined || data.temp !== undefined,
-          esp32cam: data.cam_fire !== undefined || data.esp32cam !== undefined
+          api: s.flame !== undefined,
+          asap: s.mq135 !== undefined,
+          kelembaban: s.humidity !== undefined,
+          suhu: s.temperature !== undefined,
+          esp32cam: false // Set false dulu karena belum ada folder kameranya
         };
 
         setSensorData(newData);
         setSensorActive(newActiveStatus);
 
-        // --- 3. LOGIKA BAHAYA ---
-        const isApiBahaya = newData.api == 1;
-        const isAsapBahaya = newData.asap == 1;
-        const isKelembabanBahaya = newData.kelembaban == 1; 
-        const isSuhuBahaya = newData.suhu > 50; // Bahaya jika suhu > 50 derajat
-        const isCamBahaya = newData.esp32cam == 1;
+        // --- 4. LOGIKA STATUS GLOBAL ---
+        // Kita ambil langsung dari sistem Anda: system -> danger_status
+        let currentStatus = sys?.danger_status || "NORMAL";
+        
+        // Terjemahkan bahasa DB ke Bahasa Indonesia untuk Tampilan UI
+        if (currentStatus === "SAFE") currentStatus = "NORMAL";
+        if (currentStatus === "DANGER") currentStatus = "BAHAYA";
 
-        // Salah satu bahaya = BAHAYA
-        const anyDanger = isApiBahaya || isAsapBahaya || isKelembabanBahaya || isSuhuBahaya || isCamBahaya;
-        // Semua bahaya = DARURAT
-        const allDanger = isApiBahaya && isAsapBahaya && isKelembabanBahaya && isSuhuBahaya && isCamBahaya;
+        setGlobalStatus(currentStatus);
 
-        // Update Tampilan Status Besar
-        if (allDanger) {
-            setGlobalStatus("DARURAT");
-        } else if (anyDanger) {
-            setGlobalStatus("BAHAYA");
-        } else {
-            setGlobalStatus("NORMAL");
-        }
-
-        // --- 4. LOGIKA PENGIRIMAN NOTIFIKASI OTOMATIS ---
+        // --- 5. LOGIKA NOTIFIKASI ---
         const now = Date.now();
-        const COOLDOWN = 5 * 60 * 1000; // 5 Menit (Agar tidak spam notif)
+        const COOLDOWN = 5 * 60 * 1000; // Jeda 5 Menit antar notifikasi
 
-        // Jika ada bahaya DAN sudah lewat 5 menit dari notifikasi terakhir
-        if (anyDanger && (now - lastNotificationTime > COOLDOWN)) {
-             let messageParts = [];
-             if(isApiBahaya) messageParts.push("Api Terdeteksi");
-             if(isAsapBahaya) messageParts.push("Asap Tebal");
-             if(isSuhuBahaya) messageParts.push(`Suhu Tinggi (${newData.suhu}°C)`);
-             if(isCamBahaya) messageParts.push("Kamera Mendeteksi Api");
+        // Jika Status BAHAYA dan masa jeda (cooldown) sudah lewat
+        if ((currentStatus === "BAHAYA" || currentStatus === "DARURAT") && (now - lastNotificationTime > COOLDOWN)) {
+             const message = `Sistem mendeteksi bahaya! Status Lokasi: ${currentStatus}. Suhu: ${newData.suhu}°C`;
              
-             const message = "PERINGATAN: " + messageParts.join(", ");
-
-             // A. Kirim Notifikasi ke HP/Web Petugas
+             // A. Kirim Notifikasi ke Admin
              sendNotification('bahaya_sensor', '🔥 PERINGATAN BAHAYA!', message);
              
-             // B. Buat Laporan Otomatis di Database
-             createAutoReport(`Sistem mendeteksi anomali pada sensor. Detail: ${message}`);
+             // B. Buat Laporan Otomatis
+             createAutoReport(message);
 
-             // Update waktu terakhir kirim
+             // Update waktu terakhir notifikasi
              setLastNotificationTime(now);
-             
-             console.log("Notifikasi Bahaya Dikirim!");
         }
       }
     });
 
-    return () => off(sensorRef);
-  }, [lastNotificationTime]); // Dependency agar state waktu terbaca update-nya
+    return () => off(systemRef);
+  }, [lastNotificationTime]); 
 
-  // Helper untuk mengubah angka menjadi teks status
+  // --- HELPER UNTUK TEKS STATUS (Disesuaikan dengan String dari Firebase) ---
   const getStatusText = (val, type) => {
-    if (type === 'api') return val == 1 ? "Terdeteksi" : "Tidak Terdeteksi";
-    if (type === 'bahaya') return val == 1 ? "Bahaya" : "Normal";
-    if (type === 'suhu') return val > 50 ? "Bahaya" : "Normal"; 
-    if (type === 'kelembaban') return val == 1 ? "Bahaya" : "Normal";
+    // Logika untuk API (Flame)
+    if (type === 'api') {
+        // Di DB tertulis "SAFE", jika bukan SAFE berarti Terdeteksi
+        return val === "SAFE" ? "Tidak Terdeteksi" : "Terdeteksi";
+    }
+    // Logika untuk Asap (MQ135)
+    if (type === 'asap') {
+        // Di DB tertulis "NORMAL", jika bukan NORMAL berarti Bahaya
+        return val === "NORMAL" ? "Normal" : "Bahaya";
+    }
+    // Logika untuk Suhu
+    if (type === 'suhu') {
+        return val > 50 ? "Bahaya" : "Normal"; 
+    }
+    // Logika untuk Kelembaban
+    if (type === 'kelembaban') {
+        // Contoh: Terlalu kering (<30) bisa memicu api
+        return val < 30 ? "Bahaya (Kering)" : "Normal";
+    }
     return "Normal";
   };
 
   return (
-    <div className={`${styles.page} ${!sidebarOpen ? styles.sidebarCollapsed : ''}`}>
+    <div className={`${styles.page} ${!sidebarOpen ? styles.sidebarCollapsed : ''}`} suppressHydrationWarning>
       
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} activePage="/monitoring" />
 
@@ -207,16 +213,16 @@ export default function MonitoringPage() {
                     </span>
                 </div>
                 <div className={styles.statusValueBox}>
-                    <span className={`${styles.statusValueText} ${globalStatus === 'BAHAYA' ? styles.danger : globalStatus === 'DARURAT' ? styles.emergency : ''}`}>
+                    <span className={`${styles.statusValueText} ${globalStatus !== 'NORMAL' ? styles.danger : ''}`}>
                         {globalStatus}
                     </span>
                 </div>
             </div>
 
-            {/* 2. GRID 5 SENSOR */}
+            {/* 2. GRID SENSOR */}
             <div className={styles.sensorGrid}>
 
-                {/* --- 1. SENSOR API --- */}
+                {/* SENSOR API (FLAME) */}
                 <div className={styles.sensorItem}>
                     <div className={styles.sensorNameBox}>
                         <span className={styles.sensorNameText}>SENSOR<br/>API</span>
@@ -232,7 +238,7 @@ export default function MonitoringPage() {
                     </div>
                 </div>
 
-                {/* --- 2. SENSOR ASAP --- */}
+                {/* SENSOR ASAP (MQ135) */}
                 <div className={styles.sensorItem}>
                     <div className={styles.sensorNameBox}>
                         <span className={styles.sensorNameText}>SENSOR<br/>ASAP</span>
@@ -243,12 +249,12 @@ export default function MonitoringPage() {
                             <span className={`${styles.dot} ${sensorActive.asap ? styles.activeDot : styles.inactiveDot}`}></span>
                         </div>
                         <div className={styles.sensorStatusText}>
-                            Status Asap: <span className={styles.statusHighlight}>{getStatusText(sensorData.asap, 'bahaya')}</span>
+                            Status Asap: <span className={styles.statusHighlight}>{getStatusText(sensorData.asap, 'asap')}</span>
                         </div>
                     </div>
                 </div>
 
-                {/* --- 3. SENSOR KELEMBAPAN --- */}
+                {/* SENSOR KELEMBAPAN */}
                 <div className={styles.sensorItem}>
                     <div className={styles.sensorNameBox}>
                         <span className={styles.sensorNameText}>SENSOR<br/>KELEMBAPAN</span>
@@ -259,12 +265,15 @@ export default function MonitoringPage() {
                             <span className={`${styles.dot} ${sensorActive.kelembaban ? styles.activeDot : styles.inactiveDot}`}></span>
                         </div>
                         <div className={styles.sensorStatusText}>
-                            Status Kelembapan: <span className={styles.statusHighlight}>{getStatusText(sensorData.kelembaban, 'kelembaban')}</span>
+                            Nilai: <b>{sensorData.kelembaban}%</b> <br/>
+                            <span style={{fontSize:'14px', color:'#555'}}>
+                                ({getStatusText(sensorData.kelembaban, 'kelembaban')})
+                            </span>
                         </div>
                     </div>
                 </div>
 
-                {/* --- 4. SENSOR SUHU --- */}
+                {/* SENSOR SUHU */}
                 <div className={styles.sensorItem}>
                     <div className={styles.sensorNameBox}>
                         <span className={styles.sensorNameText}>SENSOR<br/>SUHU</span>
@@ -275,12 +284,15 @@ export default function MonitoringPage() {
                             <span className={`${styles.dot} ${sensorActive.suhu ? styles.activeDot : styles.inactiveDot}`}></span>
                         </div>
                         <div className={styles.sensorStatusText}>
-                            Status Suhu: <span className={styles.statusHighlight}>{getStatusText(sensorData.suhu, 'suhu')}</span>
+                            Nilai: <b>{sensorData.suhu}°C</b> <br/>
+                            <span style={{fontSize:'14px', color:'#555'}}>
+                                ({getStatusText(sensorData.suhu, 'suhu')})
+                            </span>
                         </div>
                     </div>
                 </div>
 
-                 {/* --- 5. ESP32 CAM --- */}
+                 {/* ESP32 CAM (Placeholder) */}
                  <div className={styles.sensorItem}>
                     <div className={styles.sensorNameBox}>
                         <span className={styles.sensorNameText}>ESP32<br/>CAM</span>

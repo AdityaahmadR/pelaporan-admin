@@ -22,7 +22,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
   };
 
   return (
-    <>
+    <div suppressHydrationWarning>
       <div className={styles.fixedLogo}>
         <img src="/logo_kecil.png" alt="Logo" className="w-12 h-12" />
       </div>
@@ -88,6 +88,6 @@ export default function Sidebar({ isOpen, setIsOpen }) {
           </button>
         </div>
       </aside>
-    </>
+    </div>
   );
 }
